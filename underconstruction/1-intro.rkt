@@ -25,14 +25,15 @@
   
 ; Dieses Skript basiert auf [HTDP/2e] Kapitel 1
 
-; Programmieren mit Ausdrücken
-; ============================
+; Programmieren mit arithmetischen Ausdrücken
+; ===========================================
  
 ; Jeder von Ihnen weiß, wie man Zahlen addiert, dividiert oder multipliziert, denn Sie wurden
 ; von den Lehrern mit einem Verfahren (einem sog. _Algorithmus_) dazu "programmiert". 
 ; In diesem Kurs werden wir die Rollen umdrehen: Sie werden programmieren, und der Computer 
 ; wird ihre Anweisungen ausführen.  Die Sprache in der wir diese Anweisungen formulieren heißt
-; _Programmiersprache_.
+; _Programmiersprache_. Die Programmiersprache, die wir zunächst verwenden werden, heißt
+; _BSL_. BSL steht für "Beginning Student Language".
 
 ; Viele einfache Algorithmen sind in einer Programmiersprache bereits vorgegeben, z.B. solche
 ; zur Arithmetik mit Zahlen. Wir können "Aufgaben" stellen, indem wir DrRacket eine Frage stellen,
@@ -55,7 +56,7 @@
 (cos pi)  ; das "i" im Ergebnis #i-1.0 steht für "inexact", also ungenau - im Unterschied zur
           ; Mathematik sind manche Berechnungen auf einem Computer notwendigerweise nur Annäherungen
           ; an das mathematisch korrekte Ergebnis
-
+                                         
 ; Der Bereich, in dem Sie diesen Text lesen, ist der _Definitionsbereich_. In diesem Bereich 
 ; schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
 ; auf, mit dem Sie die Definitionen abspeichern können.
@@ -63,9 +64,42 @@
 ; Programme beinhalten Ausdrücke. Alle Programme, die wir bisher gesehen haben, _sind_ Ausdrücke.
 ; Jeder von Ihnen kennt Ausdrücke aus der Mathematik. Zu diesem Zeitpunkt ist ein Ausdruck in unserer 
 ; Programmiersprache ist entweder eine Zahl, oder etwas das mit einer linken Klammer "(" startet und mit
-; einer rechten Klammer ")" endet. Später werden andere Arten von Ausdrücken hinzukommen.
+; einer rechten Klammer ")" endet. Wir bezeichnen Zahlen als _primitive Ausdrücke_. 
+; Später werden andere Arten von Ausdrücken hinzukommen.
 
 ; Wenn Sie auf "Start" drücken, wertet DrRacket die Ausdrücke von oben nach unten aus und zeigt die 
 ; Ergebnisse im _Interaktionsbereich_ (der Bereich unter dem Definitionsbereich). Sie können auch 
 ; direkt im Interaktionsbereich Ausdrücke eingeben, die dann sofort ausgewertet werden. Allerdings 
 ; werden die Ausdrücke im Interaktionsbereich nicht durch den "Speichern" Knopf mit abgespeichert.
+
+; Wie kann man mehr als zwei Zahlen addieren? Hierzu gibt es zwei Möglichkeiten:
+
+; Durch Schachtelung:
+
+(+ 2 (+ 3 4))
+
+; oder durch Addition mit mehr als zwei Operanden
+
+(+ 2 3 4)
+
+; Immer wenn Sie in BSL eine arithmetische Operation wie "+" oder "sqrt" benutzen möchten,
+; schreiben Sie eine öffnende Klammer, gefolgt von der Operation, dann einem Lehrzeichen 
+; (oder Zeilenumbruch) und dann die _Operanden_, also in unserem Fall die Zahlen auf die die
+; Operation angewandt werden soll.
+;
+; Am Beispiel der Schachtelung haben Sie gesehen, dass auch Ausdrücke als Operanden zugelassen sind.
+; Diese Schachtelung kann beliebig tief sein:
+
+(+ (* 5 5) (+ (* 3 (/ 12 4)) 4)) ; ergibt 38
+
+; Solche geschachtelten Ausdrücke werden so ausgewertet, wie Sie es auch auf einem Blatt Papier 
+; machen würden: Wenn ein Operand ein nicht-primitiver Ausdruck ist, so wird zunächst dieser Ausdruck berechnet. 
+; Dieser Unterausdruck ist möglicherweise selber wieder geschachtelt; in diesem Fall wird diese
+; Berechnungsvorschrift auch auf diese Unterausdrücke wieder angewendet (sog. _rekursive_ Anwendung).
+; Falls mehrer Operanden nicht-primitive Ausdrücke sind, so wird von links nach rechts ausgewertet.
+
+; Zusammengefasst ist Programmieren zu diesem Zeitpunkt das Schreiben von arithmetischen Ausdrücken.
+; Ein Programm auszuführen bedeutet den Wert der darin enthaltenen Ausdrücke zu berechnen.
+; Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Resultate
+; der Ausführung werden im Interaktionsbereich angezeigt.
+
