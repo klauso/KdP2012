@@ -103,3 +103,94 @@
 ; Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Resultate
 ; der Ausführung werden im Interaktionsbereich angezeigt.
 
+
+; Arithmetik mit nicht-numerischen Werten
+; =======================================
+
+; Wenn wir nur Programme schreiben könnten, die Zahlen verarbeiten, wäre Programmieren genau so 
+; langweilig wie Mathematik ;-) Zum Glück gibt es viele andere Arten von Werten, mit denen 
+; wir ganz analog zu Zahlen rechnen können, zum Beispiel Text, Wahrheitswerte, Bilder usw.
+
+; Zu jedem dieser sogenannten _Datentypen_ gibt es _Konstruktoren_, mit denen man Werte dieser
+; Datentypen konstruieren kann, sowie _Operationen_, die auf Werte dieses Datentyps angewendet
+; werden können und die weitere Werte des Datentyps konstruieren. Konstruktoren für numerische
+; Werte sind zum Beispiel 42 oder 5.3 (also die Zahlen_literale_; Operationen sind zum Beispiel 
+; "+" oder "*".
+
+; Die Konstruktoren für Text (im folgenden auch _String_ genannt) erkennt man an Anführungszeihen. So ist zum Beispiel
+
+"Konzepte der Programmiersprachen"
+
+; ein Stringliteral. Eine Operation auf diesem Datentyp ist string-append, zum Beispiel
+
+(string-append "Konzepte der " "Programmiersprachen") ; ergibt "Konzepte der Programmiersprachen"
+
+; Es gibt weitere Operationen auf Strings: Um Teile aus einem String zu extrahieren, um die Reihenfolge
+; der Buchstaben umzukehren, um in Groß- oder Kleinbuchstaben zu konvertieren usw. Zusammen bilden diese
+; Operationen die _Arithmetik der Strings_.
+
+
+; Die Namen dieser ganzen Operationen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
+; Operationen für Zahlen, Strings und andere Datentypen in der DrRacket Hilfe nachgeschlagen werden
+; unter: Hilfe -> How to Design Programs Languages -> Beginning Student -> Pre-defined Functions
+
+; Einige Operationen haben die Eigenschaft, dass sie Werte eines Datentyps als Operand erwarten, aber
+; Werte eines anderen Datentyps als Ergebnis liefern, zum Beispiel die Operation string-length:
+
+(+ (string-length "Programmiersprachen") 5) ; ergibt 24
+
+; Bei Operationen, die mehrere Operanden erwarten, gibt es solche, die Operanden unterschiedlicher Datentypen
+; erwarten, zum Beispiel
+
+(replicate 3 "hi") ; ergibt "hihihi"
+
+; Es gibt auch Operationen, die Datentypen ineinander umwandeln, zum Beispiel
+
+(number->string 42) ; ergibt den String "42"
+
+(string->number "42") ; ergibt die Zahl 42
+
+; Ein weiterer wichtiger Datentyp sind Wahrheitswerte (Boolsche Werte). Die einzigen
+; Konstruktoren hierfür sind die Literale true und false. Operationen auf boolschen
+; Werten sind zum Beispiel die aussagenlogischen Operationen:
+
+(and true true) ; ergibt true
+(and true false) ; ergibt false
+(or true false) ; ergibt true
+(or false false) ; ergibt false
+(not false) ; ergibt true
+
+; Boolsche Werte werden auch häufig von Vergleichsoperationen zurückgegeben:
+
+(> 10 9) ; ergibt true
+(< -1 0) ; ergibt true
+(= 42 9) ; ergibt false
+(string=? "hello" "world") ; ergibt false
+
+; Natürlich können Ausdrücke weiterhin beliebig verschachtelt werden, z.B. so:
+
+(and (or (= (string-length "hello world") (string->number "11"))
+         (string=? "hello world" "good morning"))
+     (>= (+ (string-length "hello world") 60) 80))
+
+; Auftreten und Umgang mit Fehlern
+; ================================
+
+; Was passiert wenn ein Operand übergeben wird, der nicht den erwarteten Typ hat?
+; In diesem Fall wird die Auswertung abgebrochen und eine Fehlermeldung produziert.
+; Zum Beispiel (number->string "asdf") ergibt die Fehlermeldung 
+;          number->string: expects a number; given "asdf"
+
+; Manchmal stimmt zwar der Datentyp des Operanden, aber trotzdem 'passt' der Operand
+; in irgendeiner Weise nicht. Betrachten Sie beispielsweise den Aufruf:
+
+(string->number "hallo")
+
+; In BSL ist der Wert dieses Ausdrucks "false", ein sogenannter Boolscher Wert (Wahrheitswert),
+; um zu signalisieren dass der String keine Zahl repräsentiert. Manchmal kann das "nicht passen"
+; eines Operanden auch durch eine Fehlermeldung signalisiert werden, die die Berechung abbricht,
+; zum Beispiel
+; (/ 1 0)   ergibt den Fehler "/: division by zero".
+
+
+
