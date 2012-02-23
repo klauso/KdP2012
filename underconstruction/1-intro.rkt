@@ -1,196 +1,2141 @@
-;; The first three lines of this file were inserted by DrRacket. They record metadata
-;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-reader.ss" "lang")((modname 1-intro) (read-case-sensitive #t) (teachpacks ((lib "image.ss" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.ss" "teachpack" "2htdp")))))
-;  Konzepte der Programmiersprachen, SS 2012, Prof. Dr. Klaus Ostermann, Tillmann Rendel
-;  -------------------------------------------------------------------------------------
-;  
-;  Das Skript für diese Vorlesung wird als Menge von Racket Quelltexten organisiert. 
-;  Öffnen Sie diese zum Lesen mit DrRacket.
-; ------------------------------------------------------------------------------------------------
-;  Die Skripte dienen zur Übersicht und Erinnerung an das durchgenommene Material.
-;  Als alleiniges Lehrmaterial sind sie nicht geeignet. Zu diesem Zweck wird es bei jedem 
-;  Skript Verweise auf Lehrmaterial geben, welches die Themen ausführlicher darstellt.
-;  
-;  Häufig werden wir auf das Buch "How to Design Programs" [HTDP]. Eine neuere Version des Buches,
-;  HtDP/2e, ist partiell bereits öffentlich verfügbar [HTDP/2e].
-;  
-;  [HTDP] Matthias Felleisen et al, How To Design Programs, MIT Press, 2003
-;         Online Version: http://htdp.org
-;  [HTDP/2e] Matthias Felleisen et al, How To Design Programs, 2nd edition. 
-;         Partielle Online Version: http://www.ccs.neu.edu/home/matthias/HtDP2e/
-;         
-; In folgenden Skripten werden wir auf diese Quellen nur noch als [HTDP] bzw. [HTDP/2e] bezeichnen.        
-; --------------------------------------------------------------------------------------------------
-  
-  
-; Dieses Skript basiert auf [HTDP/2e] Kapitel 1
+#reader(lib"read.ss""wxme")WXME0108 ## 
+#|
+   This file uses the GRacket editor format.
+   Open this file in DrRacket version 5.2 or later to read it.
 
-; Programmieren mit arithmetischen Ausdrücken
-; ===========================================
- 
-; Jeder von Ihnen weiß, wie man Zahlen addiert, dividiert oder multipliziert, denn Sie wurden
-; von den Lehrern mit einem Verfahren (einem sog. _Algorithmus_) dazu "programmiert". 
-; In diesem Kurs werden wir die Rollen umdrehen: Sie werden programmieren, und der Computer 
-; wird ihre Anweisungen ausführen.  Die Sprache in der wir diese Anweisungen formulieren heißt
-; _Programmiersprache_. Die Programmiersprache, die wir zunächst verwenden werden, heißt
-; _BSL_. BSL steht für "Beginning Student Language".
+   Most likely, it was created by saving a program in DrRacket,
+   and it probably contains a program with non-text elements
+   (such as images or comment boxes).
 
-; Viele einfache Algorithmen sind in einer Programmiersprache bereits vorgegeben, z.B. solche
-; zur Arithmetik mit Zahlen. Wir können "Aufgaben" stellen, indem wir DrRacket eine Frage stellen,
-; auf die uns DrRacket dann im Ausgabefenster die Antwort gibt. So können wir zum Beispiel die Frage
-
-(+ 1 1)
-
-; stellen - als Antwort erhalten wir bei Ausführung dieser Anweisung ("Start" Knopf) 2.
-; Diese Art von Fragen nennen wir _Ausdrücke_.
-
-; Hier einige weitere Beispiele für Ausdrücke mit weiteren arithmetischen Operationen.
-                                        
-(+ 2 2)
-(* 3 3)
-(- 4 2)
-(/ 6 2)
-(sqr 3)
-(expt 2 3)
-(sin 0)
-(cos pi)  ; das "i" im Ergebnis #i-1.0 steht für "inexact", also ungenau - im Unterschied zur
-          ; Mathematik sind manche Berechnungen auf einem Computer notwendigerweise nur Annäherungen
-          ; an das mathematisch korrekte Ergebnis
-                                         
-; Der Bereich, in dem Sie diesen Text lesen, ist der _Definitionsbereich_. In diesem Bereich 
-; schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
-; auf, mit dem Sie die Definitionen abspeichern können.
-
-; Programme beinhalten Ausdrücke. Alle Programme, die wir bisher gesehen haben, _sind_ Ausdrücke.
-; Jeder von Ihnen kennt Ausdrücke aus der Mathematik. Zu diesem Zeitpunkt ist ein Ausdruck in unserer 
-; Programmiersprache ist entweder eine Zahl, oder etwas das mit einer linken Klammer "(" startet und mit
-; einer rechten Klammer ")" endet. Wir bezeichnen Zahlen als _primitive Ausdrücke_. 
-; Später werden andere Arten von Ausdrücken hinzukommen.
-
-; Wenn Sie auf "Start" drücken, wertet DrRacket die Ausdrücke von oben nach unten aus und zeigt die 
-; Ergebnisse im _Interaktionsbereich_ (der Bereich unter dem Definitionsbereich). Sie können auch 
-; direkt im Interaktionsbereich Ausdrücke eingeben, die dann sofort ausgewertet werden. Allerdings 
-; werden die Ausdrücke im Interaktionsbereich nicht durch den "Speichern" Knopf mit abgespeichert.
-
-; Wie kann man mehr als zwei Zahlen addieren? Hierzu gibt es zwei Möglichkeiten:
-
-; Durch Schachtelung:
-
-(+ 2 (+ 3 4))
-
-; oder durch Addition mit mehr als zwei Operanden
-
-(+ 2 3 4)
-
-; Immer wenn Sie in BSL eine arithmetische Operation wie "+" oder "sqrt" benutzen möchten,
-; schreiben Sie eine öffnende Klammer, gefolgt von der Operation, dann einem Lehrzeichen 
-; (oder Zeilenumbruch) und dann die _Operanden_, also in unserem Fall die Zahlen auf die die
-; Operation angewandt werden soll.
-;
-; Am Beispiel der Schachtelung haben Sie gesehen, dass auch Ausdrücke als Operanden zugelassen sind.
-; Diese Schachtelung kann beliebig tief sein:
-
-(+ (* 5 5) (+ (* 3 (/ 12 4)) 4)) ; ergibt 38
-
-; Solche geschachtelten Ausdrücke werden so ausgewertet, wie Sie es auch auf einem Blatt Papier 
-; machen würden: Wenn ein Operand ein nicht-primitiver Ausdruck ist, so wird zunächst dieser Ausdruck berechnet. 
-; Dieser Unterausdruck ist möglicherweise selber wieder geschachtelt; in diesem Fall wird diese
-; Berechnungsvorschrift auch auf diese Unterausdrücke wieder angewendet (sog. _rekursive_ Anwendung).
-; Falls mehrer Operanden nicht-primitive Ausdrücke sind, so wird von links nach rechts ausgewertet.
-
-; Zusammengefasst ist Programmieren zu diesem Zeitpunkt das Schreiben von arithmetischen Ausdrücken.
-; Ein Programm auszuführen bedeutet den Wert der darin enthaltenen Ausdrücke zu berechnen.
-; Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Resultate
-; der Ausführung werden im Interaktionsbereich angezeigt.
-
-
-; Arithmetik mit nicht-numerischen Werten
-; =======================================
-
-; Wenn wir nur Programme schreiben könnten, die Zahlen verarbeiten, wäre Programmieren genau so 
-; langweilig wie Mathematik ;-) Zum Glück gibt es viele andere Arten von Werten, mit denen 
-; wir ganz analog zu Zahlen rechnen können, zum Beispiel Text, Wahrheitswerte, Bilder usw.
-
-; Zu jedem dieser sogenannten _Datentypen_ gibt es _Konstruktoren_, mit denen man Werte dieser
-; Datentypen konstruieren kann, sowie _Operationen_, die auf Werte dieses Datentyps angewendet
-; werden können und die weitere Werte des Datentyps konstruieren. Konstruktoren für numerische
-; Werte sind zum Beispiel 42 oder 5.3 (also die Zahlen_literale_; Operationen sind zum Beispiel 
-; "+" oder "*".
-
-; Die Konstruktoren für Text (im folgenden auch _String_ genannt) erkennt man an Anführungszeihen. So ist zum Beispiel
-
-"Konzepte der Programmiersprachen"
-
-; ein Stringliteral. Eine Operation auf diesem Datentyp ist string-append, zum Beispiel
-
-(string-append "Konzepte der " "Programmiersprachen") ; ergibt "Konzepte der Programmiersprachen"
-
-; Es gibt weitere Operationen auf Strings: Um Teile aus einem String zu extrahieren, um die Reihenfolge
-; der Buchstaben umzukehren, um in Groß- oder Kleinbuchstaben zu konvertieren usw. Zusammen bilden diese
-; Operationen die _Arithmetik der Strings_.
-
-
-; Die Namen dieser ganzen Operationen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
-; Operationen für Zahlen, Strings und andere Datentypen in der DrRacket Hilfe nachgeschlagen werden
-; unter: Hilfe -> How to Design Programs Languages -> Beginning Student -> Pre-defined Functions
-
-; Einige Operationen haben die Eigenschaft, dass sie Werte eines Datentyps als Operand erwarten, aber
-; Werte eines anderen Datentyps als Ergebnis liefern, zum Beispiel die Operation string-length:
-
-(+ (string-length "Programmiersprachen") 5) ; ergibt 24
-
-; Bei Operationen, die mehrere Operanden erwarten, gibt es solche, die Operanden unterschiedlicher Datentypen
-; erwarten, zum Beispiel
-
-(replicate 3 "hi") ; ergibt "hihihi"
-
-; Es gibt auch Operationen, die Datentypen ineinander umwandeln, zum Beispiel
-
-(number->string 42) ; ergibt den String "42"
-
-(string->number "42") ; ergibt die Zahl 42
-
-; Ein weiterer wichtiger Datentyp sind Wahrheitswerte (Boolsche Werte). Die einzigen
-; Konstruktoren hierfür sind die Literale true und false. Operationen auf boolschen
-; Werten sind zum Beispiel die aussagenlogischen Operationen:
-
-(and true true) ; ergibt true
-(and true false) ; ergibt false
-(or true false) ; ergibt true
-(or false false) ; ergibt false
-(not false) ; ergibt true
-
-; Boolsche Werte werden auch häufig von Vergleichsoperationen zurückgegeben:
-
-(> 10 9) ; ergibt true
-(< -1 0) ; ergibt true
-(= 42 9) ; ergibt false
-(string=? "hello" "world") ; ergibt false
-
-; Natürlich können Ausdrücke weiterhin beliebig verschachtelt werden, z.B. so:
-
-(and (or (= (string-length "hello world") (string->number "11"))
-         (string=? "hello world" "good morning"))
-     (>= (+ (string-length "hello world") 60) 80))
-
-; Auftreten und Umgang mit Fehlern
-; ================================
-
-; Was passiert wenn ein Operand übergeben wird, der nicht den erwarteten Typ hat?
-; In diesem Fall wird die Auswertung abgebrochen und eine Fehlermeldung produziert.
-; Zum Beispiel (number->string "asdf") ergibt die Fehlermeldung 
-;          number->string: expects a number; given "asdf"
-
-; Manchmal stimmt zwar der Datentyp des Operanden, aber trotzdem 'passt' der Operand
-; in irgendeiner Weise nicht. Betrachten Sie beispielsweise den Aufruf:
-
-(string->number "hallo")
-
-; In BSL ist der Wert dieses Ausdrucks "false", ein sogenannter Boolscher Wert (Wahrheitswert),
-; um zu signalisieren dass der String keine Zahl repräsentiert. Manchmal kann das "nicht passen"
-; eines Operanden auch durch eine Fehlermeldung signalisiert werden, die die Berechung abbricht,
-; zum Beispiel
-; (/ 1 0)   ergibt den Fehler "/: division by zero".
-
-
-
+            http://racket-lang.org/
+|#
+ 28 7 #"wxtext\0"
+3 1 6 #"wxtab\0"
+1 1 8 #"wximage\0"
+2 0 8 #"wxmedia\0"
+4 1 34 #"(lib \"syntax-browser.ss\" \"mrlib\")\0"
+1 0 16 #"drscheme:number\0"
+3 0 44 #"(lib \"number-snip.ss\" \"drscheme\" \"private\")\0"
+1 0 36 #"(lib \"comment-snip.ss\" \"framework\")\0"
+1 0 93
+(
+ #"((lib \"collapsed-snipclass.ss\" \"framework\") (lib \"collapsed-sni"
+ #"pclass-wxme.ss\" \"framework\"))\0"
+) 0 0 19 #"drscheme:sexp-snip\0"
+0 0 36 #"(lib \"cache-image-snip.ss\" \"mrlib\")\0"
+1 0 68
+(
+ #"((lib \"image-core.ss\" \"mrlib\") (lib \"image-core-wxme.rkt\" \"mr"
+ #"lib\"))\0"
+) 1 0 33 #"(lib \"bullet-snip.ss\" \"browser\")\0"
+0 0 29 #"drscheme:bindings-snipclass%\0"
+1 0 25 #"(lib \"matrix.ss\" \"htdp\")\0"
+1 0 22 #"drscheme:lambda-snip%\0"
+1 0 57
+#"(lib \"hrule-snip.rkt\" \"macro-debugger\" \"syntax-browser\")\0"
+1 0 45 #"(lib \"image-snipr.ss\" \"slideshow\" \"private\")\0"
+1 0 26 #"drscheme:pict-value-snip%\0"
+0 0 38 #"(lib \"pict-snipclass.ss\" \"slideshow\")\0"
+2 0 55 #"(lib \"vertical-separator-snip.ss\" \"stepper\" \"private\")\0"
+1 0 18 #"drscheme:xml-snip\0"
+1 0 31 #"(lib \"xml-snipclass.ss\" \"xml\")\0"
+1 0 21 #"drscheme:scheme-snip\0"
+2 0 34 #"(lib \"scheme-snipclass.ss\" \"xml\")\0"
+1 0 10 #"text-box%\0"
+1 0 32 #"(lib \"text-snipclass.ss\" \"xml\")\0"
+1 0 15 #"test-case-box%\0"
+2 0 1 6 #"wxloc\0"
+          0 0 65 0 1 #"\0"
+0 75 1 #"\0"
+0 10 90 -1 90 -1 3 -1 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 255 255 255 1 -1 0 9
+#"Standard\0"
+0 75 12 #"Courier New\0"
+0 10 90 -1 90 -1 3 -1 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 255 255 255 1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 -1 -1 2 24
+#"framework:default-color\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 150 0 150 0 0 0 -1 -1 2 15
+#"text:ports out\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 150 0 150 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 93 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 255 0 0 0 0 0 -1
+-1 2 15 #"text:ports err\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 93 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 255 0 0 0 0 0 -1
+-1 2 1 #"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 175 0 0 0 -1 -1 2 17
+#"text:ports value\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 175 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1.0 0 92 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 34 139 34 0 0 0 -1
+-1 2 27 #"Matching Parenthesis Style\0"
+0 -1 1 #"\0"
+1.0 0 92 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 34 139 34 0 0 0 -1
+-1 2 1 #"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 38 38 128 0 0 0 -1 -1 2 37
+#"framework:syntax-color:scheme:symbol\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 38 38 128 0 0 0 -1 -1 2 38
+#"framework:syntax-color:scheme:keyword\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 38 38 128 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 194 116 31 0 0 0 -1 -1 2
+38 #"framework:syntax-color:scheme:comment\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 194 116 31 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 41 128 38 0 0 0 -1 -1 2 37
+#"framework:syntax-color:scheme:string\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 41 128 38 0 0 0 -1 -1 2 39
+#"framework:syntax-color:scheme:constant\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 41 128 38 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 132 60 36 0 0 0 -1 -1 2 42
+#"framework:syntax-color:scheme:parenthesis\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 132 60 36 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 36
+#"framework:syntax-color:scheme:error\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 36
+#"framework:syntax-color:scheme:other\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 81 112 203 0 0 0 -1 -1 2
+38 #"drracket:check-syntax:lexically-bound\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 81 112 203 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 178 34 34 0 0 0 -1 -1 2 28
+#"drracket:check-syntax:set!d\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 178 34 34 0 0 0 -1 -1 2 37
+#"drracket:check-syntax:unused-require\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 36
+#"drracket:check-syntax:free-variable\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 68 0 203 0 0 0 -1 -1 2 31
+#"drracket:check-syntax:imported\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 68 0 203 0 0 0 -1 -1 2 47
+#"drracket:check-syntax:my-obligation-style-pref\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 178 34 34 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 116 0 0 0 0 -1 -1 2 50
+#"drracket:check-syntax:their-obligation-style-pref\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 116 0 0 0 0 -1 -1 2 48
+#"drracket:check-syntax:unk-obligation-style-pref\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 139 142 28 0 0 0 -1 -1 2
+49 #"drracket:check-syntax:both-obligation-style-pref\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 139 142 28 0 0 0 -1 -1 2
+26 #"plt:htdp:test-coverage-on\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 1 0 0 0 0 0 0 255 165 0 0 0 0 -1 -1 2 27
+#"plt:htdp:test-coverage-off\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 1 0 0 0 0 0 0 255 165 0 0 0 0 -1 -1 4 1
+#"\0"
+0 70 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1.0 1.0 1.0 1.0 1.0 1.0 0 0 0 0 0 0
+-1 -1 4 4 #"XML\0"
+0 70 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1.0 1.0 1.0 1.0 1.0 1.0 0 0 0 0 0 0
+-1 -1 2 1 #"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 34 139 34 0 0 0 -1 -1 2 37
+#"plt:module-language:test-coverage-on\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 34 139 34 0 0 0 -1 -1 2 1
+#"\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 176 48 96 0 0 0 -1 -1 2 38
+#"plt:module-language:test-coverage-off\0"
+0 -1 1 #"\0"
+1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 176 48 96 0 0 0 -1 -1 4 1
+#"\0"
+0 71 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1.0 1.0 1.0 1.0 1.0 1.0 0 0 0 0 0 0
+-1 -1 4 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 1 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 0 255 0 0 0 -1
+-1 4 1 #"\0"
+0 71 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 1 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 0 255 0 0 0 -1
+-1 4 1 #"\0"
+0 71 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 100 0 0 0 0 -1
+-1 2 1 #"\0"
+0 71 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1.0 1.0 1.0 1.0 1.0 1.0 0 0 0 0 0 0
+-1 -1 2 1 #"\0"
+0 71 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 100 0 0 0 0 -1
+-1 17 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+4 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+14 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+26 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+41 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+24 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+43 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+22 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+20 1 #"\0"
+0 -1 1 #"\0"
+1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 255 255 255 -1 -1
+          0 989 0 4 3 85
+(
+ #";; The first three lines of this file were inserted by DrRacket. The"
+ #"y record metadata"
+) 0 0 4 29 1 #"\n"
+0 0 4 3 85
+(
+ #";; about the language level of this file in a form that our tools ca"
+ #"n easily process."
+) 0 0 4 29 1 #"\n"
+0 0 4 3 246
+(
+ #"#reader(lib \"htdp-beginner-reader.ss\" \"lang\")((modname 1-intro) "
+ #"(read-case-sensitive #t) (teachp"
+ #"acks ((lib \"image.ss\" \"teachpack\" \"2htdp\"))) (htdp-settings #("
+ #"#t constructor repeating-decimal #f #t none #f ((lib \"image.ss\" \""
+ #"teachpack\" \"2htdp\")))))"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 88
+(
+ #";  Konzepte der Programmiersprachen, SS 2012, Prof. Dr. Klaus Osterm"
+ #"ann, Tillmann Rendel"
+) 0 0 57 29 1 #"\n"
+0 0 17 3 88
+(
+ #";  -----------------------------------------------------------------"
+ #"--------------------"
+) 0 0 57 29 1 #"\n"
+0 0 17 3 3 #";  "
+0 0 57 29 1 #"\n"
+0 0 17 3 86
+(
+ #";  Das Skript f\303\274r diese Vorlesung wird als Menge von Racket Q"
+ #"uelltexten organisiert. "
+) 0 0 17 29 1 #"\n"
+0 0 17 3 44 #";  \303\226ffnen Sie diese zum Lesen mit DrRacket."
+0 0 17 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; ------------------------------------------------------------------"
+ #"-----------------------------"
+) 0 0 17 3 1 #"-"
+0 0 17 29 1 #"\n"
+0 0 17 3 83
+(
+ #";  Die Skripte dienen zur \303\234bersicht und Erinnerung an das dur"
+ #"chgenommene Material."
+) 0 0 17 29 1 #"\n"
+0 0 17 3 88
+(
+ #";  Als alleiniges Lehrmaterial sind sie nicht geeignet. Zu diesem Zw"
+ #"eck wird es bei jede"
+) 0 0 17 3 2 #"m "
+0 0 17 29 1 #"\n"
+0 0 17 3 87
+(
+ #";  Skript Verweise auf Lehrmateri"
+ #"al geben, welches die Themen ausf\303\274hrlicher darstellt."
+) 0 0 17 29 1 #"\n"
+0 0 17 3 3 #";  "
+0 0 17 29 1 #"\n"
+0 0 17 3 99
+(
+ #";  H\303\244ufig werden wir auf das Buch \"How to Design Programs\" "
+ #"[HTDP]. Eine neuere Version des Buches,"
+) 0 0 17 29 1 #"\n"
+0 0 17 3 64
+(
+ #";  HtDP/2e, ist partiell bereits \303\266ffentlich verf\303\274gbar "
+ #"[HTDP/2e"
+) 0 0 17 3 2 #"]."
+0 0 17 29 1 #"\n"
+0 0 17 3 3 #";  "
+0 0 17 29 1 #"\n"
+0 0 17 3 69
+(
+ #";  [HTDP] Matthias Felleisen et al, How To Design Programs, MIT Pres"
+ #"s"
+) 0 0 17 3 6 #", 2003"
+0 0 17 29 1 #"\n"
+0 0 17 3 35 #";         Online Version: http://ht"
+0 0 17 3 6 #"dp.org"
+0 0 17 29 1 #"\n"
+0 0 17 3 70
+(
+ #";  [HTDP/2e] Matthias Felleisen et al, How To Design Programs, 2nd e"
+ #"di"
+) 0 0 17 3 6 #"tion. "
+0 0 17 29 1 #"\n"
+0 0 17 3 73
+(
+ #";         Partielle Online Version: http://www.ccs.neu.edu/home/matt"
+ #"hias/"
+) 0 0 17 3 1 #"H"
+0 0 17 3 6 #"tDP2e/"
+0 0 17 29 1 #"\n"
+0 0 17 3 4 #";   "
+0 0 17 3 6 #"      "
+0 0 17 29 1 #"\n"
+0 0 17 3 101
+(
+ #"; In folgenden Skripten werden wir auf diese Quellen nur noch als [H"
+ #"TDP] bzw. [HTDP/2e] bezeichnen.  "
+) 0 0 17 3 6 #"      "
+0 0 17 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; ------------------------------------------------------------------"
+ #"--------------------------------"
+) 0 0 17 29 1 #"\n"
+0 0 17 3 2 #"  "
+0 0 17 29 1 #"\n"
+0 0 17 3 2 #"  "
+0 0 17 29 1 #"\n"
+0 0 17 3 42 #"; Dieses Skript basiert auf [HTDP/2e] Kapi"
+0 0 17 3 5 #"tel 1"
+0 0 17 29 1 #"\n"
+0 0 17 29 1 #"\n"
+0 0 17 3 46 #"; Programmieren mit arithmetischen Ausdr\303\274cken"
+0 0 17 29 1 #"\n"
+0 0 17 3 40 #"; ======================================"
+0 0 17 3 5 #"====="
+0 0 17 29 1 #"\n"
+0 0 17 3 1 #" "
+0 0 17 29 1 #"\n"
+0 0 17 3 94
+(
+ #"; Jeder von Ihnen wei\303\237, wie man Zahlen addiert, dividiert ode"
+ #"r multipliziert, denn Sie wurden"
+) 0 0 17 29 1 #"\n"
+0 0 17 3 78
+(
+ #"; von den Lehrern mit einem Verfahren (einem sog. _Algorithmus_) daz"
+ #"u \"program"
+) 0 0 17 3 5 #"miert"
+0 0 17 3 3 #"\". "
+0 0 17 29 1 #"\n"
+0 0 17 3 8 #"; In die"
+0 0 19 3 1 #"s"
+0 0 17 3 74
+(
+ #"em Kurs werden wir die Rollen umdrehen: Sie werden programmieren, un"
+ #"d der "
+) 0 0 17 3 8 #"Computer"
+0 0 17 3 1 #" "
+0 0 17 29 1 #"\n"
+0 0 17 3 8 #"; wird i"
+0 0 19 3 1 #"h"
+0 0 17 3 77
+(
+ #"re Anweisungen ausf\303\274hren.  Die Sprache in der wir diese Anwei"
+ #"sungen formulie"
+) 0 0 17 3 1 #"r"
+0 0 14 3 2 #"en"
+0 0 17 3 1 #" "
+0 0 14 3 6 #"hei\303\237t"
+0 0 17 29 1 #"\n"
+0 0 17 3 8 #"; _Progr"
+0 0 17 3 4 #"ammi"
+0 0 17 3 1 #"e"
+0 0 17 3 3 #"rsp"
+0 0 17 3 1 #"r"
+0 0 17 3 18 #"ache_. Die Program"
+0 0 17 3 1 #"m"
+0 0 17 3 1 #"i"
+0 0 17 3 3 #"ers"
+0 0 17 3 1 #"p"
+0 0 17 3 3 #"rac"
+0 0 17 3 1 #"h"
+0 0 17 3 8 #"e, die w"
+0 0 17 3 1 #"i"
+0 0 17 3 10 #"r zun\303\244chs"
+0 0 17 3 1 #"t"
+0 0 17 3 6 #" verwe"
+0 0 17 3 1 #"n"
+0 0 17 3 1 #"d"
+0 0 17 3 6 #"en wer"
+0 0 17 3 3 #"den"
+0 0 17 3 1 #","
+0 0 17 3 7 #" hei\303\237t"
+0 0 19 29 1 #"\n"
+0 0 17 3 25 #"; _BSL_. BSL steht f\303\274r \""
+0 0 17 3 9 #"Beginning"
+0 0 17 3 1 #" "
+0 0 17 3 7 #"Student"
+0 0 17 3 1 #" "
+0 0 17 3 10 #"Language\"."
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 93
+(
+ #"; Viele einfache Algorithmen sind in einer Programmiersprache bereit"
+ #"s vorgegeben, z.B. solche"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 42 #"; zur Arithmetik mit Zahlen. Wir k\303\266nnen \""
+0 0 17 3 8 #"Aufgaben"
+0 0 17 3 49 #"\" stellen, indem wir DrRacket eine Frage stellen,"
+0 0 19 29 1 #"\n"
+0 0 17 3 90
+(
+ #"; auf die uns DrRacket dann im Ausgabefenster die Antwort gibt. So k"
+ #"\303\266nnen wir zum Beispie"
+) 0 0 17 3 2 #"l "
+0 0 17 3 1 #"d"
+0 0 17 3 1 #"i"
+0 0 17 3 1 #"e"
+0 0 17 3 1 #" "
+0 0 17 3 1 #"F"
+0 0 17 3 4 #"rage"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"1"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"1"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 72
+(
+ #"; stellen - als Antwort erhalten wir bei Ausf\303\274hrung dieser An"
+ #"weisung (\""
+) 0 0 17 3 5 #"Start"
+0 0 17 3 11 #"\" Knopf) 2."
+0 0 19 29 1 #"\n"
+0 0 17 3 47 #"; Diese Art von Fragen nennen wir _Ausdr\303\274cke_."
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 88
+(
+ #"; Hier einige weitere Beispiele f\303\274r Ausdr\303\274cke mit weit"
+ #"eren arithmetischen Operationen."
+) 0 0 19 29 1 #"\n"
+0 0 19 3 30 #"                              "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 3 1 #" "
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"2"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"2"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"*"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"-"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"4"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"2"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"/"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"6"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"2"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 3 #"sqr"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 4 #"expt"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"2"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 3 #"sin"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"0"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 3 #"cos"
+0 0 19 3 1 #" "
+0 0 14 3 2 #"pi"
+0 0 22 3 1 #")"
+0 0 19 3 2 #"  "
+0 0 17 3 7 #"; das \""
+0 0 17 3 1 #"i"
+0 0 17 3 33 #"\" im Ergebnis #i-1.0 steht f\303\274r \""
+0 0 17 3 43 #"inexact\", also ungenau - im Unterschied zur"
+0 0 19 29 1 #"\n"
+0 0 19 3 10 #"          "
+0 0 17 3 91
+(
+ #"; Mathematik sind manche Berechnungen auf einem Computer notwendiger"
+ #"weise nur Ann\303\244herungen"
+) 0 0 19 29 1 #"\n"
+0 0 19 3 10 #"          "
+0 0 17 3 39 #"; an das mathematisch korrekte Ergebnis"
+0 0 19 29 1 #"\n"
+0 0 19 3 41 #"                                         "
+0 0 19 29 1 #"\n"
+0 0 17 3 93
+(
+ #"; Der Bereich, in dem Sie diesen Text lesen, ist der _Definitionsber"
+ #"eich_. In diesem Bereich "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 89
+(
+ #"; schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas "
+ #"\303\244ndern, taucht der \""
+) 0 0 17 3 16 #"Speichern\" Knopf"
+0 0 19 29 1 #"\n"
+0 0 17 3 56
+#"; auf, mit dem Sie die Definitionen abspeichern k\303\266nnen."
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 99
+(
+ #"; Programme beinhalten Ausdr\303\274cke. Alle Programme, die wir bis"
+ #"her gesehen haben, _sind_ Ausdr\303\274cke."
+) 0 0 19 29 1 #"\n"
+0 0 17 3 103
+(
+ #"; Jeder von Ihnen kennt Ausdr\303\274cke aus der Mathematik. Zu dies"
+ #"em Zeitpunkt ist ein Ausdruck in unserer "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 86
+(
+ #"; Programmiersprache ist entweder eine Zahl, oder etwas das mit eine"
+ #"r linken Klammer \""
+) 0 0 17 3 18 #"(\" startet und mit"
+0 0 19 29 1 #"\n"
+0 0 17 3 25 #"; einer rechten Klammer \""
+0 0 17 3 60
+#")\" endet. Wir bezeichnen Zahlen als _primitive Ausdr\303\274cke_. "
+0 0 19 29 1 #"\n"
+0 0 17 3 58
+(
+ #"; Sp\303\244ter werden andere Arten von Ausdr\303\274cken hinzukomme"
+ #"n."
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 16 #"; Wenn Sie auf \""
+0 0 17 3 86
+(
+ #"Start\" dr\303\274cken, wertet DrRacket die Ausdr\303\274cke von obe"
+ #"n nach unten aus und zeigt die "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 99
+(
+ #"; Ergebnisse im _Interaktionsbereich_ (der Bereich unter dem Definit"
+ #"ionsbereich). Sie k\303\266nnen auch "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; direkt im Interaktionsbereich Ausdr\303\274cke eingeben, die dann "
+ #"sofort ausgewertet werden. Allerdings "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 64
+(
+ #"; werden die Ausdr\303\274cke im Interaktionsbereich nicht durch den"
+ #" \""
+) 0 0 17 3 35 #"Speichern\" Knopf mit abgespeichert."
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 81
+(
+ #"; Wie kann man mehr als zwei Zahle"
+ #"n addieren? Hierzu gibt es zwei M\303\266glichkeiten:"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 21 #"; Durch Schachtelung:"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"2"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"4"
+0 0 22 3 2 #"))"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 49 #"; oder durch Addition mit mehr als zwei Operanden"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"2"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"4"
+0 0 22 3 1 #")"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 58
+#"; Immer wenn Sie in BSL eine arithmetische Operation wie \""
+0 0 17 3 1 #"+"
+0 0 17 3 8 #"\" oder \""
+0 0 17 3 24 #"sqrt\" benutzen m\303\266chten,"
+0 0 19 29 1 #"\n"
+0 0 17 3 90
+(
+ #"; schreiben Sie eine \303\266ffnende Klammer, gefolgt von der Operat"
+ #"ion, dann einem Lehrzeichen "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 92
+(
+ #"; (oder Zeilenumbruch) und dann die _Operanden_, also in unserem Fal"
+ #"l die Zahlen auf die die"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 34 #"; Operation angewandt werden soll."
+0 0 19 29 1 #"\n"
+0 0 17 3 1 #";"
+0 0 19 29 1 #"\n"
+0 0 17 3 101
+(
+ #"; Am Beispiel der Schachtelung ha"
+ #"ben Sie gesehen, dass auch Ausdr\303\274cke als Operanden zugelassen"
+ #" sind."
+) 0 0 19 29 1 #"\n"
+0 0 17 3 45 #"; Diese Schachtelung kann beliebig tief sein:"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 1 #"*"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"5"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"5"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 1 #"*"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 1 #"/"
+0 0 19 3 1 #" "
+0 0 20 3 2 #"12"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"4"
+0 0 22 3 2 #"))"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"4"
+0 0 22 3 2 #"))"
+0 0 19 3 1 #" "
+0 0 17 3 11 #"; ergibt 38"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; Solche geschachtelten Ausdr\303\274cke werden so ausgewertet, wie "
+ #"Sie es auch auf einem Blatt Papier "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 115
+(
+ #"; machen w\303\274rden: Wenn ein Operand ein nicht-primitiver Ausdru"
+ #"ck ist, so wird zun\303\244chst dieser Ausdruck berechnet. "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 96
+(
+ #"; Dieser Unterausdruck ist m\303\266glicherweise selber wieder gesch"
+ #"achtelt; in diesem Fall wird diese"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 102
+(
+ #"; Berechnungsvorschrift auch auf diese Unterausdr\303\274cke wieder "
+ #"angewendet (sog. _rekursive_ Anwendung)."
+) 0 0 19 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; Falls mehrer Operanden nicht-primitive Ausdr\303\274cke sind, so w"
+ #"ird von links nach rechts ausgewertet."
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 101
+(
+ #"; Zusammengefasst ist Programmieren zu diesem Zeitpunkt das Schreibe"
+ #"n von arithmetischen Ausdr\303\274cken."
+) 0 0 19 29 1 #"\n"
+0 0 17 3 92
+(
+ #"; Ein Programm auszuf\303\274hren bedeutet den Wert der darin enthal"
+ #"tenen Ausdr\303\274cke zu berechnen."
+) 0 0 19 29 1 #"\n"
+0 0 17 3 20 #"; Ein Dr\303\274cken auf \""
+0 0 17 3 81
+(
+ #"Start\" bewirkt die Ausf\303\274hrung des Programms im Definitionsbe"
+ #"reich; die Resultate"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 58
+#"; der Ausf\303\274hrung werden im Interaktionsbereich angezeigt."
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 41 #"; Arithmetik mit nicht-numerischen Werten"
+0 0 19 29 1 #"\n"
+0 0 17 3 41 #"; ======================================="
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 98
+(
+ #"; Wenn wir nur Programme schreiben k\303\266nnten, die Zahlen verarb"
+ #"eiten, w\303\244re Programmieren genau so "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 92
+(
+ #"; langweilig wie Mathematik ;-) Zum Gl\303\274ck gibt es viele ander"
+ #"e Arten von Werten, mit denen "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 91
+(
+ #"; wir ganz analog zu Zahlen rechnen k\303\266nnen, zum Beispiel Text"
+ #", Wahrheitswerte, Bilder usw."
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 94
+(
+ #"; Zu jedem dieser sogenannten _Datentypen_ gibt es _Konstruktoren_, "
+ #"mit denen man Werte dieser"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 94
+(
+ #"; Datentypen konstruieren kann, sowie _Operationen_, die auf Werte d"
+ #"ieses Datentyps angewendet"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 96
+(
+ #"; werden k\303\266nnen und die weitere Werte des Datentyps konstruie"
+ #"ren. Konstruktoren f\303\274r numerische"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 96
+(
+ #"; Werte sind zum Beispiel 42 oder 5.3 (also die Zahlen_literale_; Op"
+ #"erationen sind zum Beispiel "
+) 0 0 19 29 1 #"\n"
+0 0 17 3 3 #"; \""
+0 0 17 3 1 #"+"
+0 0 17 3 8 #"\" oder \""
+0 0 17 3 3 #"*\"."
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 120
+(
+ #"; Die Konstruktoren f\303\274r Text (im folgenden auch _String_ gena"
+ #"nnt) erkennt man an Anf\303\274hrungszeihen. So ist zum Beispiel"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 19 3 1 #"\""
+0 0 19 3 8 #"Konzepte"
+0 0 19 3 1 #" "
+0 0 19 3 3 #"der"
+0 0 19 3 20 #" Programmiersprachen"
+0 0 19 3 1 #"\""
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 87
+(
+ #"; ein Stringliteral. Eine Operation auf diesem Datentyp ist string-a"
+ #"ppend, zum Beispiel"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 13 #"string-append"
+0 0 19 3 2 #" \""
+0 0 19 3 8 #"Konzepte"
+0 0 19 3 4 #" der"
+0 0 19 3 23 #" \" \"Programmiersprachen"
+0 0 19 3 1 #"\""
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 10 #"; ergibt \""
+0 0 17 3 8 #"Konzepte"
+0 0 17 3 1 #" "
+0 0 17 3 3 #"der"
+0 0 17 3 1 #" "
+0 0 17 3 20 #"Programmiersprachen\""
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 103
+(
+ #"; Es gibt weitere Operationen auf Strings: Um Teile aus einem String"
+ #" zu extrahieren, um die Reihenfolge"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 105
+(
+ #"; der Buchstaben umzukehren, um in Gro\303\237- oder Kleinbuchstaben"
+ #" zu konvertieren usw. Zusammen bilden diese"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 43 #"; Operationen die _Arithmetik der Strings_."
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 113
+(
+ #"; Die Namen dieser ganzen Operationen muss man sich nicht merken; be"
+ #"i Bedarf k\303\266nnen die zur Verf\303\274gung stehenden"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; Operationen f\303\274r Zahlen, Strings und andere Datentypen in de"
+ #"r DrRacket Hilfe nachgeschlagen werden"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 96
+(
+ #"; unter: Hilfe -> How to Design Programs Languages -> Beginning Stud"
+ #"ent -> Pre-defined Functions"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 101
+(
+ #"; Einige Operationen haben die Eigenschaft, dass sie Werte eines Dat"
+ #"entyps als Operand erwarten, aber"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 95
+(
+ #"; Werte eines anderen Datentyps als Ergebnis liefern, zum Beispiel d"
+ #"ie Operation string-length:"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 13 #"string-length"
+0 0 19 3 21 #" \"Programmiersprachen"
+0 0 19 3 1 #"\""
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"5"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 11 #"; ergibt 24"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 109
+(
+ #"; Bei Operationen, die mehrere Operanden erwarten, gibt es solche, d"
+ #"ie Operanden unterschiedlicher Datentypen"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 24 #"; erwarten, zum Beispiel"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 9 #"replicate"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"3"
+0 0 19 3 4 #" \"hi"
+0 0 19 3 1 #"\""
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 10 #"; ergibt \""
+0 0 17 3 7 #"hihihi\""
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 77
+(
+ #"; Es gibt auch Operationen, die Datentypen ineinander umwandeln, zum"
+ #" Beispiel"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 14 #"number->string"
+0 0 19 3 1 #" "
+0 0 20 3 2 #"42"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 21 #"; ergibt den String \""
+0 0 17 3 3 #"42\""
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 14 #"string->number"
+0 0 19 3 4 #" \"42"
+0 0 19 3 1 #"\""
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 20 #"; ergibt die Zahl 42"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 84
+(
+ #"; Ein weiterer wichtiger Datentyp sind Wahrheitswerte (Boolsche Wert"
+ #"e). Die einzigen"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 84
+(
+ #"; Konstruktoren hierf\303\274r sind die Literale true und false. Ope"
+ #"rationen auf boolschen"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 61
+#"; Werten sind zum Beispiel die aussagenlogischen Operationen:"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 3 #"and"
+0 0 19 3 1 #" "
+0 0 14 3 4 #"true"
+0 0 19 3 1 #" "
+0 0 14 3 4 #"true"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 13 #"; ergibt true"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 3 #"and"
+0 0 19 3 1 #" "
+0 0 14 3 4 #"true"
+0 0 19 3 1 #" "
+0 0 14 3 5 #"false"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 14 #"; ergibt false"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 2 #"or"
+0 0 19 3 1 #" "
+0 0 14 3 4 #"true"
+0 0 19 3 1 #" "
+0 0 14 3 5 #"false"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 13 #"; ergibt true"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 2 #"or"
+0 0 19 3 1 #" "
+0 0 14 3 5 #"false"
+0 0 19 3 1 #" "
+0 0 14 3 5 #"false"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 14 #"; ergibt false"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 3 #"not"
+0 0 19 3 1 #" "
+0 0 14 3 5 #"false"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 13 #"; ergibt true"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 78
+(
+ #"; Boolsche Werte werden auch h\303\244ufig von Vergleichsoperationen"
+ #" zur\303\274ckgegeben:"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #">"
+0 0 19 3 1 #" "
+0 0 20 3 2 #"10"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"9"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 13 #"; ergibt true"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"<"
+0 0 19 3 1 #" "
+0 0 20 3 2 #"-1"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"0"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 13 #"; ergibt true"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"="
+0 0 19 3 1 #" "
+0 0 20 3 2 #"42"
+0 0 19 3 1 #" "
+0 0 20 3 1 #"9"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 14 #"; ergibt false"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 8 #"string=?"
+0 0 19 3 7 #" \"hello"
+0 0 19 3 8 #"\" \"world"
+0 0 19 3 1 #"\""
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 17 3 14 #"; ergibt false"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 81
+(
+ #"; Nat\303\274rlich k\303\266nnen Ausdr\303\274cke weiterhin beliebig"
+ #" verschachtelt werden, z.B. so:"
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 3 #"and"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 2 #"or"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 1 #"="
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 13 #"string-length"
+0 0 19 3 2 #" \""
+0 0 19 3 5 #"hello"
+0 0 19 3 6 #" world"
+0 0 19 3 1 #"\""
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 14 #"string->number"
+0 0 19 3 4 #" \"11"
+0 0 19 3 1 #"\""
+0 0 22 3 2 #"))"
+0 0 19 29 1 #"\n"
+0 0 19 3 9 #"         "
+0 0 22 3 1 #"("
+0 0 14 3 8 #"string=?"
+0 0 19 3 2 #" \""
+0 0 19 3 5 #"hello"
+0 0 19 3 6 #" world"
+0 0 19 3 3 #"\" \""
+0 0 19 3 4 #"good"
+0 0 19 3 8 #" morning"
+0 0 19 3 1 #"\""
+0 0 22 3 2 #"))"
+0 0 19 29 1 #"\n"
+0 0 19 3 5 #"     "
+0 0 22 3 1 #"("
+0 0 14 3 2 #">="
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 1 #"+"
+0 0 19 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 13 #"string-length"
+0 0 19 3 2 #" \""
+0 0 19 3 5 #"hello"
+0 0 19 3 6 #" world"
+0 0 19 3 1 #"\""
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 20 3 2 #"60"
+0 0 22 3 1 #")"
+0 0 19 3 1 #" "
+0 0 20 3 2 #"80"
+0 0 22 3 2 #"))"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 79
+(
+ #"; Der letzte Datentyp den wir heute einf\303\274hren werden, sind Bi"
+ #"lder. In BSL sind"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 10 #"; Bilder \""
+0 0 17 3 4 #"ganz"
+0 0 17 3 1 #" "
+0 0 17 3 71
+(
+ #"normale\" Werte, mit dazugeh\303\266riger Arithmetik, also Operation"
+ #"en darauf."
+) 0 0 19 29 1 #"\n"
+0 0 17 3 67
+(
+ #"; Existierende Bilder k\303\266nnen per copy&paste oder \303\274ber "
+ #"das Men\303\274 \""
+) 0 0 17 3 9 #"Einf\303\274gen"
+0 0 17 3 1 #" "
+0 0 17 3 2 #"->"
+0 0 17 3 1 #" "
+0 0 17 3 15 #"Bild\" direkt in"
+0 0 24 29 1 #"\n"
+0 0 17 3 91
+(
+ #"; das Programm eingef\303\274gt werden. Hier ist ein Bild einer Rack"
+ #"ete. Genau wie die Auswertung"
+) 0 0 24 29 1 #"\n"
+0 0 17 3 85
+(
+ #"; einer Zahl die Zahl selber ergibt, ergibt die Auswertung des Bilds"
+ #" das Bild selber."
+) 0 0 24 29 1 #"\n"
+0 0 24 29 1 #"\n"
+0 2          23 60 1 #"\0"
+2 -1.0 -1.0 0.0 0.0 0           6 500
+(
+ #"\211PNG\r\n\32\n\0\0\0\rIHDR\0\0\0\34\0\0\0*\b"
+ #"\2\0\0\0/L\254s\0\0\0\6bKGD\0\377\0\377\0\377\240\275\247"
+ #"\223\0\0\t\366IDATH\211uWk\214]Wu\376\326\336\373\234s\337"
+ #"w\356\214\355\31\333\231\261Ml\307v"
+ #"\354$\306$i\233\322\210\30\b\20\224\24\221FQ#\365\aj\211\ni\5\377"
+ #"\0AQ\v\4\265&\217\322\n\221\322\224&\215\355\3066\4h\222\322\0\r\216"
+ #"\213\363\260\235\4;qlO<\2143\17\317x\346\316\235{\347>\3169{\357"
+ #"\265\372\343\316\f\t-K[[Gkk}g\255\365-i\177\233\304v\240\264"
+ #"U\1\3\21\3\20V\260\0\201\322\216+\4\6HD\332\35\305\35\235W09"
+ #"\241\210\310\261x\357M\20z\226@\21\213\323 \200\1\0PPX\372Z4\22"
+ #"h\300;\344\263F\322\4\342)\br:\323\251\325\366=\362H\22\267\32345"
+ #"J\ec\24\240\25\2456\25\217w\230p\302\354\254\210ea/\342Y\34\213g"
+ #"aI\23\21\21\361\261\355\314\212\253\377"
+ #"\305\237\177\222\200\373\357\333#\342\255\265"
+ #"\251\263\251\263,\22\307\261\210\b\273\345"
+ #"\5+\211\25gE\3742\250ub\331\307,,\216\275w\35q\355\357>\270g"
+ #"C__Q\205;\266n\231\234\30\223"
+ #"%s\354\255\265\277\t\32K\232\212\363"
+ #"\335\344\270\v\232\212u\302b\35\263\210"
+ #"\217[\257<\363_W\257\\\265\261\2477\a\2242\231?\373\323Ot\332M\21"
+ #"/\"\314,\"\3169~\233\251\345~\222t;\312 @\261\23\357!\4(\235"
+ #"{\372\320SY\225\351\304\251\3Zq"
+ #"\374\330\336\375\207\237\373\37@\305qL"
+ #"D\370?\246\24\324\262{\21W\t+\361\212\274\342\244\221T\207\307"
+ #"\17\377\347\341\231\351Z-\3568\243=\24)\363\370\201C\313\20\314"
+) 500
+(
+ #"\f@\bB\20\220\200\24\1\n \1\1\20\0p\4\v\244\260\232L\224\215\356"
+ #"\375\312\337\266\35\346\220r\230a(h"
+ #"\323n\247\317\374\364\331j\275\31e2\"\2@k\275\230\320R\341\n\0\1`"
+ #"@\0Q\36pX\364M\216U\37\336\277\277\36\204\v\210,\5\200\2E\bs"
+ #"\23\23\323\2778\372\"\3\335f\276\243P\200Ra\r(O\213\223\253%V\326"
+ #"\1\32\244\21<\372\320\201\207\376\351\221"
+ #"\r\333\266g\213Q\245'\223\317g\253"
+ #"\315\364\364\351\323\27F\206\207V\257\374"
+ #"\361\223O\344BE@\32'A\24\2\350\26l\30\240\345\311\227\305\f5`\0"
+ #"\347pjd\364\301}\373O\216\215\203\323\371\327Ov\232\315w_{\375u7"
+ #"~p\370\324\253\337\372\346\236\271\371f"
+ #"\264\252\4\347\202P\277\235(\363\16\332"
+ #"\b\0004\240\200\0:\361\342\302\354L"
+ #"\352\353\24\276\362\322\261#\217>\354;"
+ #"\311\320\2563\237\372\314gU\256|\331"
+ #"\272\215#\27\306\6V\\\251\210H\21\30\262\304\270R \200@\2%\335\2045"
+ #"\310\0\360|\366\314\260\17\302DgX"
+ #"g\17\37=~\361\322\374\245\351\331\263"
+ #"\243S\265X\246j\255]\277\363\336\327"
+ #"N\237\23\202\b\3013\300\213l\3\212"
+ #"\0\2658\241\20\2654\251LP\346\300"
+ #"\23Ol\332\272\375\342\324\214\346\340\316"
+ #"\217\377q\337\340\20*+n\272\3456\16r\2543C\e7\235=?\302\36\306"
+ #"(\250\245H\b\0cxi\304\b\36\320 \345\25\300\211\215\37?p\360\37\367"
+ #"\177\362\302\245\204cl\272l\363\327\356"
+ #"\377fJ\256f\263\355\304\303\204\3k\6'\316\235T\6\"\3404\325\201^\244"
+ #"\206\304@<\1B`(\275\224?\240\246g\246\35\243^\253\235|\371\354\304d"
+ #"\343\322\334\214d\222\330%\242\213\205\\N\305\363\357"
+ #"\331\272~vv\216\201\2249\212\f\230 \213\254\30\250"
+) 500
+(
+ #"\24\216)\310*\a\345\1\r\260\260Q"
+ #"\243c\223\355v\374\331\277\274g\363\316"
+ #"\e\267\337p\323\316u\357'\r\347R"
+ #"\355\375\351_\276r\370\307/\336\363\314"
+ #"\17\266\17U\4\200F\313%9\211H\e\361B\206\f\322\4Q6\261NQ\250"
+ #"\f\322v\32\26\303\205V\373\273\377\266"
+ #"\357\257\277\366\365U\227\357\234\211U\223"
+ #"\303F\234\224\203\2\2\345\225\275n\327"
+ #"{\214K\326V>z\364\351\3753\325z\271\34\344MDl\300\0\221\23(\4"
+ #"yf\235\6al\220h\250b8\337l\335z\333\307\366\356;\270v\335\25."
+ #"WnX\230\304o\314\27\212\325\311R"
+ #"c\266\24d\254W\326\311\340\320\273r"
+ #"\371\362\r\327\337\320\234\231\343$\1\0"
+ #"\21\322\0A\201\bP\32` \361\302,\337\336\263\347\245\237\375w9W(\364"
+ #"\364v\274\322a\306\305\361\23\217\375\353"
+ #"?\374\315\347\356\375\334g\236{\366Ym2\371b%\261\256X,O\\x\353"
+ #"\253\237\377r\250#xv\316u\351W\360H\343$\2\362@QKcl\344\320"
+ #"\3\367\355\352\357\257d\202|6d\357"
+ #"\301\342\341\237\374\336cg\316\2768>"
+ #"\366\306k\257\235\324&\352$\311\233#"
+ #"\27\304s%W\376\351\367\1778z\354e\20T\240\30\"\200\2026\231lV\v"
+ #"\214\263\256Q}\370\201oTD6\364"
+ #"\366\365\257\\\225+\225\330k\353\224\23"
+ #"\335\273q+T\4\340\306\335\273\233\315"
+ #"\246\16\2425k\6\2cV\364\224\a"
+ #"\362\345\207\356\177\0\336)\243\235w\36^\245\4O\210[\v \0164\35y\352"
+ #"\251\201\276\276\361\361\311\260X\252\267\331"
+ #"9cLO\2662t\317\227\356\373\303/\374\335]_\375\373u\233\267E\31\223"
+ #"\332\316\344\344\2048[\235\232XU"
+ #"(\374\350\320\343\325\321Q\200\225\2\300\3123D\220\311\347"
+ #"!\374\302\217\236\234\32\35s\"sqg\345\3525\0\a"
+) 500
+(
+ #"\304>\355\3704\315\346s;\337\373\276"
+ #"\313\257\336\345\330F\241bN\213\371(0\20k9i\27(\349?\354]j"
+ #"Hkh\223\355\336\256Z!\225\321\327\317o\30\\\377\362\257F\e&\334\26 "
+ #"\220\330\240\256m\247U\255\317\314\315&Y1Q\30\251R_O\305\247\255l6"
+ #"\37\30\316\6j\356\322\364\232\376\25/"
+ #"=\377\302\265\37\276Y\0\2067H\201"
+ #"\20\355\270\235\213\2023\347\206-\314\f"
+ #"\320p\234Jp\374\330\211\1779\370\203"
+ #"\223\257\276\201D6n\335\266\240|\230\313\317\315T[coA\273\e\276\376E"
+ #"\22n\246\vU\240L\245\213\27/\302{\30\25@\e\204@\300:\320\355\264\376"
+ #"\372\305\261s\325\232.\364+\2259u"
+ #"nj\345\25\323\37\371\350\35\267\337Y"
+ #"q\35o\205\246\347\233\355\244\35\205\256"
+ #"\257'\373\275C\373\217\374\374\3317~q$\227-\270N\263#<qq\32\236"
+ #"\240\211\210\24\264\5l\212V+n\237"
+ #"\35\37\235i7\253\315\246m\304\357\333"
+ #"\375\376\333o\277\243\257\262\342\350\v\317"
+ #"/$I\276T.\26\312C\203\353\313"
+ #"\345\362\211\23'\26\32\363\267\335z\353"
+ #"\266+\2677:q\25\250\263\235\253\327"
+ #"aB\357\305\263\30\20\303\333\202V\363"
+ #"\265\371\211\251I\353\320\253#\e\206\305"
+ #"\220\f%\375}\205?\370\275\353F.NM\rO5\27\332Q\24)\315\203\203"
+ #"\203\v\363s\204 \261B\271|\322\256"
+ #"\317{\37\326\233\0\b\212\b\306Ck"
+ #"\255\310\343\304\321\343\236!\204\304/\304"
+ #"\35\353l#\356\314\17\17\27711;"
+ #"_\351\37\330\262\355\n\5\335j\265\234"
+ #"\347#\317\35\256\325\346\1U\235\233G"
+ #"\20\351\236\322\257\2525De$\242\263"
+ #"\4\202\211\311\244mW\211\nS\223\v"
+ #"&\223\273\371\226\335\357\276z\347\314B\247\315\315R%\327"
+ #"\277\266\177\242\326\230\233\255MMN\263\263:\b\347\26:\302"
+) 500
+(
+ #"\252\247\274\302:\351\351]\271\351\312\35"
+ #"g\317\275\352\214j\306i;N3\331"
+ #"H\0\343\201\\\316\300b\370\374\310\201"
+ #"\203\337\277\351\0037\211\310\351\341\221\357"
+ #"\354}\374\370\363\207\317O\326VW\6"
+ #"\206\317\216\270$u>5\231\354\316\35"
+ #"\327\25\312\245\244>\2271\252R\251\374"
+ #"\373\276\357\260t\36\374\306\236G\277\365"
+ #"\317N\254s!\0312y \215S\257\315]\237\370\223\253\256\272\312:\4A\30"
+ #"\267\3227_?3\372\346[\307^\371"
+ #"\345\344\344%\264\22\30\2030\fr\305"
+ #"\247s\a\313=\275\e\326\255\271f\333"
+ #"\346\205\372\\!\253\f\345\277\362\345\277"
+ #"\272f\313\346z\273Z\352\313YoI\330\201\b@\243\321(\225z\0\304\211?"
+ #"\177\376\374\216\253\257\321:p\326C\251"
+ #"0\314\244\355\16\202\0*@\266\17\355\370ww\33789qa\303P\377\323\377"
+ #"\261_\3I\334\24g\213\205\2\201<{\265\254/J\245\322\362U\275z\365\352"
+ #"\301\301A\227t6_\261\351\356\273\357"
+ #"\276\376\372kat6\23}\344\226\17"
+ #"\337\361G\37+\254\352}\371\304\261;"
+ #"\357\370\370\306w\255g\206\2r\231\\"
+ #"\261P\4`\235\25\21\260\267\336\245\314"
+ #"\316\332\304{o\255e\21\26y\346'?\317\344{\200\0\210\240s0E\350\2"
+ #"\202\n\302\201\302\332\253n\273\353\323\275"
+ #"\227m\271\367\201o\267\2748\21\353]\222tXR\21+b\211\331\211\210R\312"
+ #"9gL\350\2343\306\b\320l\306\343"
+ #"\343\343{\367\356=v\354\370\251S\247"
+ #"\246.\315\366\365T\34h\315\372\313\373"
+ #"V\256\334\261u\313\315\37\372\340\315\37\370}\rt:q!\233Y\222M\20\21"
+ #"\362\336*\245\230Y)%BD$\2fQ\232\342\330e2\3069\210H\243\321"
+ #"PP3\265\271\25\3k\213\5\343<4\201\4\2369\324"
+ #"J)@\274\265\226\210\224R\360\336\213H\222$\313{\327"
+) 125
+(
+ #"#\"\314\222\246ND\3428\25\21oEX\234,\256\330\371n\243\226C\272\252"
+ #"ZD\350\327B\220\250\353\5\320\355F"
+ #"\20\4\336\213R\324\225\256\314\242\24\30"
+ #"\"\304`\321:\260\326j\255\211\250\333"
+ #"\300\256\0\366\336\377\32\3647\354\355\""
+ #"\366\235\aN\250{\272\364H\22\5,\252\263\356\256~K\350oCd\0$\335"
+ #"\37\376\377\331\0\370_Cy9\230\244\266;\372\0\0\0\0IEND\256B`\202"
+) 0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 6 #"; Hier"
+0 0 17 3 1 #" "
+0 0 17 3 3 #"ein"
+0 0 17 3 1 #" "
+0 0 17 3 8 #"Beispiel"
+0 0 17 3 1 #" "
+0 0 17 3 48 #"f\303\274r die Verwendung einer Operation auf Bildern:"
+0 0 57 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 1 #"*"
+0 0 60 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 11 #"image-width"
+0 0 60 3 1 #" "
+0 2          23 60 1 #"\0"
+2 -1.0 -1.0 0.0 0.0 0           6 500
+(
+ #"\211PNG\r\n\32\n\0\0\0\rIHDR\0\0\0\34\0\0\0*\b"
+ #"\2\0\0\0/L\254s\0\0\0\6bKGD\0\377\0\377\0\377\240\275\247"
+ #"\223\0\0\t\366IDATH\211uWk\214]Wu\376\326\336\373\234s\337"
+ #"w\356\214\355\31\333\231\261Ml\307v"
+ #"\354$\306$i\233\322\210\30\b\20\224\24\221FQ#\365\aj\211\ni\5\377"
+ #"\0AQ\v\4\265&\217\322\n\221\322\224&\215\355\3066\4h\222\322\0\r\216"
+ #"\213\363\260\235\4;qlO<\2143\17\317x\346\316\235{\347>\3169{\357"
+ #"\265\372\343\316\f\t-K[[Gkk}g\255\365-i\177\233\304v\240\264"
+ #"U\1\3\21\3\20V\260\0\201\322\216+\4\6HD\332\35\305\35\235W09"
+ #"\241\210\310\261x\357M\20z\226@\21\213\323 \200\1\0PPX\372Z4\22"
+ #"h\300;\344\263F\322\4\342)\br:\323\251\325\366=\362H\22\267\32345"
+ #"J\ec\24\240\25\2456\25\217w\230p\302\354\254\210ea/\342Y\34\213g"
+ #"aI\23\21\21\361\261\355\314\212\253\377"
+ #"\305\237\177\222\200\373\357\333#\342\255\265"
+ #"\251\263\251\263,\22\307\261\210\b\273\345"
+ #"\5+\211\25gE\3742\250ub\331\307,,\216\275w\35q\355\357>\270g"
+ #"C__Q\205;\266n\231\234\30\223"
+ #"%s\354\255\265\277\t\32K\232\212\363"
+ #"\335\344\270\v\232\212u\302b\35\263\210"
+ #"\217[\257<\363_W\257\\\265\261\2477\a\2242\231?\373\323Ot\332M\21"
+ #"/\"\314,\"\3169~\233\251\345~\222t;\312 @\261\23\357!\4(\235"
+ #"{\372\320SY\225\351\304\251\3Zq"
+ #"\374\330\336\375\207\237\373\37@\305qL"
+ #"D\370?\246\24\324\262{\21W\t+\361\212\274\342\244\221T\207\307"
+ #"\17\377\347\341\231\351Z-\3568\243=\24)\363\370\201C\313\20\314"
+) 500
+(
+ #"\f@\bB\20\220\200\24\1\n \1\1\20\0p\4\v\244\260\232L\224\215\356"
+ #"\375\312\337\266\35\346\220r\230a(h"
+ #"\323n\247\317\374\364\331j\275\31e2\"\2@k\275\230\320R\341\n\0\1`"
+ #"@\0Q\36pX\364M\216U\37\336\277\277\36\204\v\210,\5\200\2E\bs"
+ #"\23\23\323\2778\372\"\3\335f\276\243P\200Ra\r(O\213\223\253%V\326"
+ #"\1\32\244\21<\372\320\201\207\376\351\221"
+ #"\r\333\266g\213Q\245'\223\317g\253"
+ #"\315\364\364\351\323\27F\206\207V\257\374"
+ #"\361\223O\344BE@\32'A\24\2\350\26l\30\240\345\311\227\305\f5`\0"
+ #"\347pjd\364\301}\373O\216\215\203\323\371\327Ov\232\315w_{\375u7"
+ #"~p\370\324\253\337\372\346\236\271\371f"
+ #"\264\252\4\347\202P\277\235(\363\16\332"
+ #"\b\0004\240\200\0:\361\342\302\354L"
+ #"\352\353\24\276\362\322\261#\217>\354;"
+ #"\311\320\2563\237\372\314gU\256|\331"
+ #"\272\215#\27\306\6V\\\251\210H\21\30\262\304\270R \200@\2%\335\2045"
+ #"\310\0\360|\366\314\260\17\302DgX"
+ #"g\17\37=~\361\322\374\245\351\331\263"
+ #"\243S\265X\246j\255]\277\363\336\327"
+ #"N\237\23\202\b\3013\300\213l\3\212"
+ #"\0\2658\241\20\2654\251LP\346\300"
+ #"\23Ol\332\272\375\342\324\214\346\340\316"
+ #"\217\377q\337\340\20*+n\272\3456\16r\2543C\e7\235=?\302\36\306"
+ #"(\250\245H\b\0cxi\304\b\36\320 \345\25\300\211\215\37?p\360\37\367"
+ #"\177\362\302\245\204cl\272l\363\327\356"
+ #"\377fJ\256f\263\355\304\303\204\3k\6'\316\235T\6\"\3404\325\201^\244"
+ #"\206\304@<\1B`(\275\224?\240\246g\246\35\243^\253\235|\371\354\304d"
+ #"\343\322\334\214d\222\330%\242\213\205\\N\305\363\357"
+ #"\331\272~vv\216\201\2249\212\f\230 \213\254\30\250"
+) 500
+(
+ #"\24\216)\310*\a\345\1\r\260\260Q"
+ #"\243c\223\355v\374\331\277\274g\363\316"
+ #"\e\267\337p\323\316u\357'\r\347R"
+ #"\355\375\351_\276r\370\307/\336\363\314"
+ #"\17\266\17U\4\200F\313%9\211H\e\361B\206\f\322\4Q6\261NQ\250"
+ #"\f\322v\32\26\303\205V\373\273\377\266"
+ #"\357\257\277\366\365U\227\357\234\211U\223"
+ #"\303F\234\224\203\2\2\345\225\275n\327"
+ #"{\214K\326V>z\364\351\3753\325z\271\34\344MDl\300\0\221\23(\4"
+ #"yf\235\6al\220h\250b8\337l\335z\333\307\366\356;\270v\335\25."
+ #"WnX\230\304o\314\27\212\325\311R"
+ #"c\266\24d\254W\326\311\340\320\273r"
+ #"\371\362\r\327\337\320\234\231\343$\1\0"
+ #"\21\322\0A\201\bP\32` \361\302,\337\336\263\347\245\237\375w9W(\364"
+ #"\364v\274\322a\306\305\361\23\217\375\353"
+ #"?\374\315\347\356\375\334g\236{\366Ym2\371b%\261\256X,O\\x\353"
+ #"\253\237\377r\250#xv\316u\351W\360H\343$\2\362@QKcl\344\320"
+ #"\3\367\355\352\357\257d\202|6d\357"
+ #"\301\342\341\237\374\336cg\316\2768>"
+ #"\366\306k\257\235\324&\352$\311\233#"
+ #"\27\304s%W\376\351\367\1778z\354e\20T\240\30\"\200\2026\231lV\v"
+ #"\214\263\256Q}\370\201oTD6\364"
+ #"\366\365\257\\\225+\225\330k\353\224\23"
+ #"\335\273q+T\4\340\306\335\273\233\315"
+ #"\246\16\2425k\6\2cV\364\224\a"
+ #"\362\345\207\356\177\0\336)\243\235w\36^\245\4O\210[\v \0164\35y\352"
+ #"\251\201\276\276\361\361\311\260X\252\267\331"
+ #"9cLO\2662t\317\227\356\373\303/\374\335]_\375\373u\233\267E\31\223"
+ #"\332\316\344\344\2048[\235\232XU"
+ #"(\374\350\320\343\325\321Q\200\225\2\300\3123D\220\311\347"
+ #"!\374\302\217\236\234\32\35s\"sqg\345\3525\0\a"
+) 500
+(
+ #"\304>\355\3704\315\346s;\337\373\276"
+ #"\313\257\336\345\330F\241bN\213\371(0\20k9i\27(\349?\354]j"
+ #"Hkh\223\355\336\256Z!\225\321\327\317o\30\\\377\362\257F\e&\334\26 "
+ #"\220\330\240\256m\247U\255\317\314\315&Y1Q\30\251R_O\305\247\255l6"
+ #"\37\30\316\6j\356\322\364\232\376\25/"
+ #"=\377\302\265\37\276Y\0\2067H\201"
+ #"\20\355\270\235\213\2023\347\206-\314\f"
+ #"\320p\234Jp\374\330\211\1779\370\203"
+ #"\223\257\276\201D6n\335\266\240|\230\313\317\315T[coA\273\e\276\376E"
+ #"\22n\246\vU\240L\245\213\27/\302{\30\25@\e\204@\300:\320\355\264\376"
+ #"\372\305\261s\325\232.\364+\2259u"
+ #"nj\345\25\323\37\371\350\35\267\337Y"
+ #"q\35o\205\246\347\233\355\244\35\205\256"
+ #"\257'\373\275C\373\217\374\374\3317~q$\227-\270N\263#<qq\32\236"
+ #"\240\211\210\24\264\5l\212V+n\237"
+ #"\35\37\235i7\253\315\246m\304\357\333"
+ #"\375\376\333o\277\243\257\262\342\350\v\317"
+ #"/$I\276T.\26\312C\203\353\313"
+ #"\345\362\211\23'\26\32\363\267\335z\353"
+ #"\266+\2677:q\25\250\263\235\253\327"
+ #"aB\357\305\263\30\20\303\333\202V\363"
+ #"\265\371\211\251I\353\320\253#\e\206\305"
+ #"\220\f%\375}\205?\370\275\353F.NM\rO5\27\332Q\24)\315\203\203"
+ #"\203\v\363s\204 \261B\271|\322\256"
+ #"\317{\37\326\233\0\b\212\b\306Ck"
+ #"\255\310\343\304\321\343\236!\204\304/\304"
+ #"\35\353l#\356\314\17\17\27711;"
+ #"_\351\37\330\262\355\n\5\335j\265\234"
+ #"\347#\317\35\256\325\346\1U\235\233G"
+ #"\20\351\236\322\257\2525De$\242\263"
+ #"\4\202\211\311\244mW\211\nS\223\v"
+ #"&\223\273\371\226\335\357\276z\347\314B\247\315\315R%\327"
+ #"\277\266\177\242\326\230\233\255MMN\263\263:\b\347\26:\302"
+) 500
+(
+ #"\252\247\274\302:\351\351]\271\351\312\35"
+ #"g\317\275\352\214j\306i;N3\331"
+ #"H\0\343\201\\\316\300b\370\374\310\201"
+ #"\203\337\277\351\0037\211\310\351\341\221\357"
+ #"\354}\374\370\363\207\317O\326VW\6"
+ #"\206\317\216\270$u>5\231\354\316\35"
+ #"\327\25\312\245\244>\2271\252R\251\374"
+ #"\373\276\357\260t\36\374\306\236G\277\365"
+ #"\317N\254s!\0312y \215S\257\315]\237\370\223\253\256\272\312:\4A\30"
+ #"\267\3227_?3\372\346[\307^\371"
+ #"\345\344\344%\264\22\30\2030\fr\305"
+ #"\247s\a\313=\275\e\326\255\271f\333"
+ #"\346\205\372\\!\253\f\345\277\362\345\277"
+ #"\272f\313\346z\273Z\352\313YoI\330\201\b@\243\321(\225z\0\304\211?"
+ #"\177\376\374\216\253\257\321:p\326C\251"
+ #"0\314\244\355\16\202\0*@\266\17\355\370ww\33789qa\303P\377\323\377"
+ #"\261_\3I\334\24g\213\205\2\201<{\265\254/J\245\322\362U\275z\365\352"
+ #"\301\301A\227t6_\261\351\356\273\357"
+ #"\276\376\372kat6\23}\344\226\17"
+ #"\337\361G\37+\254\352}\371\304\261;"
+ #"\357\370\370\306w\255g\206\2r\231\\"
+ #"\261P\4`\235\25\21\260\267\336\245\314"
+ #"\316\332\304{o\255e\21\26y\346'?\317\344{\200\0\210\240s0E\350\2"
+ #"\202\n\302\201\302\332\253n\273\353\323\275"
+ #"\227m\271\367\201o\267\2748\21\353]\222tXR\21+b\211\331\211\210R\312"
+ #"9gL\350\2343\306\b\320l\306\343"
+ #"\343\343{\367\356=v\354\370\251S\247"
+ #"\246.\315\366\365T\34h\315\372\313\373"
+ #"V\256\334\261u\313\315\37\372\340\315\37\370}\rt:q!\233Y\222M\20\21"
+ #"\362\336*\245\230Y)%BD$\2fQ\232\342\330e2\3069\210H\243\321"
+ #"PP3\265\271\25\3k\213\5\343<4\201\4\2369\324"
+ #"J)@\274\265\226\210\224R\360\336\213H\222$\313{\327"
+) 125
+(
+ #"#\"\314\222\246ND\3428\25\21oEX\234,\256\330\371n\243\226C\272\252"
+ #"ZD\350\327B\220\250\353\5\320\355F"
+ #"\20\4\336\213R\324\225\256\314\242\24\30"
+ #"\"\304`\321:\260\326j\255\211\250\333"
+ #"\300\256\0\366\336\377\32\3647\354\355\""
+ #"\366\235\aN\250{\272\364H\22\5,\252\263\356\256~K\350oCd\0$\335"
+ #"\37\376\377\331\0\370_Cy9\230\244\266;\372\0\0\0\0IEND\256B`\202"
+) 0 0 22 3 1 #")"
+0 0 60 29 1 #"\n"
+0 0 60 3 3 #"   "
+0 0 22 3 1 #"("
+0 0 14 3 12 #"image-height"
+0 0 60 3 1 #" "
+0 2          23 60 1 #"\0"
+2 -1.0 -1.0 0.0 0.0 0           6 500
+(
+ #"\211PNG\r\n\32\n\0\0\0\rIHDR\0\0\0\34\0\0\0*\b"
+ #"\2\0\0\0/L\254s\0\0\0\6bKGD\0\377\0\377\0\377\240\275\247"
+ #"\223\0\0\t\366IDATH\211uWk\214]Wu\376\326\336\373\234s\337"
+ #"w\356\214\355\31\333\231\261Ml\307v"
+ #"\354$\306$i\233\322\210\30\b\20\224\24\221FQ#\365\aj\211\ni\5\377"
+ #"\0AQ\v\4\265&\217\322\n\221\322\224&\215\355\3066\4h\222\322\0\r\216"
+ #"\213\363\260\235\4;qlO<\2143\17\317x\346\316\235{\347>\3169{\357"
+ #"\265\372\343\316\f\t-K[[Gkk}g\255\365-i\177\233\304v\240\264"
+ #"U\1\3\21\3\20V\260\0\201\322\216+\4\6HD\332\35\305\35\235W09"
+ #"\241\210\310\261x\357M\20z\226@\21\213\323 \200\1\0PPX\372Z4\22"
+ #"h\300;\344\263F\322\4\342)\br:\323\251\325\366=\362H\22\267\32345"
+ #"J\ec\24\240\25\2456\25\217w\230p\302\354\254\210ea/\342Y\34\213g"
+ #"aI\23\21\21\361\261\355\314\212\253\377"
+ #"\305\237\177\222\200\373\357\333#\342\255\265"
+ #"\251\263\251\263,\22\307\261\210\b\273\345"
+ #"\5+\211\25gE\3742\250ub\331\307,,\216\275w\35q\355\357>\270g"
+ #"C__Q\205;\266n\231\234\30\223"
+ #"%s\354\255\265\277\t\32K\232\212\363"
+ #"\335\344\270\v\232\212u\302b\35\263\210"
+ #"\217[\257<\363_W\257\\\265\261\2477\a\2242\231?\373\323Ot\332M\21"
+ #"/\"\314,\"\3169~\233\251\345~\222t;\312 @\261\23\357!\4(\235"
+ #"{\372\320SY\225\351\304\251\3Zq"
+ #"\374\330\336\375\207\237\373\37@\305qL"
+ #"D\370?\246\24\324\262{\21W\t+\361\212\274\342\244\221T\207\307"
+ #"\17\377\347\341\231\351Z-\3568\243=\24)\363\370\201C\313\20\314"
+) 500
+(
+ #"\f@\bB\20\220\200\24\1\n \1\1\20\0p\4\v\244\260\232L\224\215\356"
+ #"\375\312\337\266\35\346\220r\230a(h"
+ #"\323n\247\317\374\364\331j\275\31e2\"\2@k\275\230\320R\341\n\0\1`"
+ #"@\0Q\36pX\364M\216U\37\336\277\277\36\204\v\210,\5\200\2E\bs"
+ #"\23\23\323\2778\372\"\3\335f\276\243P\200Ra\r(O\213\223\253%V\326"
+ #"\1\32\244\21<\372\320\201\207\376\351\221"
+ #"\r\333\266g\213Q\245'\223\317g\253"
+ #"\315\364\364\351\323\27F\206\207V\257\374"
+ #"\361\223O\344BE@\32'A\24\2\350\26l\30\240\345\311\227\305\f5`\0"
+ #"\347pjd\364\301}\373O\216\215\203\323\371\327Ov\232\315w_{\375u7"
+ #"~p\370\324\253\337\372\346\236\271\371f"
+ #"\264\252\4\347\202P\277\235(\363\16\332"
+ #"\b\0004\240\200\0:\361\342\302\354L"
+ #"\352\353\24\276\362\322\261#\217>\354;"
+ #"\311\320\2563\237\372\314gU\256|\331"
+ #"\272\215#\27\306\6V\\\251\210H\21\30\262\304\270R \200@\2%\335\2045"
+ #"\310\0\360|\366\314\260\17\302DgX"
+ #"g\17\37=~\361\322\374\245\351\331\263"
+ #"\243S\265X\246j\255]\277\363\336\327"
+ #"N\237\23\202\b\3013\300\213l\3\212"
+ #"\0\2658\241\20\2654\251LP\346\300"
+ #"\23Ol\332\272\375\342\324\214\346\340\316"
+ #"\217\377q\337\340\20*+n\272\3456\16r\2543C\e7\235=?\302\36\306"
+ #"(\250\245H\b\0cxi\304\b\36\320 \345\25\300\211\215\37?p\360\37\367"
+ #"\177\362\302\245\204cl\272l\363\327\356"
+ #"\377fJ\256f\263\355\304\303\204\3k\6'\316\235T\6\"\3404\325\201^\244"
+ #"\206\304@<\1B`(\275\224?\240\246g\246\35\243^\253\235|\371\354\304d"
+ #"\343\322\334\214d\222\330%\242\213\205\\N\305\363\357"
+ #"\331\272~vv\216\201\2249\212\f\230 \213\254\30\250"
+) 500
+(
+ #"\24\216)\310*\a\345\1\r\260\260Q"
+ #"\243c\223\355v\374\331\277\274g\363\316"
+ #"\e\267\337p\323\316u\357'\r\347R"
+ #"\355\375\351_\276r\370\307/\336\363\314"
+ #"\17\266\17U\4\200F\313%9\211H\e\361B\206\f\322\4Q6\261NQ\250"
+ #"\f\322v\32\26\303\205V\373\273\377\266"
+ #"\357\257\277\366\365U\227\357\234\211U\223"
+ #"\303F\234\224\203\2\2\345\225\275n\327"
+ #"{\214K\326V>z\364\351\3753\325z\271\34\344MDl\300\0\221\23(\4"
+ #"yf\235\6al\220h\250b8\337l\335z\333\307\366\356;\270v\335\25."
+ #"WnX\230\304o\314\27\212\325\311R"
+ #"c\266\24d\254W\326\311\340\320\273r"
+ #"\371\362\r\327\337\320\234\231\343$\1\0"
+ #"\21\322\0A\201\bP\32` \361\302,\337\336\263\347\245\237\375w9W(\364"
+ #"\364v\274\322a\306\305\361\23\217\375\353"
+ #"?\374\315\347\356\375\334g\236{\366Ym2\371b%\261\256X,O\\x\353"
+ #"\253\237\377r\250#xv\316u\351W\360H\343$\2\362@QKcl\344\320"
+ #"\3\367\355\352\357\257d\202|6d\357"
+ #"\301\342\341\237\374\336cg\316\2768>"
+ #"\366\306k\257\235\324&\352$\311\233#"
+ #"\27\304s%W\376\351\367\1778z\354e\20T\240\30\"\200\2026\231lV\v"
+ #"\214\263\256Q}\370\201oTD6\364"
+ #"\366\365\257\\\225+\225\330k\353\224\23"
+ #"\335\273q+T\4\340\306\335\273\233\315"
+ #"\246\16\2425k\6\2cV\364\224\a"
+ #"\362\345\207\356\177\0\336)\243\235w\36^\245\4O\210[\v \0164\35y\352"
+ #"\251\201\276\276\361\361\311\260X\252\267\331"
+ #"9cLO\2662t\317\227\356\373\303/\374\335]_\375\373u\233\267E\31\223"
+ #"\332\316\344\344\2048[\235\232XU"
+ #"(\374\350\320\343\325\321Q\200\225\2\300\3123D\220\311\347"
+ #"!\374\302\217\236\234\32\35s\"sqg\345\3525\0\a"
+) 500
+(
+ #"\304>\355\3704\315\346s;\337\373\276"
+ #"\313\257\336\345\330F\241bN\213\371(0\20k9i\27(\349?\354]j"
+ #"Hkh\223\355\336\256Z!\225\321\327\317o\30\\\377\362\257F\e&\334\26 "
+ #"\220\330\240\256m\247U\255\317\314\315&Y1Q\30\251R_O\305\247\255l6"
+ #"\37\30\316\6j\356\322\364\232\376\25/"
+ #"=\377\302\265\37\276Y\0\2067H\201"
+ #"\20\355\270\235\213\2023\347\206-\314\f"
+ #"\320p\234Jp\374\330\211\1779\370\203"
+ #"\223\257\276\201D6n\335\266\240|\230\313\317\315T[coA\273\e\276\376E"
+ #"\22n\246\vU\240L\245\213\27/\302{\30\25@\e\204@\300:\320\355\264\376"
+ #"\372\305\261s\325\232.\364+\2259u"
+ #"nj\345\25\323\37\371\350\35\267\337Y"
+ #"q\35o\205\246\347\233\355\244\35\205\256"
+ #"\257'\373\275C\373\217\374\374\3317~q$\227-\270N\263#<qq\32\236"
+ #"\240\211\210\24\264\5l\212V+n\237"
+ #"\35\37\235i7\253\315\246m\304\357\333"
+ #"\375\376\333o\277\243\257\262\342\350\v\317"
+ #"/$I\276T.\26\312C\203\353\313"
+ #"\345\362\211\23'\26\32\363\267\335z\353"
+ #"\266+\2677:q\25\250\263\235\253\327"
+ #"aB\357\305\263\30\20\303\333\202V\363"
+ #"\265\371\211\251I\353\320\253#\e\206\305"
+ #"\220\f%\375}\205?\370\275\353F.NM\rO5\27\332Q\24)\315\203\203"
+ #"\203\v\363s\204 \261B\271|\322\256"
+ #"\317{\37\326\233\0\b\212\b\306Ck"
+ #"\255\310\343\304\321\343\236!\204\304/\304"
+ #"\35\353l#\356\314\17\17\27711;"
+ #"_\351\37\330\262\355\n\5\335j\265\234"
+ #"\347#\317\35\256\325\346\1U\235\233G"
+ #"\20\351\236\322\257\2525De$\242\263"
+ #"\4\202\211\311\244mW\211\nS\223\v"
+ #"&\223\273\371\226\335\357\276z\347\314B\247\315\315R%\327"
+ #"\277\266\177\242\326\230\233\255MMN\263\263:\b\347\26:\302"
+) 500
+(
+ #"\252\247\274\302:\351\351]\271\351\312\35"
+ #"g\317\275\352\214j\306i;N3\331"
+ #"H\0\343\201\\\316\300b\370\374\310\201"
+ #"\203\337\277\351\0037\211\310\351\341\221\357"
+ #"\354}\374\370\363\207\317O\326VW\6"
+ #"\206\317\216\270$u>5\231\354\316\35"
+ #"\327\25\312\245\244>\2271\252R\251\374"
+ #"\373\276\357\260t\36\374\306\236G\277\365"
+ #"\317N\254s!\0312y \215S\257\315]\237\370\223\253\256\272\312:\4A\30"
+ #"\267\3227_?3\372\346[\307^\371"
+ #"\345\344\344%\264\22\30\2030\fr\305"
+ #"\247s\a\313=\275\e\326\255\271f\333"
+ #"\346\205\372\\!\253\f\345\277\362\345\277"
+ #"\272f\313\346z\273Z\352\313YoI\330\201\b@\243\321(\225z\0\304\211?"
+ #"\177\376\374\216\253\257\321:p\326C\251"
+ #"0\314\244\355\16\202\0*@\266\17\355\370ww\33789qa\303P\377\323\377"
+ #"\261_\3I\334\24g\213\205\2\201<{\265\254/J\245\322\362U\275z\365\352"
+ #"\301\301A\227t6_\261\351\356\273\357"
+ #"\276\376\372kat6\23}\344\226\17"
+ #"\337\361G\37+\254\352}\371\304\261;"
+ #"\357\370\370\306w\255g\206\2r\231\\"
+ #"\261P\4`\235\25\21\260\267\336\245\314"
+ #"\316\332\304{o\255e\21\26y\346'?\317\344{\200\0\210\240s0E\350\2"
+ #"\202\n\302\201\302\332\253n\273\353\323\275"
+ #"\227m\271\367\201o\267\2748\21\353]\222tXR\21+b\211\331\211\210R\312"
+ #"9gL\350\2343\306\b\320l\306\343"
+ #"\343\343{\367\356=v\354\370\251S\247"
+ #"\246.\315\366\365T\34h\315\372\313\373"
+ #"V\256\334\261u\313\315\37\372\340\315\37\370}\rt:q!\233Y\222M\20\21"
+ #"\362\336*\245\230Y)%BD$\2fQ\232\342\330e2\3069\210H\243\321"
+ #"PP3\265\271\25\3k\213\5\343<4\201\4\2369\324"
+ #"J)@\274\265\226\210\224R\360\336\213H\222$\313{\327"
+) 125
+(
+ #"#\"\314\222\246ND\3428\25\21oEX\234,\256\330\371n\243\226C\272\252"
+ #"ZD\350\327B\220\250\353\5\320\355F"
+ #"\20\4\336\213R\324\225\256\314\242\24\30"
+ #"\"\304`\321:\260\326j\255\211\250\333"
+ #"\300\256\0\366\336\377\32\3647\354\355\""
+ #"\366\235\aN\250{\272\364H\22\5,\252\263\356\256~K\350oCd\0$\335"
+ #"\37\376\377\331\0\370_Cy9\230\244\266;\372\0\0\0\0IEND\256B`\202"
+) 0 0 22 3 2 #"))"
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 95
+(
+ #"; Statt existierende Bilder in das Programm einzuf\303\274gen kann m"
+ #"an auch neue Bilder konstruieren:"
+) 0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 6 #"circle"
+0 0 60 3 1 #" "
+0 0 20 3 2 #"10"
+0 0 60 3 1 #" "
+0 0 19 3 7 #"\"solid\""
+0 0 60 3 1 #" "
+0 0 19 3 5 #"\"red\""
+0 0 22 3 1 #")"
+0 0 57 3 1 #" "
+0 0 17 3 9 #"; ergibt "
+0 11           4 17 88
+(
+ #"(#(struct:translate 10 10 #(struct:ellipse 20 20 0 255 \"red\")) #(s"
+ #"truct:bb 20 20 20) #f)"
+) 0 0 57 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 9 #"rectangle"
+0 0 60 3 1 #" "
+0 0 20 3 2 #"30"
+0 0 60 3 1 #" "
+0 0 20 3 2 #"20"
+0 0 60 3 1 #" "
+0 0 19 3 9 #"\"outline\""
+0 0 60 3 1 #" "
+0 0 19 3 6 #"\"blue\""
+0 0 22 3 1 #")"
+0 0 57 3 1 #" "
+0 0 17 3 9 #"; ergibt "
+0 11           4 17 169
+(
+ #"(#(struct:translate 0 0 #(struct:polygon (#(struct:point 0 0) #(stru"
+ #"ct:point 30 0) #(struct:point 30 2"
+ #"0) #(struct:point 0 20)) outline \"blue\")) #(struct:bb 30 20 20) #f"
+ #")"
+) 0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; Die Arithmetik der Bilder umfasst nicht nur Operationen um Bilder "
+ #"zu konstruieren, sondern auch"
+) 0 0 57 29 1 #"\n"
+0 0 17 3 50 #"; um Bilder in verschiedener Weise zu kombinieren:"
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 7 #"overlay"
+0 0 60 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 6 #"circle"
+0 0 60 3 1 #" "
+0 0 20 3 1 #"5"
+0 0 60 3 1 #" "
+0 0 19 3 7 #"\"solid\""
+0 0 60 3 1 #" "
+0 0 19 3 5 #"\"red\""
+0 0 22 3 1 #")"
+0 0 60 29 1 #"\n"
+0 0 60 3 9 #"         "
+0 0 22 3 1 #"("
+0 0 14 3 9 #"rectangle"
+0 0 60 3 1 #" "
+0 0 20 3 2 #"20"
+0 0 60 3 1 #" "
+0 0 20 3 2 #"20"
+0 0 60 3 1 #" "
+0 0 19 3 7 #"\"solid\""
+0 0 60 3 1 #" "
+0 0 19 3 6 #"\"blue\""
+0 0 22 3 2 #"))"
+0 0 57 3 1 #" "
+0 0 17 3 9 #"; ergibt "
+0 11           4 17 291
+(
+ #"(#(struct:overlay #(struct:translate 5 5 #(struct:translate 5 5 #(st"
+ #"ruct:ellipse 10 10 0 255 \"red\"))) #(struct:translate 0 0 #(struct:"
+ #"translate 0 0 #(struct:polygon (#(struct:point 0 0) #(struct:point 2"
+ #"0 0) #(struct:point 20 20) #(struct:point 0 20)) 255 \"blue\")))) #("
+ #"struct:bb 20 20 20) #f)"
+) 0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; Zwei wichtige Operationen die Sie noch kennen sollten sind empty-s"
+ #"cence und place-image. Die erste"
+) 0 0 57 29 1 #"\n"
+0 0 17 3 84
+(
+ #"; erzeugt eine Szene, ein spezielles Rechteck in dem Bilder plaziert"
+ #" werden k\303\266nnen."
+) 0 0 57 29 1 #"\n"
+0 0 17 3 52 #"; Die zweite Operation setzt ein Bild in eine Szene:"
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 22 3 1 #"("
+0 0 14 3 11 #"place-image"
+0 0 60 3 1 #" "
+0 0 22 3 1 #"("
+0 0 14 3 6 #"circle"
+0 0 60 3 1 #" "
+0 0 20 3 1 #"5"
+0 0 60 3 1 #" "
+0 0 19 3 7 #"\"solid\""
+0 0 60 3 1 #" "
+0 0 19 3 7 #"\"green\""
+0 0 22 3 1 #")"
+0 0 60 3 1 #" "
+0 0 17 3 9 #"; ergibt "
+0 11           4 17 809
+(
+ #"(#(struct:crop (#(struct:point 0 0) #(struct:point 100 0) #(struct:p"
+ #"oint 100 100) #(struct:point 0 100)) #(struct:translate 0 0 #(struct"
+ #":overlay #(struct:translate 45 75 #(struct:translate 5 5 #(struct:el"
+ #"lipse 10 10 0 255 \"green\"))) #(struct:translate 0 0 #(struct:crop "
+ #"(#(struct:point 0 0) #(struct:point 100 0) #(struct:point 100 100) #"
+ #"(struct:point 0 100)) #(struct:translate 0 0 #(struct:overlay #(stru"
+ #"ct:translate 0 0 #(struct:translate 0 0 #(struct:polygon (#(struct:p"
+ #"oint 0 0) #(struct:point 100 0) #(struct:point 100 100) #(struct:poi"
+ #"nt 0 100)) outline #(struct:pen \"black\" 2 solid round round)))) #("
+ #"struct:translate 0 0 #(struct:translate 0 0 #(struct:polygon (#(stru"
+ #"ct:point 0 0) #(struct:point 100 0) #(struct:point 100 100) #(struct"
+ #":point 0 100)) 255 \"white\")))))))))) #(struct:bb 100 100 100) #f)"
+) 0 0 60 29 1 #"\n"
+0 0 60 3 13 #"             "
+0 0 20 3 2 #"50"
+0 0 60 3 1 #" "
+0 0 20 3 2 #"80"
+0 0 60 29 1 #"\n"
+0 0 60 3 13 #"             "
+0 0 22 3 1 #"("
+0 0 14 3 11 #"empty-scene"
+0 0 60 3 1 #" "
+0 0 20 3 3 #"100"
+0 0 60 3 1 #" "
+0 0 20 3 3 #"100"
+0 0 22 3 2 #"))"
+0 0 57 3 5 #"     "
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 34 #"; Auftreten und Umgang mit Fehlern"
+0 0 57 29 1 #"\n"
+0 0 17 3 34 #"; ================================"
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 89
+(
+ #"; Bei der Erstellung von Programmen k\303\266nnen unterschiedliche A"
+ #"rten von Fehlern auftreten."
+) 0 0 57 29 1 #"\n"
+0 0 17 3 67
+#"; Es ist wichtig, die Klassen und Ursachen dieser Fehler zu kennen."
+0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 83
+(
+ #"; Eine wichtige Art von Fehlern si"
+ #"nd _Syntaxfehler_. Ein Beispiel f\303\274r ein Programm"
+) 0 0 57 29 1 #"\n"
+0 0 17 3 89
+(
+ #"; mit einem Syntaxfehler sind die Ausdr\303\274cke \"(+ 2 3(\"  oder"
+ #" \"(+ 2 3\" oder \"(+ 2 (+ 3 4)\""
+) 0 0 4 29 1 #"\n"
+0 0 17 3 1 #";"
+0 0 4 29 1 #"\n"
+0 0 17 3 85
+(
+ #"; Syntaxfehler werden vor der Programmausf\303\274hrung von DrRacket"
+ #" gepr\303\274ft und gefunden;"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 84
+(
+ #"; diese Pr\303\274fung kann auch mit der Schaltfl\303\244che \"Synta"
+ #"xpr\303\274fung\" veranlasst werden."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 1 #";"
+0 0 4 29 1 #"\n"
+0 0 17 3 82
+(
+ #"; Ein Syntaxfehler tritt auf, wenn ein BSL Programm nicht zur BSL Gr"
+ #"ammatik passt."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 84
+(
+ #"; Sp\303\244ter werden wir diese Grammatik genau definieren; informe"
+ #"ll ist eine Grammatik "
+) 0 0 4 29 1 #"\n"
+0 0 17 3 69
+(
+ #"; eine Menge von Vorschriften \303\274ber die Struktur korrekter Pro"
+ #"gramme."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 2 #"; "
+0 0 4 29 1 #"\n"
+0 0 17 3 79
+(
+ #"; Die Grammatik von dem Teil von BSL, den sie bereits kennen, ist se"
+ #"hr einfach:"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 55
+#"; 1. Ein BSL Programm ist eine Sequenz von Ausdr\303\274cken."
+0 0 4 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; 2. Ein Ausdruck ist eine Zahl, ein Bild, ein Boolscher Wert, ein S"
+ #"tring, oder ein Funktionsaufruf."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 119
+(
+ #"; 3. Ein Funktionsaufruf hat die Form (f a1 a2 ...) wobei f der name"
+ #" einer Operation ist und a1,a2,... Ausdr\303\274cke sind."
+) 0 0 57 29 1 #"\n"
+0 0 57 29 1 #"\n"
+0 0 17 3 48 #"; Diese Programme sind alle syntaktisch korrekt:"
+0 0 4 29 1 #"\n"
+0 0 17 3 19 #"; a)  (+ 2 (* 3 4))"
+0 0 4 29 1 #"\n"
+0 0 17 3 7 #"; b)  ("
+0 0 17 3 14 #"number->string"
+0 0 17 3 1 #" "
+0 0 17 3 7 #"\"asdf\")"
+0 0 4 29 1 #"\n"
+0 0 17 3 35 #"; c)  (string-length \"asdf\" \"fdsa\")"
+0 0 4 29 1 #"\n"
+0 0 17 3 32 #"; c)  (number->string \"21\" \"42\")"
+0 0 4 29 1 #"\n"
+0 0 17 3 13 #"; d)  (/ 1 0)"
+0 0 4 29 1 #"\n"
+0 0 17 3 7 #"; e)  ("
+0 0 17 3 22 #"string->number \"asdf\")"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; Allerdings hat nicht jedes dieser Programme in BSL eine Bedeutung."
+ #" _Bedeutung_ hei\303\237t in diesem"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 87
+(
+ #"; Fall dass das Programm korrekt ausgef\303\274hrt werden kann und e"
+ #"inen Wert zur\303\274ckliefert."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 95
+(
+ #"; Die Menge der BSL Programme, die eine Bedeutung haben, ist nur ein"
+ #"e Teilmenge der syntaktisch"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 26 #"; korrekten BSL Programme."
+0 0 4 29 1 #"\n"
+0 0 4 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; Die Ausf\303\274hrung von Programm b) ergibt einen _Laufzeitfehler"
+ #"_, ein Fehler der auftritt w\303\244hrend"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 106
+(
+ #"; das Programm l\303\244uft (im Unterschied zu Syntaxfehlern, die _v"
+ #"or_ der Programmausf\303\274hrung erkannt werden)."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 93
+(
+ #"; Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausf\303"
+ #"\274hrung abgebrochen und eine "
+) 0 0 4 29 1 #"\n"
+0 0 17 3 61
+#"; Fehlermeldung ausgegeben, in diesem Fall die Fehlermeldung:"
+0 0 19 29 1 #"\n"
+0 0 17 3 52 #";          number->string: expects a number; given \""
+0 0 17 3 5 #"asdf\""
+0 0 19 29 1 #"\n"
+0 0 17 3 1 #";"
+0 0 4 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; Dieser Fehler ist ein Beispiel f\303\274r einen _Typfehler_: Die O"
+ #"peration erwartet, dass ein Operand"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 95
+(
+ #"; einen bestimmten Typ hat, diesem Fall 'Zahl', aber tats\303\244chl"
+ #"ich hat der Operand einen anderen"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 31 #"; Typ, in diesem Fall 'String'."
+0 0 4 29 1 #"\n"
+0 0 4 29 1 #"\n"
+0 0 17 3 99
+(
+ #"; Ein anderer Fehler, der auftreten kann, ist der, dass die Anzahl d"
+ #"er angegebenen Operanden nicht "
+) 0 0 4 29 1 #"\n"
+0 0 17 3 4 #"; zu"
+0 0 17 3 1 #" "
+0 0 17 3 3 #"der"
+0 0 17 3 60
+#" Operation passt. Im Beispiel c) tritt folgender Fehler auf:"
+0 0 4 29 1 #"\n"
+0 0 17 3 63
+#";           string-length: expects only 1 argument, but found 2"
+0 0 4 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 84
+(
+ #"; Manchmal stimmt zwar der Datentyp des Operanden, aber trotzdem 'pa"
+ #"sst' der Operand"
+) 0 0 19 29 1 #"\n"
+0 0 17 3 94
+(
+ #"; in irgendeiner Weise nicht. Im Beispiel d) ist es so, dass der Div"
+ #"ionsoperator als Operanden"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; Zahlen erwartet. Der zweite Operand ist eine Zahl, trotzdem result"
+ #"iert die Ausf\303\274hrung in einer"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 26 #"; Fehlermeldung, n\303\244mlich "
+0 0 17 3 3 #"\"/:"
+0 0 17 3 1 #" "
+0 0 17 3 8 #"division"
+0 0 17 3 1 #" "
+0 0 17 3 2 #"by"
+0 0 17 3 7 #" zero\"."
+0 0 4 29 1 #"\n"
+0 0 17 3 1 #";"
+0 0 4 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; Programmiersprachen unterscheiden sich darin, zu welchem Zeitpunkt"
+ #" Fehler der Kategorien a) bis d)"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 107
+(
+ #"; gefunden werden, also zum Beispiel vor der Ausf\303\274hrung oder "
+ #"erst w\303\244hrend der Ausf\303\274hrung. Im Allgemeinen"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; gilt: Je fr\303\274her desto besse"
+ #"r! - allerdings muss diese zus\303\244tzliche Sicherheit h\303\244uf"
+ #"ig mit anderen"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 97
+(
+ #"; Restriktionen erkauft werden, zum Beispiel der Restriktion dass ei"
+ #"nige korrekte Programme nicht"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 34 #"; mehr ausgef\303\274hrt werden k\303\266nnen."
+0 0 4 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 103
+(
+ #"; Eine andere Situation liegt im Fall e) vor. Die Ausf\303\274hrung "
+ #"des Programms e) ergibt den Wert \"false\"."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 82
+(
+ #"; Dieser Wert signalisiert, dass der \303\274bergebene String keine "
+ #"Zahl repr\303\244sentiert."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 96
+(
+ #"; In diesem Fall tritt also _kein_ Laufzeitfehler auf, sondern die A"
+ #"usf\303\274hrung wird fortgesetzt."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 99
+(
+ #"; Das Programm ist also aus BSL-Sicht wohldefiniert. Die Operation s"
+ #"tring->number h\303\244tte alternativ"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 100
+(
+ #"; aber auch so definiert werden k\303\266nnen, dass sie in dieser Si"
+ #"tuation einen Laufzeitfehler ausl\303\266st."
+) 0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 19 29 1 #"\n"
+0 0 17 3 30 #"; Bedeutung von BSL Programmen"
+0 0 4 29 1 #"\n"
+0 0 17 3 31 #"; ============================="
+0 0 4 29 1 #"\n"
+0 0 4 29 1 #"\n"
+0 0 17 3 111
+(
+ #"; Fassen wir nochmal den jetzigen Stand zusammen: Programmieren ist "
+ #"das Aufschreiben arithmetischer Ausdr\303\274cke,"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 101
+(
+ #"; wobei die Arithmetik Zahlen, Strings, Boolsche Werte und Bilder um"
+ #"fasst. Programme sind syntaktisch"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 102
+(
+ #"; korrekt wenn Sie gem\303\244\303\237 der Regeln aus dem vorherigen"
+ #" Abschnitt konstruiert wurden. Nur syntaktisch"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 104
+(
+ #"; korrekte Programme (aber nicht alle) haben in BSL eine Bedeutung. "
+ #"Die Bedeutung eines Ausdrucks in BSL"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 86
+(
+ #"; ist ein Wert, und dieser Wert wird durch folgende Auswertungsvorsc"
+ #"hriften ermittelt:"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 1 #";"
+0 0 4 29 1 #"\n"
+0 0 17 3 131
+(
+ #"; 1. Ist der Ausdruck bereits ein Wert (eine Zahl, ein String, ein B"
+ #"ild oder ein Wahrheitswert) so ist seine Bedeutung dieser Wert."
+) 0 0 4 29 1 #"\n"
+0 0 17 3 114
+(
+ #"; 2. Hat der Ausdruck die Form (f a1 a2 ...), wobei f ein Operations"
+ #"name und a1, a2,... Ausdr\303\274cke sind, so werden"
+) 0 0 4 29 1 #"\n"
+0 0 17 3 112
+(
+ #"; von links nach rechts die Ausdr\303\274cke a1, a2,... zu Werten v1"
+ #", v2,... ausgewertet. Ist die Operation f auf den "
+) 0 0 4 29 1 #"\n"
+0 0 17 3 96
+(
+ #"; Werten v1, v2,... definiert, so ist der Wert des Ausdrucks die Anw"
+ #"endung von f auf v1, v2,... "
+) 0 0 4 29 1 #"\n"
+0 0 17 3 121
+(
+ #"; Ist die Operation nicht auf v1, v2,... definiert, so wird die Ausw"
+ #"ertung mit einer passenden Fehlermeldung abgebrochen."
+) 0 0 24 29 1 #"\n"
+0           0
