@@ -5,6 +5,7 @@
 
    
 @title{Konzepte der Programmiersprachen, SS 2012}
+@author["Prof. Dr. Klaus Ostermann" "Tillmann Rendel"]
 
 @section{Programmieren mit Ausdrücken}
 Dieser Teil des Skripts basiert auf [HTDP/2e] Kapitel 1
@@ -12,11 +13,13 @@ Dieser Teil des Skripts basiert auf [HTDP/2e] Kapitel 1
 @subsection{Programmieren mit arithmetischen Ausdrücken}
  
 Jeder von Ihnen weiß, wie man Zahlen addiert, dividiert oder multipliziert, denn Sie wurden
-von den Lehrern mit einem Verfahren (einem sog. @italic{Algorithmus}) dazu "programmiert". 
+in der Schule von den Lehrern mit einem Verfahren (einem sog. @italic{Algorithmus}) dazu "programmiert". 
 In diesem Kurs werden wir die Rollen umdrehen: Sie werden programmieren, und der Computer 
 wird ihre Anweisungen ausführen.  Die Sprache in der wir diese Anweisungen formulieren heißt
 @italic{Programmiersprache}. Die Programmiersprache, die wir zunächst verwenden werden, heißt
-@italic{BSL}. BSL steht für "Beginning Student Language".
+@italic{BSL}. BSL steht für "Beginning Student Language". Zum Editieren und Ausführen der BSL Programme
+verwenden wir @italic{DrRacket}. DrRacket kann man unter der URL @url{http://racket-lang.org/} herunterladen.
+Bitte stellen Sie als Sprache "How To Design Programs - Anfänger" ein.
 
 Viele einfache Algorithmen sind in einer Programmiersprache bereits vorgegeben, z.B. solche
 zur Arithmetik mit Zahlen. Wir können "Aufgaben" stellen, indem wir DrRacket eine Frage stellen,
@@ -25,7 +28,7 @@ auf die uns DrRacket dann im Ausgabefenster die Antwort gibt. So können wir zum
 @racketblock[(+ 1 1)]
 
 stellen --- als Antwort erhalten wir bei Ausführung dieser Anweisung ("Start" Knopf) @ev[(+ 1 1)].
-Diese Art von Fragen nennen wir _Ausdrücke_. In Zukunft werden wir solche Frage/Antwort Interaktionen
+Diese Art von Fragen nennen wir @italic{Ausdrücke}. In Zukunft werden wir solche Frage/Antwort Interaktionen
 wie folgt darstellen:
  
 @ex[(+ 1 1)] 
@@ -57,7 +60,7 @@ an das mathematisch korrekte Ergebnis
  Später werden andere Arten von Ausdrücken hinzukommen.
 
  Wenn Sie auf "Start" drücken, wertet DrRacket die Ausdrücke von oben nach unten aus und zeigt die 
- Ergebnisse im _Interaktionsbereich_ (der Bereich unter dem Definitionsbereich). Sie können auch 
+ Ergebnisse im @italic{Interaktionsbereich} (der Bereich unter dem Definitionsbereich). Sie können auch 
  direkt im Interaktionsbereich Ausdrücke eingeben, die dann sofort ausgewertet werden. Allerdings 
  werden die Ausdrücke im Interaktionsbereich nicht durch den "Speichern" Knopf mit abgespeichert.
 
@@ -163,24 +166,30 @@ Natürlich können Ausdrücke weiterhin beliebig verschachtelt werden, z.B. so:
          (string=? "hello world" "good morning"))
      (>= (+ (string-length "hello world") 60) 80))]
 
+
+Der letzte Datentyp den wir heute einführen werden, sind Bilder. In BSL sind
+Bilder "ganz normale" Werte, mit dazugehöriger Arithmetik, also Operationen darauf.
+Existierende Bilder können per copy&paste oder über das Menü "Einfügen -> Bild" direkt in
+das Programm eingefügt werden. Hier ist ein Bild einer Rackete. Genau wie die Auswertung
+einer Zahl die Zahl selber ergibt, ergibt die Auswertung des Bilds das Bild selber.
+
+
+
+Hier ein Beispiel für die Verwendung einer Operation auf Bildern:
+
+@racketblock[
+  (* (image-width )
+   (image-height ))]
+
+
+Statt existierende Bilder in das Programm einzufügen kann man auch neue Bilder konstruieren:
+
 @;{
-
-; Der letzte Datentyp den wir heute einführen werden, sind Bilder. In BSL sind
-; Bilder "ganz normale" Werte, mit dazugehöriger Arithmetik, also Operationen darauf.
-; Existierende Bilder können per copy&paste oder über das Menü "Einfügen -> Bild" direkt in
-; das Programm eingefügt werden. Hier ist ein Bild einer Rackete. Genau wie die Auswertung
-; einer Zahl die Zahl selber ergibt, ergibt die Auswertung des Bilds das Bild selber.
+   
+@ex[(circle 10 "solid" "red")]
 
 
 
-; Hier ein Beispiel für die Verwendung einer Operation auf Bildern:
-(* (image-width )
-   (image-height ))
-
-
-; Statt existierende Bilder in das Programm einzufügen kann man auch neue Bilder konstruieren:
-
-(circle 10 "solid" "red") ; ergibt 
 (rectangle 30 20 "outline" "blue") ; ergibt 
 
 ; Die Arithmetik der Bilder umfasst nicht nur Operationen um Bilder zu konstruieren, sondern auch
