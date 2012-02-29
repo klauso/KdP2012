@@ -42,7 +42,8 @@ Hier einige weitere Beispiele für Ausdrücke mit weiteren arithmetischen Operat
          
 Das @racket[i] im letzten Ergebnis steht für "inexact", also ungenau - im Unterschied zur
 Mathematik sind manche Berechnungen auf einem Computer notwendigerweise nur Annäherungen
-an das mathematisch korrekte Ergebnis
+an das mathematisch korrekte Ergebnis. In BSL kann man an dem @racket[i] sehen, ob eine
+Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
 
  Der Bereich, in dem Sie diesen Text lesen, ist der @italic{Definitionsbereich}. In diesem Bereich 
  schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
@@ -232,7 +233,6 @@ Die folgenden Programme sind alle syntaktisch korrekt, allerdings lassen sich ni
 @ex[ (+ 2 (* 3 4))
  (number->string "asdf")
  (string-length "asdf" "fdsa")
- (number->string "21" "42")
  (/ 1 0)
  (string->number "asdf")]
 
@@ -251,7 +251,7 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
  Typ, in diesem Fall 'String'.
 
  Ein anderer Fehler, der auftreten kann, ist der, dass die Anzahl der angegebenen Operanden nicht 
- zu der Operation passt. Im Programm @racket[(number->string "21" "42")] tritt dieser Fehler.
+ zu der Operation passt. Im Programm @racket[ (string-length "asdf" "fdsa")] tritt dieser Fehler.
 
  Manchmal stimmt zwar der Datentyp des Operanden, aber trotzdem 'passt' der Operand
  in irgendeiner Weise nicht. Im Beispiel @racket[(/ 1 0)] ist es so, dass der Divionsoperator als Operanden
@@ -268,6 +268,8 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
  ergibt den Wert @racket[false].
  Dieser Wert signalisiert, dass der übergebene String keine Zahl repräsentiert.
  In diesem Fall tritt also @italic{kein} Laufzeitfehler auf, sondern die Ausführung wird fortgesetzt.
+ Der Aufrufer von @racket[(string->number "asdf")] hat dadurch die Möglichkeit, abzufragen, ob die
+ Umwandlung erfolgreich war oder nicht, und je nachdem das Programm anders fortzusetzen.
  Das Programm ist also aus BSL-Sicht wohldefiniert. Die Operation @racket[string->number] hätte alternativ
  aber auch so definiert werden können, dass sie in dieser Situation einen Laufzeitfehler auslöst.
 

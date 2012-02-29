@@ -11,7 +11,7 @@
 (provide block ev ex stdeval)
 
 
-(define stdeval (bsl-eval '()))
+(define stdeval (isl-eval '()))
 
 (void (interaction-eval #:eval stdeval (require 2htdp/image)))
 (void (interaction-eval #:eval stdeval (define rocket (bitmap "rocket-s.jpg"))))
