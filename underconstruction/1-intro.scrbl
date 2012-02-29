@@ -1,6 +1,8 @@
 #lang scribble/manual
 @(require scribble/eval)
 @(require "marburg-utils.rkt")
+@(require (for-label lang/htdp-beginner))
+@(require (for-label (except-in 2htdp/image image?)))
 
    
 @title[#:version ""]{Programmieren mit Ausdrücken}
@@ -30,7 +32,8 @@ wie folgt darstellen:
  
 @ex[(+ 1 1)] 
 
-Hier einige weitere Beispiele für Ausdrücke mit weiteren arithmetischen Operationen.
+Hier einige weitere Beispiele für Ausdrücke mit weiteren arithmetischen Operationen. 
+
 @ex[(+ 2 2)
 (* 3 3)
 (- 4 2)
@@ -60,6 +63,8 @@ Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
  direkt im Interaktionsbereich Ausdrücke eingeben, die dann sofort ausgewertet werden. Allerdings 
  werden die Ausdrücke im Interaktionsbereich nicht durch den "Speichern" Knopf mit abgespeichert.
 
+ 
+ 
  Wie kann man mehr als zwei Zahlen addieren? Hierzu gibt es zwei Möglichkeiten:
 
  Durch Schachtelung:
@@ -71,7 +76,7 @@ oder durch Addition mit mehr als zwei Operanden
 @ex[(+ 2 3 4)]
 
 Immer wenn Sie in BSL eine arithmetische Operation wie @racket[+] oder @racket[sqrt] benutzen möchten,
-schreiben Sie eine öffnende Klammer, gefolgt von der Operation, dann einem Lehrzeichen 
+schreiben Sie eine öffnende Klammer, gefolgt von der @italic{Operation}, dann einem Lehrzeichen 
 (oder Zeilenumbruch) und dann die @italic{Operanden}, also in unserem Fall die Zahlen auf die die
 Operation angewandt werden soll.
 
@@ -92,8 +97,12 @@ Ein Programm auszuführen bedeutet den Wert der darin enthaltenen Ausdrücke zu 
 Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Resultate
 der Ausführung werden im Interaktionsbereich angezeigt.
 
+Noch ein praktischer Hinweis: Wenn Sie dieses Dokument mit einem Webbrowser lesen, sollten alle Operationen, die 
+in den Beispielausdrücken vorkommen, einen Hyperlink zu ihrer Dokumentation enthalten. Beispielsweise
+sollte der Additionsoperator im Ausdruck @racket[(+ 5 7)] einen solchen Hyperlink enthalten. Unter diesen
+Links finden Sie auch eine Übersicht über die weiteren Operatoren, die sie verwenden können.
 
-@section{Arithmetik mit nicht-numerischen Werten}
+@section[#:tag "arithmeticnm"]{Arithmetik mit nicht-numerischen Werten}
 
 Wenn wir nur Programme schreiben könnten, die Zahlen verarbeiten, wäre Programmieren genau so 
 langweilig wie Mathematik ;-) Zum Glück gibt es viele andere Arten von Werten, mit denen 

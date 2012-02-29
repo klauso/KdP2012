@@ -1,0 +1,1 @@
+racket -l racket/gui -l- scribble/run ++xref-in setup/xref load-collections-xref --htmls --redirect-main http://docs.racket-lang.org/ script.scrbl

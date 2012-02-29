@@ -1,7 +1,8 @@
 #lang scribble/manual
 @(require scribble/eval)
 @(require "marburg-utils.rkt")
-
+@(require (for-label lang/htdp-beginner))
+@(require (for-label (except-in 2htdp/image image?)))
    
 @title[#:version ""]{Funktionen und Animationen}
 
@@ -83,8 +84,33 @@ definieren die so aussehen, als wäre die Sprache um primitive Funktionen erweit
 @section{Funktionen die Bilder produzieren}
 
 Selbstverständlich können in BSL Funktionen nicht nur Zahlen sondern beliebige Werte als Eingabe
-bekommen oder als Ausgabe zurückliefern.
+bekommen oder als Ausgabe zurückliefern. In Abschnitt @secref{arithmeticnm} haben Sie gesehen,
+wie man mit @racket[place-image] ein Bild in einer Szene plaziert. Zum Beispiel erzeugen die
+drei Ausdrücke 
+@racketblock[
+(place-image (unsyntax @ev[rocket]) 50 20 (empty-scene 100 100))
+(place-image (unsyntax @ev[rocket]) 50 40 (empty-scene 100 100))
+(place-image (unsyntax @ev[rocket]) 50 60 (empty-scene 100 100))]
+
+die Bilder
+
+@ev[(place-image rocket 50 20 (empty-scene 100 100))]
+@ev[(place-image rocket 50 40 (empty-scene 100 100))]
+@ev[(place-image rocket 50 60 (empty-scene 100 100))]
+
+Offensichtlich sind diese drei Ausdrücke zusammen redundant, denn sie unterscheiden sich nur in
+dem Parameter für die Höhe der Rakete. Mit einer Funktionsdefinition können wir das
+Muster, welches diese drei Ausdrücke gemein haben, ausdrücken:
 
 @racketblock[
 (define (create-rocket-scene height)
   (place-image (unsyntax @ev[rocket]) 50 height (empty-scene 100 100)))]
+                                                                        
+@(void (interaction-eval #:eval stdeval (define (create-rocket-scene height)
+  (place-image rocket 50 height (empty-scene 100 100)))))
+
+Die drei Bilder können nun durch Aufrufe der Funktion erzeugt werden.
+
+@ex[(create-rocket-scene 20)
+    (create-rocket-scene 40)
+    (create-rocket-scene 60)]                                                                        

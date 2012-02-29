@@ -1,0 +1,1 @@
+racket -l racket/gui -l- scribble/run ++xref-in setup/xref load-collections-xref --pdf script.scrbl
