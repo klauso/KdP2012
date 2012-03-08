@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\WinSCP\WinSCP.exe" kos@login.mathematik.uni-marburg.de /synchronize c:\github\KdP2012\underconstruction\script /app/home/kos/public_html/teaching/kdp2012/script /default

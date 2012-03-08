@@ -11,14 +11,16 @@
 
 @section{Programmieren mit arithmetischen Ausdrücken}
  
-Jeder von Ihnen weiß, wie man Zahlen addiert, dividiert oder multipliziert, denn Sie wurden
-in der Schule von den Lehrern mit einem Verfahren (einem sog. @italic{Algorithmus}) dazu "programmiert". 
-In diesem Kurs werden wir die Rollen umdrehen: Sie werden programmieren, und der Computer 
-wird ihre Anweisungen ausführen.  Die Sprache in der wir diese Anweisungen formulieren heißt
+Jeder von Ihnen weiß, wie man Zahlen addiert, Kaffee kocht, oder einen Schrank eines schwedischen Möbelhauses zusammenbaut.
+Die Abfolge von Schritten, die sie hierzu durchführen, nennt man @italic{Algorithmus}, und Sie wissen
+wie man einen solchen Algorithmus ausführt. 
+In diesem Kurs werden wir die Rollen umdrehen: Sie werden den Algorithmus programmieren, und der Computer 
+ihn ausführen.  Eine formale Sprache, in der solche Algorithmen formulieren werden können, heißt
 @italic{Programmiersprache}. Die Programmiersprache, die wir zunächst verwenden werden, heißt
 @italic{BSL}. BSL steht für "Beginning Student Language". Zum Editieren und Ausführen der BSL Programme
 verwenden wir @italic{DrRacket}. DrRacket kann man unter der URL @url{http://racket-lang.org/} herunterladen.
-Bitte stellen Sie als Sprache "How To Design Programs - Anfänger" ein.
+Bitte stellen Sie als Sprache "How To Design Programs - Anfänger" ein. Folgen Sie diesem Text am besten,
+indem Sie DrRacket parallel starten und immer mitprogrammieren.
 
 Viele einfache Algorithmen sind in einer Programmiersprache bereits vorgegeben, z.B. solche
 zur Arithmetik mit Zahlen. Wir können "Aufgaben" stellen, indem wir DrRacket eine Frage stellen,
@@ -26,13 +28,20 @@ auf die uns DrRacket dann im Ausgabefenster die Antwort gibt. So können wir zum
 
 @racketblock[(+ 1 1)]
 
-stellen --- als Antwort erhalten wir bei Ausführung dieser Anweisung ("Start" Knopf) @ev[(+ 1 1)].
-Diese Art von Fragen nennen wir @italic{Ausdrücke}. In Zukunft werden wir solche Frage/Antwort Interaktionen
+im Definitionsbereich (dem oberen Teil der DrRacket Oberfläche) stellen --- als Antwort erhalten im @italic{Interaktionsbereich} (dem Bereich unterhalb
+des Definitionsbereichs) bei Auswertung dieses Programms ("Start" Knopf) @ev[(+ 1 1)].
+Im Definitionsbereich 
+ schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
+ auf, mit dem Sie die Definitionen in einer Datei abspeichern können. Im Interaktionsbereich wird das Ergebnis einer Programmausführung angezeigt;
+ außerdem können hier Ausdrücke eingegeben werden, die sofort ausgewertet werden aber nicht in der Datei mit abgespeichert werden.
+
+ Die Art von Programmen bzw. Fragen wie @racket[(+ 1 1)] nennen wir @italic{Ausdrücke}. In Zukunft werden wir solche Frage/Antwort Interaktionen
 wie folgt darstellen:
  
 @ex[(+ 1 1)] 
 
-Hier einige weitere Beispiele für Ausdrücke mit weiteren arithmetischen Operationen. 
+Operationen wie @racket[+] nennen wir im folgenden @italic{Funktionen}. Die Operanden wie @racket[1] nennen wir @italic{Argumente}.
+Hier einige weitere Beispiele für Ausdrücke mit weiteren Funktionen deren Argumente Zahlen sind. 
 
 @ex[(+ 2 2)
 (* 3 3)
@@ -48,20 +57,13 @@ Mathematik sind manche Berechnungen auf einem Computer notwendigerweise nur Ann�
 an das mathematisch korrekte Ergebnis. In BSL kann man an dem @racket[i] sehen, ob eine
 Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
 
- Der Bereich, in dem Sie diesen Text lesen, ist der @italic{Definitionsbereich}. In diesem Bereich 
- schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
- auf, mit dem Sie die Definitionen abspeichern können.
 
  Programme beinhalten Ausdrücke. Alle Programme, die wir bisher gesehen haben, @italic{sind} Ausdrücke.
  Jeder von Ihnen kennt Ausdrücke aus der Mathematik. Zu diesem Zeitpunkt ist ein Ausdruck in unserer 
  Programmiersprache ist entweder eine Zahl, oder etwas das mit einer linken Klammer "(" startet und mit
- einer rechten Klammer ")" endet. Wir bezeichnen Zahlen als @italic{primitive Ausdrücke}. 
+ einer rechten Klammer ")" endet. I
+ Wir bezeichnen Zahlen als @italic{primitive Ausdrücke} und Ausdrücke die mit einer Klammer starten als @italic{nicht-primitive Ausdrücke}. 
  Später werden andere Arten von Ausdrücken hinzukommen.
-
- Wenn Sie auf "Start" drücken, wertet DrRacket die Ausdrücke von oben nach unten aus und zeigt die 
- Ergebnisse im @italic{Interaktionsbereich} (der Bereich unter dem Definitionsbereich). Sie können auch 
- direkt im Interaktionsbereich Ausdrücke eingeben, die dann sofort ausgewertet werden. Allerdings 
- werden die Ausdrücke im Interaktionsbereich nicht durch den "Speichern" Knopf mit abgespeichert.
 
  
  
@@ -71,36 +73,36 @@ Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
 
 @ex[(+ 2 (+ 3 4))]
 
-oder durch Addition mit mehr als zwei Operanden
+oder durch Addition mit mehr als zwei Argumenten:
 
 @ex[(+ 2 3 4)]
 
-Immer wenn Sie in BSL eine arithmetische Operation wie @racket[+] oder @racket[sqrt] benutzen möchten,
-schreiben Sie eine öffnende Klammer, gefolgt von der @italic{Operation}, dann einem Lehrzeichen 
-(oder Zeilenumbruch) und dann die @italic{Operanden}, also in unserem Fall die Zahlen auf die die
-Operation angewandt werden soll.
+Immer wenn Sie in BSL eine Funktion wie @racket[+] oder @racket[sqrt] benutzen möchten,
+schreiben Sie eine öffnende Klammer, gefolgt vom Namen der Funktion, dann einem Lehrzeichen 
+(oder Zeilenumbruch) und dann die Argumente der Funktion, also in unserem Fall die Zahlen auf die die
+Funktion angewandt werden soll. 
 
-Am Beispiel der Schachtelung haben Sie gesehen, dass auch Ausdrücke als Operanden zugelassen sind.
+Am Beispiel der Schachtelung haben Sie gesehen, dass auch Ausdrücke als Argumente zugelassen sind.
 Diese Schachtelung kann beliebig tief sein:
 
 @ex[(+ (* 5 5) (+ (* 3 (/ 12 4)) 4))]
 
 
 Solche geschachtelten Ausdrücke werden so ausgewertet, wie Sie es auch auf einem Blatt Papier 
-machen würden: Wenn ein Operand ein nicht-primitiver Ausdruck ist, so wird zunächst dieser Ausdruck berechnet. 
+machen würden: Wenn ein Argument ein nicht-primitiver Ausdruck ist, so wird zunächst dieser Ausdruck berechnet. 
 Dieser Unterausdruck ist möglicherweise selber wieder geschachtelt; in diesem Fall wird diese
 Berechnungsvorschrift auch auf diese Unterausdrücke wieder angewendet (@italic{rekursive} Anwendung).
-Falls mehrer Operanden nicht-primitive Ausdrücke sind, so wird von links nach rechts ausgewertet.
+Falls mehrer Argumente nicht-primitive Ausdrücke sind, so wird von links nach rechts ausgewertet.
 
 Zusammengefasst ist Programmieren zu diesem Zeitpunkt das Schreiben von arithmetischen Ausdrücken.
 Ein Programm auszuführen bedeutet den Wert der darin enthaltenen Ausdrücke zu berechnen.
 Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Resultate
 der Ausführung werden im Interaktionsbereich angezeigt.
 
-Noch ein praktischer Hinweis: Wenn Sie dieses Dokument mit einem Webbrowser lesen, sollten alle Operationen, die 
+Noch ein praktischer Hinweis: Wenn Sie dieses Dokument mit einem Webbrowser lesen, sollten alle Funktionen, die 
 in den Beispielausdrücken vorkommen, einen Hyperlink zu ihrer Dokumentation enthalten. Beispielsweise
 sollte der Additionsoperator im Ausdruck @racket[(+ 5 7)] einen solchen Hyperlink enthalten. Unter diesen
-Links finden Sie auch eine Übersicht über die weiteren Operatoren, die sie verwenden können.
+Links finden Sie auch eine Übersicht über die weiteren Operationen, die sie verwenden können.
 
 @section[#:tag "arithmeticnm"]{Arithmetik mit nicht-numerischen Werten}
 
@@ -109,46 +111,46 @@ langweilig wie Mathematik ;-) Zum Glück gibt es viele andere Arten von Werten, 
 wir ganz analog zu Zahlen rechnen können, zum Beispiel Text, Wahrheitswerte, Bilder usw.
 
 Zu jedem dieser sogenannten @italic{Datentypen} gibt es @italic{Konstruktoren}, mit denen man Werte dieser
- Datentypen konstruieren kann, sowie @italic{Operationen}, die auf Werte dieses Datentyps angewendet
+ Datentypen konstruieren kann, sowie @italic{Funktionen}, die auf Werte dieses Datentyps angewendet
  werden können und die weitere Werte des Datentyps konstruieren. Konstruktoren für numerische
- Werte sind zum Beispiel @racket[42] oder @racket[5.3] (also die Zahlen@italic{literale}; Operationen sind zum Beispiel 
+ Werte sind zum Beispiel @racket[42] oder @racket[5.3] (also die Zahlen@italic{literale}; Funktionen sind zum Beispiel 
  @racket[+] oder @racket[*].
 
 Die Konstruktoren für Text (im folgenden auch @italic{String} genannt) erkennt man an Anführungszeihen. So ist zum Beispiel
 
 @racket["Konzepte der Programmiersprachen"]
 
-ein Stringliteral. Eine Operation auf diesem Datentyp ist @racket[string-append], zum Beispiel
+ein Stringliteral. Eine Funktion auf diesem Datentyp ist @racket[string-append], zum Beispiel
 
 @ex[(string-append "Konzepte der " "Programmiersprachen")]
 
-Es gibt weitere Operationen auf Strings: Um Teile aus einem String zu extrahieren, um die Reihenfolge
+Es gibt weitere Funktionen auf Strings: Um Teile aus einem String zu extrahieren, um die Reihenfolge
 der Buchstaben umzukehren, um in Groß- oder Kleinbuchstaben zu konvertieren usw. Zusammen bilden diese
-Operationen die @italic{Arithmetik der Strings}.
+Funktionen die @italic{Arithmetik der Strings}.
 
 
-Die Namen dieser ganzen Operationen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
-Operationen für Zahlen, Strings und andere Datentypen in der DrRacket Hilfe nachgeschlagen werden
+Die Namen dieser ganzen Funktionen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
+Funktionen für Zahlen, Strings und andere Datentypen in der DrRacket Hilfe nachgeschlagen werden
 unter: Hilfe -> How to Design Programs Languages -> Beginning Student -> Pre-defined Functions
 
-Einige Operationen haben die Eigenschaft, dass sie Werte eines Datentyps als Operand erwarten, aber
-Werte eines anderen Datentyps als Ergebnis liefern, zum Beispiel die Operation @racket[string-length]:
+Einige Funktionen haben die Eigenschaft, dass sie Werte eines Datentyps als Funktion erwarten, aber
+Werte eines anderen Datentyps als Ergebnis liefern, zum Beispiel die Funktion @racket[string-length]:
 
 @ex[(+ (string-length "Programmiersprachen") 5)]
 
-Bei Operationen, die mehrere Operanden erwarten, gibt es solche, die Operanden unterschiedlicher Datentypen
+Bei Funktionen, die mehrere Argumente erwarten, gibt es solche, die Argumente unterschiedlicher Datentypen
 erwarten, zum Beispiel
 
 @ex[(replicate 3 "hi")]
 
-Es gibt auch Operationen, die Datentypen ineinander umwandeln, zum Beispiel
+Es gibt auch Funktionen, die Datentypen ineinander umwandeln, zum Beispiel
 
 @ex[(number->string 42)
     (string->number "42")]
 
 Ein weiterer wichtiger Datentyp sind Wahrheitswerte (Boolsche Werte). Die einzigen
-Konstruktoren hierfür sind die Literale @racket[true] und @racket[false]. Operationen auf boolschen
-Werten sind zum Beispiel die aussagenlogischen Operationen:
+Konstruktoren hierfür sind die Literale @racket[true] und @racket[false]. Funktionen auf boolschen
+Werten sind zum Beispiel die aussagenlogischen Funktionen:
 
 @ex[
 (and true true) 
@@ -157,7 +159,7 @@ Werten sind zum Beispiel die aussagenlogischen Operationen:
 (or false false)
 (not false)] 
 
-Boolsche Werte werden auch häufig von Vergleichsoperationen zurückgegeben:
+Boolsche Werte werden auch häufig von Vergleichsfumktionen zurückgegeben:
 
 @ex[(> 10 9) 
 (< -1 0) 
@@ -167,22 +169,27 @@ Boolsche Werte werden auch häufig von Vergleichsoperationen zurückgegeben:
 
 Natürlich können Ausdrücke weiterhin beliebig verschachtelt werden, z.B. so:
 
+@margin-note{Beachten Sie in diesem Beispiel wie die Einrückung des Textes
+hilft, zu verstehen, welcher Teilausdruck Argument welcher Funktion ist. Probieren
+Sie in DrRacket aus, wie die Funktionen "Einrücken" bzw. "Alles einrücken"
+im Menü "Racket" die Einrückung ihres Programms verändern.}
 @ex[(and (or (= (string-length "hello world") (string->number "11"))
-         (string=? "hello world" "good morning"))
-     (>= (+ (string-length "hello world") 60) 80))]
+             (string=? "hello world" "good morning"))
+         (>= (+ (string-length "hello world") 60) 80))]
 
 
 Der letzte Datentyp den wir heute einführen werden, sind Bilder. In BSL sind
-Bilder "ganz normale" Werte, mit dazugehöriger Arithmetik, also Operationen darauf.
+Bilder "ganz normale" Werte, mit dazugehöriger Arithmetik, also Funktionen darauf.
 Existierende Bilder können per copy&paste oder über das Menü "Einfügen -> Bild" direkt in
-das Programm eingefügt werden. Genau wie die Auswertung
+das Programm eingefügt werden. Wenn Sie dieses Dokument im Browser betrachten, können Sie
+das Bild dieser Rakete @ev[rocket] mit Copy&Paste in ihr Programm einfügen. Genau wie die Auswertung
 einer Zahl die Zahl selber ergibt, ergibt die Auswertung des Bilds das Bild selber.
 
 @racket[>] @ev[rocket]
 
 @ev[rocket]
 
-Wie auf anderen Datentypen sind auch auf Bildern eine Reihe von Operationen verfügbar.
+Wie auf anderen Datentypen sind auch auf Bildern eine Reihe von Funktionen verfügbar.
 Beispielsweise kann die Fläche des Bildes durch diesen Ausdruck berechnet werden:
 
 @racket[>] @racket[(* (image-width (unsyntax @ev[rocket]))  (image-height (unsyntax @ev[rocket])))]
@@ -198,18 +205,19 @@ Statt existierende Bilder in das Programm einzufügen kann man auch neue Bilder 
 
 
 
-Die Arithmetik der Bilder umfasst nicht nur Operationen um Bilder zu konstruieren, sondern auch
+Die Arithmetik der Bilder umfasst nicht nur Funktionen um Bilder zu konstruieren, sondern auch
 um Bilder in verschiedener Weise zu kombinieren:
 
 @ex[(overlay (circle 5 "solid" "red")
-         (rectangle 20 20 "solid" "blue"))]
+             (rectangle 20 20 "solid" "blue"))]
 
 
-Zwei wichtige Operationen die Sie noch kennen sollten sind @racket[empty-scence] und @racket[place-image]. Die erste
+Zwei wichtige Funktionen die Sie noch kennen sollten sind @racket[empty-scence] und @racket[place-image]. Die erste
 erzeugt eine Szene, ein spezielles Rechteck in dem Bilder plaziert werden können.
-Die zweite Operation setzt ein Bild in eine Szene:
+Die zweite Funktionen setzt ein Bild in eine Szene:
 
-@ex[(place-image (circle 5 "solid" "green") ; ergibt 
+@ex[
+(place-image (circle 5 "solid" "green") ; ergibt 
              50 80
              (empty-scene 100 100))]     
 
@@ -233,7 +241,7 @@ Die zweite Operation setzt ein Bild in eine Szene:
 @itemize[
  @item{Ein BSL Programm ist eine Sequenz von Ausdrücken.}
  @item{Ein Ausdruck ist eine Zahl, ein Bild, ein Boolscher Wert, ein String, oder ein Funktionsaufruf.}
- @item{Ein Funktionsaufruf hat die Form @racket[(f a1 a2 ...)] wobei @racket[f] der name einer Operation ist und 
+ @item{Ein Funktionsaufruf hat die Form @racket[(f a1 a2 ...)] wobei @racket[f] der name einer Funktion ist und 
                                         @racket[a1],@racket[a2],... Ausdrücke sind.}
  ]
 
@@ -255,16 +263,16 @@ das Programm läuft (im Unterschied zu Syntaxfehlern, die @italic{vor} der Progr
 Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebrochen und eine 
  Fehlermeldung ausgegeben.
  
- Dieser Fehler ist ein Beispiel für einen @italic{Typfehler}: Die Operation erwartet, dass ein Operand
- einen bestimmten Typ hat, diesem Fall 'Zahl', aber tatsächlich hat der Operand einen anderen
+ Dieser Fehler ist ein Beispiel für einen @italic{Typfehler}: Die Funktion erwartet, dass ein Argument
+ einen bestimmten Typ hat, diesem Fall 'Zahl', aber tatsächlich hat das Argument einen anderen
  Typ, in diesem Fall 'String'.
 
- Ein anderer Fehler, der auftreten kann, ist der, dass die Anzahl der angegebenen Operanden nicht 
- zu der Operation passt. Im Programm @racket[ (string-length "asdf" "fdsa")] tritt dieser Fehler.
+ Ein anderer Fehler, der auftreten kann, ist der, dass die Anzahl der angegebenen Argumente nicht 
+ zu der Funktion passt. Im Programm @racket[ (string-length "asdf" "fdsa")] tritt dieser Fehler.
 
- Manchmal stimmt zwar der Datentyp des Operanden, aber trotzdem 'passt' der Operand
- in irgendeiner Weise nicht. Im Beispiel @racket[(/ 1 0)] ist es so, dass der Divionsoperator als Operanden
- Zahlen erwartet. Der zweite Operand ist eine Zahl, trotzdem resultiert die Ausführung in einer
+ Manchmal stimmt zwar der Datentyp des Arguments, aber trotzdem 'passt' der Argument
+ in irgendeiner Weise nicht. Im Beispiel @racket[(/ 1 0)] ist es so, dass die Divionsfunktion als Argumente
+ Zahlen erwartet. Das zweite Argument ist eine Zahl, trotzdem resultiert die Ausführung in einer
  Fehlermeldung, denn die Division durch Null ist nicht definiert.
 
  Programmiersprachen unterscheiden sich darin, zu welchem Zeitpunkt solche Fehler 
@@ -279,7 +287,7 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
  In diesem Fall tritt also @italic{kein} Laufzeitfehler auf, sondern die Ausführung wird fortgesetzt.
  Der Aufrufer von @racket[(string->number "asdf")] hat dadurch die Möglichkeit, abzufragen, ob die
  Umwandlung erfolgreich war oder nicht, und je nachdem das Programm anders fortzusetzen.
- Das Programm ist also aus BSL-Sicht wohldefiniert. Die Operation @racket[string->number] hätte alternativ
+ Das Programm ist also aus BSL-Sicht wohldefiniert. Die Funktion @racket[string->number] hätte alternativ
  aber auch so definiert werden können, dass sie in dieser Situation einen Laufzeitfehler auslöst.
 
 
@@ -293,9 +301,88 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
  ist ein Wert, und dieser Wert wird durch folgende Auswertungsvorschriften ermittelt:
 
 @itemize[
- @item{Ist der Ausdruck bereits ein Wert (eine Zahl, ein String, ein Bild oder ein Wahrheitswert) so ist seine Bedeutung dieser Wert.}
- @item{ Hat der Ausdruck die Form @racket[(f a1 a2 ...)], wobei @racket[f] ein Operationsname und @racket[a1], @racket[a2],... Ausdrücke sind, so werden
- von links nach rechts die Ausdrücke @racket[a1], @racket[a2],... zu Werten @racket[v1], @racket[v2],... ausgewertet. Ist die Operation @racket[f] auf den 
- Werten @racket[v1], @racket[v2],... definiert, so ist der Wert des Ausdrucks die Anwendung von @racket[f] auf @racket[v1], @racket[v2],... 
- Ist die Operation nicht auf @racket[v1], @racket[v2],... definiert, so wird die Auswertung mit einer passenden Fehlermeldung abgebrochen.}
+ @item{Zahlen, Strings, Bilder und Wahrheitswerte sind Werte. Wir benutzen im Rest dieser Vorschrift Varianten des Buchstaben @racket[v] für Ausdrücke die Werte sind.}        
+ @item{Ist der Ausdruck bereits ein Wert so ist seine Bedeutung dieser Wert.}
+ @item{ Hat der Ausdruck die Form @racket[(f (unsyntax @e1) ... (unsyntax @eN))], wobei @racket[f] ein Funktionsname und @e1,..., @eN  Ausdrücke sind, so wird dieser Ausdruck
+                                  wie folgt ausgewertet:
+   @itemize[
+       @item{Falls @e1,..., @eN  bereits Werte @v1,...,@vN sind und 
+                   @racket[f] auf  den  Werten @v1,...,@vN definiert ist, so so ist der Wert des Ausdrucks die Anwendung von @racket[f] auf @v1,...,@vN }     
+       @item{Falls @e1,...,@eN bereits Werte @v1,...,@vN sind aber 
+                   @racket[f] ist @italic{nicht} auf den  Werten @v1,...,@vN definiert, dann wird die Auswertung mit einer passenden Fehlermeldung abgebrochen.}
+       @item{Falls mindestens eines der Argumente noch kein Wert ist, so werden durch Anwendung der gleichen Auswertungsvorschriften 
+             die Werte aller Argumente bestimmt, so dass dann die vorherige Auswertungsregel anwendbar ist.}                                                                                                                                                                                     
+                                                                                                                                                                                      
+          ]}                                 
+ 
 ]
+
+Diese Vorschriften können wir als Anleitung zur schrittweisen @italic{Reduktionen} von Programmen auffassen. Wir schreiben @e @step @(prime e) um zu
+sagen, dass @e in einem Schritt zu @(prime e) reduziert werden kann. Werte können nicht reduziert werden; nur auf Ausdrücken der Form @racket[(f (unsyntax @e1) ... (unsyntax @eN))]
+ist die Reduktion wie folgt definiert:
+
+@margin-note{Experimentieren Sie in DrRacket mit dem "Stepper" Knopf: Geben Sie einen komplexen
+Ausdruck in den Definitionsbereich ein, drücken Sie auf "Stepper" und dann auf die "Schritt nach rechts"
+Taste und beobachten was passiert.}
+   @itemize[
+       @item{Falls @e1,..., @eN  bereits Werte @v1,...,@vN sind und 
+                   die Anwendung von @racket[f] auf   @racket[v1], @racket[v2],... den Wert @racket[v] ergibt, dann 
+                   @racket[(f a1 a2 ...)] @step @racket[v].}
+       @item{Falls mindestens eines der Argumente @eI reduziert werden kann, @eI @step @(prime @eI), 
+                                                                dann @racket[(f (unsyntax @e1) ... (unsyntax @eN))] @step @racket[(f (unsyntax @e1) ... (unsyntax @eI-1) (unsyntax @(prime @eI)) (unsyntax @eI+1) ...)]. }] 
+                                                                                                                                                                                      
+                                           
+
+Wir benutzen folgende Konventionen:
+
+@itemize[
+         @item{@e1 @step @e2 @step @e3 ist eine Kurzschreibweise für @e1 @step @e2 und @e2 @step @e3}
+         @item{Wenn wir schreiben @e @multistep @(prime @e) so bedeutet dies dass es ein n ≥ 0 und @e1, ...,@eN gibt so dass 
+                                  @e @step @e1 @step ... @step  @eN @step @(prime @e) gilt. Insbesondere gilt @e @multistep @e .
+           Man sagt, @multistep ist der reflexive und transitive Abschluss von @step .}]
+
+
+
+Beispiele:
+
+@itemize[
+@item{@racket[(+ 1 1)] @step @racket[2].}
+
+@item{@racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ 6 (* 4 5))] @step @racket[(+ 6 20)] @step @racket[26].}
+
+@item{@racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ (* 2 3) 20)] @step @racket[(+ 6 20)] @step @racket[26].}
+
+@item{@racket[(+ (* 2 3) (* 4 5))] @multistep @racket[26] aber nicht @racket[(+ (* 2 3) (* 4 5))] @step @racket[26].}
+
+@item{@racket[(+ 1 1)] @multistep @racket[(+ 1 1)] aber nicht @racket[(+ 1 1)] @step @racket[(+ 1 1)].}
+
+@item{@racket[(overlay (circle 5 "solid" "red")  (rectangle 20 20 "solid" "blue"))] @step @racket[(overlay (unsyntax @ev[(circle 5 "solid" "red")])  (rectangle 20 20 "solid" "blue"))]
+       @step @racket[(overlay (unsyntax @ev[(circle 5 "solid" "red")])  (unsyntax @ev[(rectangle 20 20 "solid" "blue")]))]  
+       @step @ev[(overlay (circle 5 "solid" "red")  (rectangle 20 20 "solid" "blue"))].}
+
+]
+
+Auf Basis dieser Reduktionsregeln können wir nun eine definieren, wann zwei Programme die gleiche Bedeutung haben.
+Zwei Ausdrücke @e1 und @e2 haben die gleiche Bedeutung, geschrieben @e1 @equiv @e2 , falls es einen Wert @v gibt
+so dass @e1 @multistep @v und @e2 @multistep @v . 
+
+Beispiele:
+
+@itemize[
+@item{@racket[(+ 1 1)] @equiv @racket[2].}
+
+@item{@racket[(+ (* 2 3) 20)]  @equiv @racket[(+ 6 (* 4 5))] @equiv @racket[26].}
+
+@item{ @racket[(overlay (unsyntax @ev[(circle 5 "solid" "red")])  (rectangle 20 20 "solid" "blue"))]
+       @equiv @racket[(overlay (circle 5 "solid" "red") (unsyntax @ev[(rectangle 20 20 "solid" "blue")]))].}
+
+]
+
+Die Rechtfertigung für diese Definition liegt in folgender wichtiger Eigenschaft begründet: Wir können innerhalb eines großen Programms Teilausdrücke beliebig durch Teilausdrücke mit der gleichen Bedeutung ersetzen, ohne die Bedeutung des Gesamtprogramms zu verändern. Etwas formaler können wir das so ausdrücken: 
+
+Sei @e1 ein Unterausdruck eines größeren Ausdrucks @e2 und @e1 @equiv @e3 . Ferner sei @(prime @e2) eine Kopie von @e2 in dem Vorkommen von @e1 durch @e3 ersetzt wurden. Dann gilt: @e2 @equiv @(prime @e2). 
+
+Dieser Gleichheitsbegriff ist daher identisch mit dem, den Sie aus der Schulmathematik kennen, wenn Sie Gleichungen umformen, zum Beispiel wenn wir a + a - b umformen zu 2a - b weil wir wissen dass a + a = 2a. 
+
+Die Benutzung von @equiv um zu zeigen dass Programme die gleiche Bedeutung haben nennt man auch @italic{equational reasoning}.
+
