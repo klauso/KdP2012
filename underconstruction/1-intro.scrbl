@@ -15,7 +15,7 @@ Jeder von Ihnen weiß, wie man Zahlen addiert, Kaffee kocht, oder einen Schrank 
 Die Abfolge von Schritten, die sie hierzu durchführen, nennt man @italic{Algorithmus}, und Sie wissen
 wie man einen solchen Algorithmus ausführt. 
 In diesem Kurs werden wir die Rollen umdrehen: Sie werden den Algorithmus programmieren, und der Computer 
-ihn ausführen.  Eine formale Sprache, in der solche Algorithmen formulieren werden können, heißt
+wird ihn ausführen.  Eine formale Sprache, in der solche Algorithmen formuliert werden können, heißt
 @italic{Programmiersprache}. Die Programmiersprache, die wir zunächst verwenden werden, heißt
 @italic{BSL}. BSL steht für "Beginning Student Language". Zum Editieren und Ausführen der BSL Programme
 verwenden wir @italic{DrRacket}. DrRacket kann man unter der URL @url{http://racket-lang.org/} herunterladen.
@@ -28,7 +28,7 @@ auf die uns DrRacket dann im Ausgabefenster die Antwort gibt. So können wir zum
 
 @racketblock[(+ 1 1)]
 
-im Definitionsbereich (dem oberen Teil der DrRacket Oberfläche) stellen --- als Antwort erhalten im @italic{Interaktionsbereich} (dem Bereich unterhalb
+im @italic{Definitionsbereich} (dem oberen Teil der DrRacket Oberfläche) stellen --- als Antwort erhalten im @italic{Interaktionsbereich} (dem Bereich unterhalb
 des Definitionsbereichs) bei Auswertung dieses Programms ("Start" Knopf) @ev[(+ 1 1)].
 Im Definitionsbereich 
  schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
@@ -40,7 +40,7 @@ wie folgt darstellen:
  
 @ex[(+ 1 1)] 
 
-Operationen wie @racket[+] nennen wir im folgenden @italic{Funktionen}. Die Operanden wie @racket[1] nennen wir @italic{Argumente}.
+Operationen wie @racket[+] nennen wir im Folgenden @italic{Funktionen}. Die Operanden wie @racket[1] nennen wir @italic{Argumente}.
 Hier einige weitere Beispiele für Ausdrücke mit weiteren Funktionen deren Argumente Zahlen sind. 
 
 @ex[(+ 2 2)
@@ -201,7 +201,7 @@ Beispielsweise kann die Fläche des Bildes durch diesen Ausdruck berechnet werde
 Statt existierende Bilder in das Programm einzufügen kann man auch neue Bilder konstruieren:
    
 @ex[(circle 10 "solid" "red")
-    (rectangle 30 20 "outline" "blue")]
+    (rectangle 30 20 "solid" "blue")]
 
 
 
@@ -291,7 +291,7 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
  aber auch so definiert werden können, dass sie in dieser Situation einen Laufzeitfehler auslöst.
 
 
-@section{Bedeutung von BSL Programmen}
+@section[#:tag "semanticsofexpressions"]{Bedeutung von BSL Ausdrücken}
 
 
  Fassen wir nochmal den jetzigen Stand zusammen: Programmieren ist das Aufschreiben arithmetischer Ausdrücke,
@@ -301,7 +301,7 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
  ist ein Wert, und dieser Wert wird durch folgende Auswertungsvorschriften ermittelt:
 
 @itemize[
- @item{Zahlen, Strings, Bilder und Wahrheitswerte sind Werte. Wir benutzen im Rest dieser Vorschrift Varianten des Buchstaben @racket[v] für Ausdrücke die Werte sind.}        
+ @item{Zahlen, Strings, Bilder und Wahrheitswerte sind Werte. Wir benutzen im Rest dieser Vorschrift Varianten des Buchstaben @v als Platzhalter für  Ausdrücke die Werte sind und Varianten des Buchstaben @e für beliebige Ausdrücke (Merkhilfe: Wert = @italic{v}alue, Ausdruck = @italic{e}xpression).}        
  @item{Ist der Ausdruck bereits ein Wert so ist seine Bedeutung dieser Wert.}
  @item{ Hat der Ausdruck die Form @racket[(f (unsyntax @e1) ... (unsyntax @eN))], wobei @racket[f] ein Funktionsname und @e1,..., @eN  Ausdrücke sind, so wird dieser Ausdruck
                                   wie folgt ausgewertet:
@@ -318,21 +318,23 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
 ]
 
 Diese Vorschriften können wir als Anleitung zur schrittweisen @italic{Reduktionen} von Programmen auffassen. Wir schreiben @e @step @(prime e) um zu
-sagen, dass @e in einem Schritt zu @(prime e) reduziert werden kann. Werte können nicht reduziert werden; nur auf Ausdrücken der Form @racket[(f (unsyntax @e1) ... (unsyntax @eN))]
-ist die Reduktion wie folgt definiert:
+sagen, dass @e in einem Schritt zu @(prime e) reduziert werden kann. Werte können nicht reduziert werden. Die Reduktion ist wie folgt definiert:
 
 @margin-note{Experimentieren Sie in DrRacket mit dem "Stepper" Knopf: Geben Sie einen komplexen
 Ausdruck in den Definitionsbereich ein, drücken Sie auf "Stepper" und dann auf die "Schritt nach rechts"
 Taste und beobachten was passiert.}
    @itemize[
-       @item{Falls @e1,..., @eN  bereits Werte @v1,...,@vN sind und 
+       @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und
                    die Anwendung von @racket[f] auf   @racket[v1], @racket[v2],... den Wert @racket[v] ergibt, dann 
-                   @racket[(f a1 a2 ...)] @step @racket[v].}
-       @item{Falls mindestens eines der Argumente @eI reduziert werden kann, @eI @step @(prime @eI), 
-                                                                dann @racket[(f (unsyntax @e1) ... (unsyntax @eN))] @step @racket[(f (unsyntax @e1) ... (unsyntax @eI-1) (unsyntax @(prime @eI)) (unsyntax @eI+1) ...)]. }] 
-                                                                                                                                                                                      
-                                           
-
+                   @racket[(f (unsyntax @v1) ... (unsyntax @vN))]  @step @racket[v].}
+       @item{Falls ein Audruck @e1 einen Unterausdruck @e2 enthält, der reduziert werden kann, also @e2 @step @(prime @e2), dann
+       gilt @e1 step @(prime @e1), wobei @(prime @e1) aus @e1 entsteht indem @e2 durch @(prime @e2) ersetzt wird.}]
+       
+Die letzte Regel nennen wir die @italic{Kongruenzregel}. In dem Teil der Sprache, den Sie bereits kennengelernt haben, 
+können nur Funktionsaufrufe Unterausdrücke haben, daher gilt
+in diesem Fall folgender Spezialfall der Kongruenzregel: Fall @eI @step @(prime @eI), 
+dann @racket[(f (unsyntax @e1) ... (unsyntax @eN))] @step @racket[(f (unsyntax @e1) ... (unsyntax @eI-1) (unsyntax @(prime @eI)) (unsyntax @eI+1) ...)]. 
+              
 Wir benutzen folgende Konventionen:
 
 @itemize[
@@ -352,6 +354,8 @@ Beispiele:
 
 @item{@racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ (* 2 3) 20)] @step @racket[(+ 6 20)] @step @racket[26].}
 
+@item{@racket[(+ (* 2 (+ 1 2) (* 4 5)))] @step @racket[(+ (* 2 3) (* 4 5))].}
+
 @item{@racket[(+ (* 2 3) (* 4 5))] @multistep @racket[26] aber nicht @racket[(+ (* 2 3) (* 4 5))] @step @racket[26].}
 
 @item{@racket[(+ 1 1)] @multistep @racket[(+ 1 1)] aber nicht @racket[(+ 1 1)] @step @racket[(+ 1 1)].}
@@ -361,6 +365,14 @@ Beispiele:
        @step @ev[(overlay (circle 5 "solid" "red")  (rectangle 20 20 "solid" "blue"))].}
 
 ]
+
+Im Allgemeinen kann ein Ausdruck mehrere reduzierbare Unterausdrücke haben, also die Kongruenzregeln an mehreren Stellen gleichzeitig einsetzbar sein.
+In den Beispielen oben haben wir zum Beispiel @racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ (* 2 3) 20)] aber auch 
+@racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ 6 (* 4 5))]. Es ist jedoch nicht schwer zu sehen, dass immer wenn
+wir die Situation @e1 @step e2 und @e1 step @e3 haben, dann gibt es ein @e4 so dass gilt @e2 @multistep @e4 und @e3 @multistep @e4 . 
+Diese Eigenschaft nennt man @italic{Konfluenz}. Reduktionen die auseinanderlaufen können also immer wieder zusammengeführt werden;
+der Wert den man am Ende erhält ist auf jeden Fall eindeutig.
+
 
 Auf Basis dieser Reduktionsregeln können wir nun eine definieren, wann zwei Programme die gleiche Bedeutung haben.
 Zwei Ausdrücke @e1 und @e2 haben die gleiche Bedeutung, geschrieben @e1 @equiv @e2 , falls es einen Wert @v gibt
@@ -382,7 +394,7 @@ Die Rechtfertigung für diese Definition liegt in folgender wichtiger Eigenschaf
 
 Sei @e1 ein Unterausdruck eines größeren Ausdrucks @e2 und @e1 @equiv @e3 . Ferner sei @(prime @e2) eine Kopie von @e2 in dem Vorkommen von @e1 durch @e3 ersetzt wurden. Dann gilt: @e2 @equiv @(prime @e2). 
 
-Dieser Gleichheitsbegriff ist daher identisch mit dem, den Sie aus der Schulmathematik kennen, wenn Sie Gleichungen umformen, zum Beispiel wenn wir a + a - b umformen zu 2a - b weil wir wissen dass a + a = 2a. 
+Diese Eigenschaft folgt direkt aus der Kongruenzregel und der Definition von @equiv . Dieser Gleichheitsbegriff ist identisch mit dem, den Sie aus der Schulmathematik kennen, wenn Sie Gleichungen umformen, zum Beispiel wenn wir a + a - b umformen zu 2a - b weil wir wissen dass a + a = 2a. 
 
 Die Benutzung von @equiv um zu zeigen dass Programme die gleiche Bedeutung haben nennt man auch @italic{equational reasoning}.
 

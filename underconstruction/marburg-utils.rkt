@@ -9,7 +9,7 @@
 (require 2htdp/image)
 (require scribble/manual)
 
-(provide block ev ex stdeval step multistep equiv prime e e1 e2 e3 eN-1 eN v v1 v2 v3 vN-1 vN eI vI eI-1 eI+1)
+(provide block ev ex stdeval step multistep equiv prime e e1 e2 e3 e4 eN-1 eN v v1 v2 v3 vN-1 vN x x1 x2 x3 xI xN-1 xN xN eI vI eI-1 eI+1)
 
 
 (define step (elem "→")) ; (bitmap "arrow.png"))
@@ -22,6 +22,7 @@
 (define eI-1 (elem e (subscript "i-1")))
 (define eI+1 (elem e (subscript "i+1")))
 (define e3 (elem e (subscript "3")))
+(define e4 (elem e (subscript "4")))
 (define eI (elem e (subscript "i")))
 (define eN-1 (elem e (subscript "n-1")))
 (define eN (elem e (subscript "n")))
@@ -33,6 +34,15 @@
 (define vI (elem v (subscript "i")))
 (define vN-1 (elem v (subscript "n-1")))
 (define vN (elem v (subscript "n")))
+(define x (italic "x"))
+(define x1 (elem x (subscript "1")))
+(define x2 (elem x (subscript "2")))
+(define x3 (elem x (subscript "3")))
+(define xI (elem x (subscript "i")))
+(define xN-1 (elem x (subscript "n-1")))
+(define xN (elem x (subscript "n")))
+
+
 (define (prime x) (elem x "'"))
 
 (define stdeval (isl-eval '()))

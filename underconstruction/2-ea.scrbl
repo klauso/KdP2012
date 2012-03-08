@@ -144,11 +144,43 @@ Die @racket[animate] Funktion bewirkt folgendes: Eine Stoppuhr wird mit dem Wert
 wird der Zählerwert um eins erhöht. Jedesmal wenn der Zähler um eins erhöht wird, wird die Funktion @racket[create-rocket-scene]
 ausgewertet und das resultierende Bild in dem Fenster angezeigt.
 
+@subsection{Bedeutung von Funktionsdefinitionen}
+Um die Bedeutung von Funktionsdefinitionen zu definieren, müssen wir sagen, was es bedeutet, eine Funktion, die definiert wurde,
+aufzurufen. Zu diesem Zweck modifizieren wir die Auswertungsregeln aus @secref{semanticsofexpressions} wie folgt:
+   @itemize[
+   @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und @racket[f] eine primitive Funktion ist und
+                   die Anwendung von @racket[f] auf   @racket[v1], @racket[v2],... den Wert @racket[v] ergibt, dann 
+                   @racket[(f a1 a2 ...)] @step @racket[v].}
+   @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und @racket[f] @italic{keine} primitive Funktion ist und
+                   das Programm die Funktionsdefinition @racketblock[(define (f (unsyntax @x1) ... (unsyntax @xN)) BodyExpression)] enthält, 
+                   dann @racket[(f (unsyntax @v1) ... (unsyntax @vN))] @step @racket[NewBody], wobei @racket[NewBody] aus @racket[BodyExpression]
+                   entsteht, indem man alle Vorkommen von @xI durch @vI ersetzt (für i=1...n).}] 
+Unverändert gilt die Kongruenzregel aus @secref{semanticsofexpressions}. 
+
+@italic{Beispiel}: Unser Programm enthält folgende Funktionsdefinitionen.
+
+@racketblock[
+(define (f x) (* x 2))
+(define (g y z) (+ (f y) y (f z)))
+]
+
+Dann @racket[(g (+ 2 3) 4)] 
+     @step @racket[(g 5 4)] 
+     @step @racket[(+ (f 5) 5 (f 4))] 
+     @step @racket[(+ (* 5 2) 5 (f 4))]
+     @step @racket[(+ 10 5 (f 4))]
+     @step @racket[(+ 10 5 8)]
+     @step @racket[23]
+
+                 
+
+
 @section{Konditionale Ausdrücke}
 
 In der Animation aus dem letzten Abschnitt verschwindet die Rakete einfach irgendwann nach unten aus dem Bild.
 Wie können wir es erreichen, dass die Rakete stattdessen auf dem Boden der Szene "landet"?
 
+@subsection{Motivation}
 Offensichtlich benötigen wir hierzu in unserem Programm eine Fallunterscheidung. Fallunterscheidungen
 kennen sie aus zahlreichen Beispielen des realen Lebens. Beispielsweise ist das Bewertungsschema für
 eine Klausur, welches jeder Punktzahl eine Note zuordnet, eine Funktion die die unterschiedlichen
@@ -173,6 +205,7 @@ Einige Beispiele für die Benutzung des Notenschemas:
 (note 73)
 (note 24)]
 
+@subsection{Bedeutung konditionaler Ausdrücke}    
 Im allgemeinen Fall sieht ein konditionaler Ausdruck wie folgt aus:
 
 @racketblock[
@@ -199,6 +232,50 @@ so wird mit einer Fehlermeldung abgebrochen. Ebenso ist es ein Fehler, wenn die 
           [(> 2 9) 88])
     (cond [(+ 2 3) 4])]
 
+Die Reduktionsregeln für BSL müssen wir zur Berücksichtigung konditionaler Audrücke um folgende beiden Regeln ergänzen:
+
+@racket[(cond [false (unsyntax @e)]
+      [(unsyntax @e2) (unsyntax @e3)]
+      ....
+      [(unsyntax @eN-1) (unsyntax @eN)])]
+      @step    
+@racket[(cond [(unsyntax @e2) (unsyntax @e3)]
+      ....
+      [(unsyntax @eN-1) (unsyntax @eN)])]
+
+und 
+      
+@racket[(cond [true (unsyntax @e)]
+      [(unsyntax @e2) (unsyntax @e3)]
+      ....
+      [(unsyntax @eN-1) (unsyntax @eN)]) ]
+      @step    
+     @e 
+
+Beispiel: Betrachten wir den Aufruf @racket[(note 73)] in dem Beispiel oben. Dann
+@racket[(note 83)] @step  @racket[(cond
+    [(>= 83 90) 1]
+    [(>= 83 80) 2]
+    ...)]
+    @step
+@racket[(cond
+    [false 1]
+    [(>= 83 80) 2]
+    ...)]
+    @step
+@racket[(cond
+    [(>= 83 80) 2]
+    ...)]
+    @step
+@racket[(cond
+    [true 2]
+    ...)]
+    @step
+    @racket[2]
+
+@subsection{Etwas syntaktischer Zucker...}    
+     
+@subsection{Beispiel}      
 Zurück zu unserer Rakete. Offensichtlich müssen wir hier zwei Fälle unterscheiden. Während die Rakete noch oberhalb
 des Bodens der Szene ist, soll sie wie gehabt sinken. Wenn die Rakete allerdings bereits auf dem Boden angekommen ist,
 soll die Rakete nicht mehr weiter sinken. 
@@ -245,7 +322,7 @@ Allerdings ist offensichtlich, dass @racket[create-rocket-scene-v3] gegen das im
 verstößt, dass gute Programme keine Redundanz enthalten. Im Programmiererjargon wird dieses Prinzip auch häufig
 DRY-Prinzip --- Don't Repeat Yourself --- genannt. 
 
-@margin-note{Im Programmiererjargon werden Vorkommen von konstanten Werten wie @racket[100] in Programmtexten häufig abfällig als @italic{magic numbers} bezeichnet.}
+@margin-note{Konstante Werte wie @racket[100] in Programmtexten werden von Programmierern häufig abfällig als @italic{magic numbers} bezeichnet.}
 Eine Art von Redundanz, die in @racket[create-rocket-scene-v3] auftritt, ist die, dass die Höhe und Breite der Szene 
 sehr häufig wiederholt wird. Stellen Sie sich vor, sie möchten statt einer 100 mal 100 Szene eine 200 mal 400 Szene haben.
 Zu diesem Zweck müssen Sie alle Vorkommen der alten Höhe und Breite finden, jeweils herausfinden ob sie für die Breite
