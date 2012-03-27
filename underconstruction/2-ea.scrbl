@@ -66,10 +66,13 @@ Im Allgemeinen Fall haben Funktionsdefinitionen diese Form:
 
 @racketblock[(define (FunctionName InputName1 InputName2 ...) BodyExpression)]
 
-Eine Funktionsdefinition startet also mit dem Schlüsselwort @racket[define].
+Funktionsdefinitionen sind @italic{keine} Ausdrücke sondern eine neue Kategorie von Programmen.
+Funktionsdefinitionen dürfen also beispielsweise nicht als Argument von Funktionen verwendet werden.
+Eine Funktionsdefinition startet mit dem Schlüsselwort @racket[define].
 Der einzige Zweck dieses Schlüsselworts ist der, Funktionsdefinitionen von
 Ausdrücken unterscheiden zu können. Insbesondere darf es also keine Funktionen
-geben, die @racket[define] heißen. @racket[FunctionName] ist der name der Funktion.
+geben, die @racket[define] heißen.
+@racket[FunctionName] ist der name der Funktion.
 Diesen benötigt man, um die Funktion in Ausdrücken benutzen (oder: @italic{aufrufen}) zu können.
 @racket[InputName1], @racket[InputName2] und so weiter sind die @italic{Parameter}
 der Funktion. Die Parameter repräsentieren die Eingabe der Funktion, die erst bekannt wird wenn
@@ -81,7 +84,6 @@ Funktionsaufrufe haben die Form:
 
 @racketblock[(FunctionName ArgumentExpression1 ArgumentExpression1 ...)]
 
-@margin-note{Suchen Sie im Internet nach ``Growing a Language'' um mehr hierüber zu erfahren.}
 Ein Funktionsaufruf einer mit @racket[define] definierten (@italic{benutzerdefinierte})
 Funktion sieht also genau so aus wie
 das Benutzen einer fest eingebauten (@italic{primitiven}) Funktion. 
@@ -145,8 +147,8 @@ wird der Zählerwert um eins erhöht. Jedesmal wenn der Zähler um eins erhöht 
 ausgewertet und das resultierende Bild in dem Fenster angezeigt.
 
 @subsection{Bedeutung von Funktionsdefinitionen}
-Um die Bedeutung von Funktionsdefinitionen zu definieren, müssen wir sagen, was es bedeutet, eine Funktion, die definiert wurde,
-aufzurufen. Zu diesem Zweck modifizieren wir die Auswertungsregeln aus @secref{semanticsofexpressions} wie folgt:
+Um die Bedeutung von Funktionsdefinitionen zu definieren, müssen wir sagen, wie Funktionsdefinitionen und Funktionsaufrufe ausgewertet werden. 
+Zu diesem Zweck erweitern wir die Auswertungsregeln aus @secref{semanticsofexpressions} wie folgt:
    @itemize[
    @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und @racket[f] eine primitive Funktion ist und
                    die Anwendung von @racket[f] auf   @racket[v1], @racket[v2],... den Wert @racket[v] ergibt, dann 
@@ -157,6 +159,8 @@ aufzurufen. Zu diesem Zweck modifizieren wir die Auswertungsregeln aus @secref{s
                    entsteht, indem man alle Vorkommen von @xI durch @vI ersetzt (für i=1...n).}] 
 Unverändert gilt die Kongruenzregel aus @secref{semanticsofexpressions}. 
 
+Wie werden Funktionsdefinitionen ausgewertet? Funktionsdefinitionen sind, wie oben bereits gesagt, keine Ausdrücke, d
+aher werden Funktionsdefinitionen nicht reduziert. 
 @italic{Beispiel}: Unser Programm enthält folgende Funktionsdefinitionen.
 
 @racketblock[
@@ -205,7 +209,7 @@ Einige Beispiele für die Benutzung des Notenschemas:
 (note 73)
 (note 24)]
 
-@subsection{Bedeutung konditionaler Ausdrücke}    
+@subsection[#:tag "kondsem"]{Bedeutung konditionaler Ausdrücke}    
 Im allgemeinen Fall sieht ein konditionaler Ausdruck wie folgt aus:
 
 @racketblock[
@@ -252,7 +256,18 @@ und
       @step    
      @e 
 
-Beispiel: Betrachten wir den Aufruf @racket[(note 73)] in dem Beispiel oben. Dann
+Außerdem ergänzen wir die Auswertungspositionen, die in der Kongruenzregel verwendet werden können wie folgt:
+In einem Ausdruck der Form 
+
+@racketblock[
+(cond [(unsyntax @e0) (unsyntax @e1)]
+      [(unsyntax @e2) (unsyntax @e3)]
+      ....
+      [(unsyntax @eN-1) (unsyntax @eN)])]
+
+ist der Ausdruck @e0 in einer Auswertungsposition, aber nicht @e1,...,@eN .
+      
+Beispiel: Betrachten wir den Aufruf @racket[(note 83)] in dem Beispiel oben. Dann
 @racket[(note 83)] @step  @racket[(cond
     [(>= 83 90) 1]
     [(>= 83 80) 2]
@@ -273,8 +288,7 @@ Beispiel: Betrachten wir den Aufruf @racket[(note 73)] in dem Beispiel oben. Dan
     @step
     @racket[2]
 
-@subsection{Etwas syntaktischer Zucker...}    
-     
+
 @subsection{Beispiel}      
 Zurück zu unserer Rakete. Offensichtlich müssen wir hier zwei Fälle unterscheiden. Während die Rakete noch oberhalb
 des Bodens der Szene ist, soll sie wie gehabt sinken. Wenn die Rakete allerdings bereits auf dem Boden angekommen ist,
@@ -295,6 +309,157 @@ den Varianten die Suffixe @racket[-v2], @racket[-v3] usw. geben.}
     [(> height 100)
      (place-image (unsyntax @ev[rocket]) 50 100 (empty-scene 100 100))]))]
 
+     
+@subsection{Etwas syntaktischer Zucker...}   
+
+Zwei Spezialfälle konditionaler Ausdrücke sind so häufig, dass es in BSL eine eigene Syntax dafür gibt, die für diese
+Spezialfälle optimiert ist.
+
+Der erste Spezialfall ist der, dass man einen Zweig der Kondition haben möchte, der immer dann genommen wird, wenn alle anderen
+Zweige nicht anwendbar sind. In diesem Fall kann man statt der Kondition das Schlüsselword @racket[else] verwenden. Das Beispiel von oben könnten wir daher auch so formulieren:
+ 
+@racketblock[
+(define (note punkte) 
+  (cond
+    [(>= punkte 90) 1]
+    [(>= punkte 80) 2]
+    [(>= punkte 70) 3]
+    [(>= punkte 60) 4]
+    [(>= punkte 50) 5]
+    [else 6]))
+] 
+
+Die @racket[else] Klausel allerdings darf nur im letzten Zweig eines @racket[cond] Ausdrucks verwendet werden:
+
+@ex[
+(cond [(> 3 2) 5]
+      [else 7]
+      [(< 2 1) 13])]
+
+      
+Der @racket[else] Zwei ist äquivalent zu einem Zweig mit der immer erfüllten Bedingung @racket[true], daher ist im Allgemeinen Fall
+die Bedeutung von
+
+@racketblock[
+(cond [(unsyntax @e0) (unsyntax @e1)]
+      [(unsyntax @e2) (unsyntax @e3)]
+      ....
+      [else (unsyntax @eN)])]
+      
+definiert als die Bedeutung von      
+
+@racketblock[
+(cond [(unsyntax @e0) (unsyntax @e1)]
+      [(unsyntax @e2) (unsyntax @e3)]
+      ....
+      [true (unsyntax @eN)])]
+ 
+Wir geben also in diesem Fall keine Reduktionsregeln für dieses Sprachkonstrukt an, sondern stattdessen eine Transformation, die
+die Bedeutung transformiert. Wenn Sprachkonstrukte "nichts neues" hinzufügen sondern lediglich eine Abkürzung für eine bestimmte
+Benutzung bestehender Sprachkonstrukte sind, so nennt man solche Sprachkonstrukte auch @italic{syntaktischen Zucker}. 
+
+Ein anderer Spezialfall konditionaler Ausdrücke ist der, dass es nur eine Bedingung gibt, die überprüft werden soll, und je nachdem ob diese Bedingung wahr oder falsch ist soll ein anderer Ausdruck ausgewählt werden. Für diesen Fall gibt es das @racket[if] Konstrukt.
+
+
+Beispiel:
+
+@block[
+(define (aggregatzustand temperatur) 
+  (if (< temperatur 0) "gefroren" "flüssig"))]
+@ex[(aggregatzustand -5)]
+
+Im Allgemeinen hat ein @racket[if] Ausdruck folgende Form:
+
+@racketblock[(if CondExpression ThenExpression ElseExpression)]
+
+Ein @racket[if] Ausdruck ist syntaktischer Zucker; die Bedeutung wird durch die Transformation in diesen Ausdruck festgelegt:
+
+@racketblock[
+(cond [CondExpression ThenExpression]
+      [else ElseExpression])]
+
+Im Allgemeinen eignet sich @racket[if] für Situationen, in denen wir so etwas wie "entweder das eine oder das andere" sagen wollen. Die @racket[cond] Ausdrücke eignen sich dann, wenn man mehr als zwei Situationen unterscheiden möchten.
+
+Obwohl es zunächst so aussieht, als sei @racket[if] ein Spezialfall von @racket[cond], kann man allerdings auch jeden @racket[cond] 
+Ausdruck durch einen geschachtelten @racket[if] Ausdruck ersetzen. Beispielsweise kann die Funktion von oben auch so geschrieben werden:
+
+@racketblock[
+(define (note punkte) 
+  (if (>= punkte 90) 
+      1
+     (if (>= punkte 80) 
+         2
+         (if (>= punkte 70) 
+             3
+             (if (>= punkte 60) 
+                 4
+                 (if (>= punkte 50) 
+                     5
+                     6))))))]
+                     
+In solchen Fällen ist offensichtlich das @racket[cond] Konstrukt besser geeignet, weil man keine tief geschachtelten Ausdrücke benötigt. Dennoch kann man festhalten, dass @racket[cond] und @racket[if] gleichmächtig sind, weil das eine in das andere
+so transformiert werden kann, dass die Bedeutung gleich bleibt.
+
+      
+     
+
+@subsection{Auswertung konditionaler Ausdrücke}
+In @secref{kondsem} haben wir definiert, dass in einem konditionalen Ausdruck
+
+@racketblock[
+(cond [(unsyntax @e0) (unsyntax @e1)]
+      [(unsyntax @e2) (unsyntax @e3)]
+      ....
+      [(unsyntax @eN-1) (unsyntax @eN)])]
+
+nur der Ausdruck @e0 in einer Auswertungsposition ist, aber nicht @e1,...,@eN . Wieso diese Einschränkung --- wieso nicht auch
+die Auswertung von @e1,...,@eN erlauben? Betrachten Sie folgendes Beispiel:
+
+@racketblock[
+(cond [(= 5 7) (/ 1 0)]
+      [(= 3 3) 42]
+      [(/ 1 0) 17])]
+
+Gemäß unserer Auswertungsregeln gilt:      
+
+@racketblock[
+(cond [(= 5 7) (/ 1 0)]
+      [(= 3 3) 42]
+      [(/ 1 0) 17])]
+
+@(hspace 5) @step
+
+@racketblock[
+(cond [false (/ 1 0)]
+      [(= 3 3) 42]
+      [(/ 1 0) 17])]
+
+   @(hspace 5) @step
+
+@racketblock[
+(cond [(= 3 3) 42]
+      [(/ 1 0) 17])]
+
+   @(hspace 5) @step
+      
+@racketblock[
+(cond [true 42]
+      [(/ 1 0) 17])]
+
+   @(hspace 5) @step
+      
+ @(hspace 2) @racketblock[42]
+
+Wenn es erlaubt wäre, auch auf den anderen Positionen auszuwerten, müssten wir gemäß unserer Regeln die Berechnung in dem Beispiel mit einem Fehler abbrechen, sobald wir einen der @racket[(/ 1 0)] Ausdrücke auswerten. Gemäß der Terminologie aus 
+@secref{semanticsofexpressions} geht uns die Konfluenz-Eigenschaft verloren und der Wert eins Ausdrucks ist nicht mehr eindeutig.
+
+Das Beispiel oben ist sehr künstlich, aber wir werden später sehen, dass konditionale Ausdrücke häufig verwendet werden, um die Terminierung einer Funktion sicherzustellen, und dafür ist es essentiell, dass nicht auf allen Positionen ausgewertet werden darf.
+Operatoren wie @racket[cond], bei denen die Auswertung beliebiger Argumente nicht erlaubt ist, nennt man auch @italic{nicht-strikt}.
+Normale Funktionen, bei deren Aufruf alle Argumente ausgewertet werden bevor die Funktion angewendet wird, nennt man hingegen @italic{strikt}. 
+
+
+
+     
 @section{Definition von Konstanten}
 
 Wenn wir uns @racket[(animate create-rocket-scene-v2)] anschauen, stellen wir fest, dass die Animation noch immer nicht befriedigend
@@ -406,6 +571,10 @@ sieht nun so aus:
     [(> height ROCKET-CENTER-TO-BOTTOM)
      (place-image ROCKET 50 ROCKET-CENTER-TO-BOTTOM MTSCN)]))]
 
+@subsection{Bedeutung von Konstantendefinitionen}
+
+Wie am besten Rewriting ganzer Programme einführen?
+     
 @section{Abhängigkeiten zwischen Definitionen}
 
 Wir haben oben gesagt, dass es keie Rolle spielt, ob die Konstanten oberhalb oder unterhalb der Funktionsdefinition definiert werden.
@@ -430,6 +599,8 @@ Tritt dieses Problem auch bei Funktionen auf? Hier ein Versuch:
 
 Der Grund, wieso die Reihenfolge von Funktionsdefinitionen nicht wichtig ist, ist der, dass DrRacket bei Auswertung einer Funktionsdefinition lediglich
 registriert, dass es eine neue Funktion des angegebenen Namens gibt, jedoch im Unterschied zu Konstantendefinitionen die @racket[BodyExpression] der Funktion nicht auswertet.
+
+
 
 @section{Kommentare}
 

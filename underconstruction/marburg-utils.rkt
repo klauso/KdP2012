@@ -9,7 +9,7 @@
 (require 2htdp/image)
 (require scribble/manual)
 
-(provide block ev ex stdeval step multistep equiv prime e e1 e2 e3 e4 eN-1 eN v v1 v2 v3 vN-1 vN x x1 x2 x3 xI xN-1 xN xN eI vI eI-1 eI+1)
+(provide block ev ex stdeval step multistep equiv prime e e0 e1 e2 e3 e4 eN-1 eN v v1 v2 v3 vN-1 vN x x1 x2 x3 xI xN-1 xN xN eI vI eI-1 eI+1)
 
 
 (define step (elem "→")) ; (bitmap "arrow.png"))
@@ -17,6 +17,7 @@
 (define equiv (elem "≡"))
 
 (define e (italic "e"))
+(define e0 (elem e (subscript "0")))
 (define e1 (elem e (subscript "1")))
 (define e2 (elem e (subscript "2")))
 (define eI-1 (elem e (subscript "i-1")))

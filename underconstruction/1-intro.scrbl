@@ -35,8 +35,7 @@ Im Definitionsbereich
  auf, mit dem Sie die Definitionen in einer Datei abspeichern können. Im Interaktionsbereich wird das Ergebnis einer Programmausführung angezeigt;
  außerdem können hier Ausdrücke eingegeben werden, die sofort ausgewertet werden aber nicht in der Datei mit abgespeichert werden.
 
- Die Art von Programmen bzw. Fragen wie @racket[(+ 1 1)] nennen wir @italic{Ausdrücke}. In Zukunft werden wir solche Frage/Antwort Interaktionen
-wie folgt darstellen:
+ Die Art von Programmen bzw. Fragen wie @racket[(+ 1 1)] nennen wir @italic{Ausdrücke}. In Zukunft werden wir solche Frage/Antwort Interaktionen so darstellen, dass wir vor die Frage das > Zeichen setzen und in der nächsten Zeile die Antwort auf die Frage:
  
 @ex[(+ 1 1)] 
 
@@ -212,6 +211,8 @@ um Bilder in verschiedener Weise zu kombinieren:
              (rectangle 20 20 "solid" "blue"))]
 
 
+Benutzen Sie die Dokumentation von BSL (z.B. über die Links in der Browser-Version dieses Dokuments) wenn
+Sie wissen wollen welche weiteren Funktionen auf Bildern es gibt und welche Parameter diese erwarten.             
 Zwei wichtige Funktionen die Sie noch kennen sollten sind @racket[empty-scence] und @racket[place-image]. Die erste
 erzeugt eine Szene, ein spezielles Rechteck in dem Bilder plaziert werden können.
 Die zweite Funktionen setzt ein Bild in eine Szene:
@@ -327,12 +328,11 @@ Taste und beobachten was passiert.}
        @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und
                    die Anwendung von @racket[f] auf   @racket[v1], @racket[v2],... den Wert @racket[v] ergibt, dann 
                    @racket[(f (unsyntax @v1) ... (unsyntax @vN))]  @step @racket[v].}
-       @item{Falls ein Audruck @e1 einen Unterausdruck @e2 enthält, der reduziert werden kann, also @e2 @step @(prime @e2), dann
+       @item{Falls ein Audruck @e1 einen Unterausdruck @e2 in einer @italic{Auswertungsposition} enthält, der reduziert werden kann, also @e2 @step @(prime @e2), dann
        gilt @e1 step @(prime @e1), wobei @(prime @e1) aus @e1 entsteht indem @e2 durch @(prime @e2) ersetzt wird.}]
        
 Die letzte Regel nennen wir die @italic{Kongruenzregel}. In dem Teil der Sprache, den Sie bereits kennengelernt haben, 
-können nur Funktionsaufrufe Unterausdrücke haben, daher gilt
-in diesem Fall folgender Spezialfall der Kongruenzregel: Fall @eI @step @(prime @eI), 
+sind @italic{alle} Positionen von Unterausdrücken Auswertungspositionen. Da bisher nur Funktionsaufrufe Unterausdrücke haben, daher gilt in diesem Fall folgender Spezialfall der Kongruenzregel: Fall @eI @step @(prime @eI), 
 dann @racket[(f (unsyntax @e1) ... (unsyntax @eN))] @step @racket[(f (unsyntax @e1) ... (unsyntax @eI-1) (unsyntax @(prime @eI)) (unsyntax @eI+1) ...)]. 
               
 Wir benutzen folgende Konventionen:
@@ -369,14 +369,14 @@ Beispiele:
 Im Allgemeinen kann ein Ausdruck mehrere reduzierbare Unterausdrücke haben, also die Kongruenzregeln an mehreren Stellen gleichzeitig einsetzbar sein.
 In den Beispielen oben haben wir zum Beispiel @racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ (* 2 3) 20)] aber auch 
 @racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ 6 (* 4 5))]. Es ist jedoch nicht schwer zu sehen, dass immer wenn
-wir die Situation @e1 @step e2 und @e1 step @e3 haben, dann gibt es ein @e4 so dass gilt @e2 @multistep @e4 und @e3 @multistep @e4 . 
+wir die Situation @e1 @step e2 und @e1 @step @e3 haben, dann gibt es ein @e4 so dass gilt @e2 @multistep @e4 und @e3 @multistep @e4 . 
 Diese Eigenschaft nennt man @italic{Konfluenz}. Reduktionen die auseinanderlaufen können also immer wieder zusammengeführt werden;
 der Wert den man am Ende erhält ist auf jeden Fall eindeutig.
 
 
-Auf Basis dieser Reduktionsregeln können wir nun eine definieren, wann zwei Programme die gleiche Bedeutung haben.
-Zwei Ausdrücke @e1 und @e2 haben die gleiche Bedeutung, geschrieben @e1 @equiv @e2 , falls es einen Wert @v gibt
-so dass @e1 @multistep @v und @e2 @multistep @v . 
+Auf Basis dieser Reduktionsregeln können wir nun  definieren, unter welchen Umständen zwei Programme die gleiche Bedeutung haben:
+Zwei Ausdrücke @e1 und @e2 haben die gleiche Bedeutung, geschrieben @e1 @equiv @e2 , falls es einen Ausdruck @e gibt
+so dass @e1 @multistep @e und @e2 @multistep @e . 
 
 Beispiele:
 
