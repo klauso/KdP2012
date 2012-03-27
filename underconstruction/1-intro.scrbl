@@ -28,12 +28,14 @@ auf die uns DrRacket dann im Ausgabefenster die Antwort gibt. So können wir zum
 
 @racketblock[(+ 1 1)]
 
-im @italic{Definitionsbereich} (dem oberen Teil der DrRacket Oberfläche) stellen --- als Antwort erhalten im @italic{Interaktionsbereich} (dem Bereich unterhalb
+im @italic{Definitionsbereich} (dem oberen Teil der DrRacket Oberfläche) stellen --- als Antwort erhalten wir im @italic{Interaktionsbereich} (dem Bereich unterhalb
 des Definitionsbereichs) bei Auswertung dieses Programms ("Start" Knopf) @ev[(+ 1 1)].
 Im Definitionsbereich 
  schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
  auf, mit dem Sie die Definitionen in einer Datei abspeichern können. Im Interaktionsbereich wird das Ergebnis einer Programmausführung angezeigt;
  außerdem können hier Ausdrücke eingegeben werden, die sofort ausgewertet werden aber nicht in der Datei mit abgespeichert werden.
+
+@todo{Screenshot zur Beschreibung der DrRacket Oberfläche?}
 
  Die Art von Programmen bzw. Fragen wie @racket[(+ 1 1)] nennen wir @italic{Ausdrücke}. In Zukunft werden wir solche Frage/Antwort Interaktionen
 wie folgt darstellen:
