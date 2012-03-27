@@ -43,7 +43,7 @@ wie folgt darstellen:
 @ex[(+ 1 1)] 
 
 Operationen wie @racket[+] nennen wir im Folgenden @italic{Funktionen}. Die Operanden wie @racket[1] nennen wir @italic{Argumente}.
-Hier einige weitere Beispiele für Ausdrücke mit weiteren Funktionen deren Argumente Zahlen sind. 
+Hier einige weitere Beispiele für Ausdrücke mit anderen Funktionen:
 
 @ex[(+ 2 2)
 (* 3 3)
@@ -51,12 +51,21 @@ Hier einige weitere Beispiele für Ausdrücke mit weiteren Funktionen deren Argu
 (/ 6 2)
 (sqr 3)
 (expt 2 3)
-(sin 0)
-(cos pi)]  
-         
-Das @racket[i] im letzten Ergebnis steht für "inexact", also ungenau - im Unterschied zur
-Mathematik sind manche Berechnungen auf einem Computer notwendigerweise nur Annäherungen
-an das mathematisch korrekte Ergebnis. In BSL kann man an dem @racket[i] sehen, ob eine
+(sin 0)]
+
+Die Argumente dieser Funktionen sind jeweils Zahlen, und das Ergebnis ist auch wieder eine Zahl. Wir können auch direkt eine Zahl als Ausdruck verwenden. Zum Beispiel:
+
+@ex[5]
+
+DrRacket zeigt als Ergebnis wieder genau dieselbe Zahl an. Eine Zahl, die direkt in einem Ausdruck verwendet wird, heißt auch Zahlen@italic{literal}.
+
+Für manche Ausdrücke kann der Computer das mathematisch korrekte Ergebnis nicht berechnen.
+Stattdessen erhalten wir eine Annäherung an das mathematisch korrekte Ergebnis. Zum Beispiel:
+
+@ex[(sqrt 2)]
+@ex[(cos pi)]
+
+Das @racket[i] im letzten Ergebnis steht für "inexact", also ungenau. In BSL kann man an diesem @racket[i] sehen, ob eine
 Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
 
 
