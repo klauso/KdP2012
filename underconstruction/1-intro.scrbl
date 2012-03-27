@@ -111,6 +111,8 @@ Ein Programm auszuführen bedeutet, den Wert der darin enthaltenen Ausdrücke zu
 Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Ergebnisse
 der Ausführung werden im Interaktionsbereich angezeigt.
 
+@todo{Hier sollte ein Link auf die HTML-Version des Skriptes sein.}
+
 Noch ein praktischer Hinweis: Wenn Sie dieses Dokument mit einem Webbrowser lesen, sollten alle Funktionen, die 
 in den Beispielausdrücken vorkommen, einen Hyperlink zu ihrer Dokumentation enthalten. Beispielsweise
 sollte der Additionsoperator im Ausdruck @racket[(+ 5 7)] einen solchen Hyperlink enthalten. Unter diesen
