@@ -71,9 +71,9 @@ Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
 
  Programme beinhalten Ausdrücke. Alle Programme, die wir bisher gesehen haben, @italic{sind} Ausdrücke.
  Jeder von Ihnen kennt Ausdrücke aus der Mathematik. Zu diesem Zeitpunkt ist ein Ausdruck in unserer 
- Programmiersprache ist entweder eine Zahl, oder etwas das mit einer linken Klammer "(" startet und mit
- einer rechten Klammer ")" endet. I
- Wir bezeichnen Zahlen als @italic{primitive Ausdrücke} und Ausdrücke die mit einer Klammer starten als @italic{nicht-primitive Ausdrücke}. 
+ Programmiersprache entweder eine Zahl, oder etwas, das mit einer linken Klammer "(" startet und mit
+ einer rechten Klammer ")" endet.
+ Wir bezeichnen Zahlen als @italic{atomare Ausdrücke} und Ausdrücke, die mit einer Klammer starten, als @italic{zusammengesetzte Ausdrücke}.
  Später werden andere Arten von Ausdrücken hinzukommen.
 
  
@@ -90,24 +90,25 @@ oder durch Addition mit mehr als zwei Argumenten:
 
 Immer wenn Sie in BSL eine Funktion wie @racket[+] oder @racket[sqrt] benutzen möchten,
 schreiben Sie eine öffnende Klammer, gefolgt vom Namen der Funktion, dann einem Lehrzeichen 
-(oder Zeilenumbruch) und dann die Argumente der Funktion, also in unserem Fall die Zahlen auf die die
+(oder Zeilenumbruch) und dann die Argumente der Funktion, also in unserem Fall die Zahlen, auf die die
 Funktion angewandt werden soll. 
 
-Am Beispiel der Schachtelung haben Sie gesehen, dass auch Ausdrücke als Argumente zugelassen sind.
+Am Beispiel der Schachtelung haben Sie gesehen, dass auch zusammengesetzte Ausdrücke als Argumente zugelassen sind.
 Diese Schachtelung kann beliebig tief sein:
 
 @ex[(+ (* 5 5) (+ (* 3 (/ 12 4)) 4))]
 
-
-Solche geschachtelten Ausdrücke werden so ausgewertet, wie Sie es auch auf einem Blatt Papier 
-machen würden: Wenn ein Argument ein nicht-primitiver Ausdruck ist, so wird zunächst dieser Ausdruck berechnet. 
+Das Ergebnis für einen solchen geschachtelten Ausdruck wird so berechnet, wie sie es auch auf einem Blatt Papier
+machen würden: Wenn ein Argument ein zusammengesetzter Ausdruck ist, so wird zunächst das Ergebnis für diesen Ausdruck berechnet. 
 Dieser Unterausdruck ist möglicherweise selber wieder geschachtelt; in diesem Fall wird diese
 Berechnungsvorschrift auch auf diese Unterausdrücke wieder angewendet (@italic{rekursive} Anwendung).
-Falls mehrer Argumente nicht-primitive Ausdrücke sind, so wird von links nach rechts ausgewertet.
+Falls mehrere Argumente zusammengesetzte Ausdrücke sind, so wird von links nach rechts berechnet.
+
+@todo{Hier würde passen: "Wie in der Mathematik können sie gleiches mit gleichem ersetzen."}
 
 Zusammengefasst ist Programmieren zu diesem Zeitpunkt das Schreiben von arithmetischen Ausdrücken.
-Ein Programm auszuführen bedeutet den Wert der darin enthaltenen Ausdrücke zu berechnen.
-Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Resultate
+Ein Programm auszuführen bedeutet, den Wert der darin enthaltenen Ausdrücke zu berechnen.
+Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Ergebnisse
 der Ausführung werden im Interaktionsbereich angezeigt.
 
 Noch ein praktischer Hinweis: Wenn Sie dieses Dokument mit einem Webbrowser lesen, sollten alle Funktionen, die 
