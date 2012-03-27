@@ -9,7 +9,8 @@
 (require 2htdp/image)
 (require scribble/manual)
 
-(provide block ev ex stdeval step multistep equiv prime e e0 e1 e2 e3 e4 eN-1 eN v v1 v2 v3 vN-1 vN x x1 x2 x3 xI xN-1 xN xN eI vI eI-1 eI+1)
+
+(provide block ev ex stdeval todo step multistep equiv prime e e0 e1 e2 e3 e4 eN-1 eN v v1 v2 v3 vN-1 vN x x1 x2 x3 xI xN-1 xN xN eI vI eI-1 eI+1)
 
 
 (define step (elem "→")) ; (bitmap "arrow.png"))
@@ -45,6 +46,9 @@
 
 
 (define (prime x) (elem x "'"))
+
+(define (todo text)
+  '())
 
 (define stdeval (isl-eval '()))
 
