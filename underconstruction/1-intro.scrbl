@@ -143,24 +143,33 @@ der Buchstaben umzukehren, um in Groß- oder Kleinbuchstaben zu konvertieren usw
 Funktionen die @italic{Arithmetik der Strings}.
 
 
-Die Namen dieser ganzen Funktionen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
+Die Namen aller dieser Funktionen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
 Funktionen für Zahlen, Strings und andere Datentypen in der DrRacket Hilfe nachgeschlagen werden
 unter: Hilfe -> How to Design Programs Languages -> Beginning Student -> Pre-defined Functions
 
-Einige Funktionen haben die Eigenschaft, dass sie Werte eines Datentyps als Funktion erwarten, aber
-Werte eines anderen Datentyps als Ergebnis liefern, zum Beispiel die Funktion @racket[string-length]:
+Bisher haben wir nur Funktionen kennengelernt, bei denen alle Argumente und auch das Ergebnis zum
+selben Datentyp gehören müssen. Zum Beispiel arbeitet die Funktion @racket[+] nur mit Zahlen, und die
+Funktion @racket[string-append] arbeitet nur mit Strings. Es gibt aber auch Funktionen, die Werte
+eines Datentyps as Argument erwarten, aber Werte eines anderen Datentypes als Ergebnis liefern,
+zum Beispiel die Funktion @racket[string-length]:
 
 @ex[(+ (string-length "Programmiersprachen") 5)]
 
-Bei Funktionen, die mehrere Argumente erwarten, gibt es solche, die Argumente unterschiedlicher Datentypen
+Das Ergebnis von @racket[(string-length "Programmiersprachen")] ist die Zahl
+@ev[(string-length "Programmiersprachen")], die ganz normal als Argument für die Funktion @racket[+]
+verwendet werden kann. Sie können also Funktionen, die zu unterschiedlichen Datentypen gehören, in
+einem Ausdruck zusammen verwenden. Dabei müssen Sie allerdings darauf achten, daß jede Funktion Argumente
+des richtigen Datentyps bekommt. Es gibt sogar Funktionen, die Argumente unterschiedlicher Datentypen
 erwarten, zum Beispiel
 
 @ex[(replicate 3 "hi")]
 
-Es gibt auch Funktionen, die Datentypen ineinander umwandeln, zum Beispiel
+Schließlich gibt es auch Funktionen, die Datentypen ineinander umwandeln, zum Beispiel
 
 @ex[(number->string 42)
     (string->number "42")]
+
+Als Programmierer können Sie also viele verschiedene Datentypen benutzen, um Ihr Ziel zu erreichen.
 
 Ein weiterer wichtiger Datentyp sind Wahrheitswerte (Boolsche Werte). Die einzigen
 Konstruktoren hierfür sind die Literale @racket[true] und @racket[false]. Funktionen auf boolschen
@@ -173,7 +182,7 @@ Werten sind zum Beispiel die aussagenlogischen Funktionen:
 (or false false)
 (not false)] 
 
-Boolsche Werte werden auch häufig von Vergleichsfumktionen zurückgegeben:
+Boolsche Werte werden auch häufig von Vergleichsfunktionen zurückgegeben:
 
 @ex[(> 10 9) 
 (< -1 0) 
