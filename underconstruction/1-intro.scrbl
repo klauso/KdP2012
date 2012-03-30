@@ -28,7 +28,7 @@ auf die uns DrRacket dann im Ausgabefenster die Antwort gibt. So können wir zum
 
 @racketblock[(+ 1 1)]
 
-im @italic{Definitionsbereich} (dem oberen Teil der DrRacket Oberfläche) stellen --- als Antwort erhalten im @italic{Interaktionsbereich} (dem Bereich unterhalb
+im @italic{Definitionsbereich} (dem oberen Teil der DrRacket Oberfläche) stellen --- als Antwort erhalten wir im @italic{Interaktionsbereich} (dem Bereich unterhalb
 des Definitionsbereichs) bei Auswertung dieses Programms ("Start" Knopf) @ev[(+ 1 1)].
 Im Definitionsbereich 
  schreiben und editieren Sie ihre Programme. Sobald Sie hier etwas ändern, taucht der "Speichern" Knopf
@@ -36,11 +36,12 @@ Im Definitionsbereich
  außerdem können hier Ausdrücke eingegeben werden, die sofort ausgewertet werden aber nicht in der Datei mit abgespeichert werden.
 
  Die Art von Programmen bzw. Fragen wie @racket[(+ 1 1)] nennen wir @italic{Ausdrücke}. In Zukunft werden wir solche Frage/Antwort Interaktionen so darstellen, dass wir vor die Frage das > Zeichen setzen und in der nächsten Zeile die Antwort auf die Frage:
- 
+@todo{Screenshot zur Beschreibung der DrRacket Oberfläche?}
+
 @ex[(+ 1 1)] 
 
 Operationen wie @racket[+] nennen wir im Folgenden @italic{Funktionen}. Die Operanden wie @racket[1] nennen wir @italic{Argumente}.
-Hier einige weitere Beispiele für Ausdrücke mit weiteren Funktionen deren Argumente Zahlen sind. 
+Hier einige weitere Beispiele für Ausdrücke mit anderen Funktionen:
 
 @ex[(+ 2 2)
 (* 3 3)
@@ -48,20 +49,29 @@ Hier einige weitere Beispiele für Ausdrücke mit weiteren Funktionen deren Argu
 (/ 6 2)
 (sqr 3)
 (expt 2 3)
-(sin 0)
-(cos pi)]  
-         
-Das @racket[i] im letzten Ergebnis steht für "inexact", also ungenau - im Unterschied zur
-Mathematik sind manche Berechnungen auf einem Computer notwendigerweise nur Annäherungen
-an das mathematisch korrekte Ergebnis. In BSL kann man an dem @racket[i] sehen, ob eine
+(sin 0)]
+
+Die Argumente dieser Funktionen sind jeweils Zahlen, und das Ergebnis ist auch wieder eine Zahl. Wir können auch direkt eine Zahl als Ausdruck verwenden. Zum Beispiel:
+
+@ex[5]
+
+DrRacket zeigt als Ergebnis wieder genau dieselbe Zahl an. Eine Zahl, die direkt in einem Ausdruck verwendet wird, heißt auch Zahlen@italic{literal}.
+
+Für manche Ausdrücke kann der Computer das mathematisch korrekte Ergebnis nicht berechnen.
+Stattdessen erhalten wir eine Annäherung an das mathematisch korrekte Ergebnis. Zum Beispiel:
+
+@ex[(sqrt 2)]
+@ex[(cos pi)]
+
+Das @racket[i] im letzten Ergebnis steht für "inexact", also ungenau. In BSL kann man an diesem @racket[i] sehen, ob eine
 Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
 
 
  Programme beinhalten Ausdrücke. Alle Programme, die wir bisher gesehen haben, @italic{sind} Ausdrücke.
  Jeder von Ihnen kennt Ausdrücke aus der Mathematik. Zu diesem Zeitpunkt ist ein Ausdruck in unserer 
- Programmiersprache ist entweder eine Zahl, oder etwas das mit einer linken Klammer "(" startet und mit
- einer rechten Klammer ")" endet. I
- Wir bezeichnen Zahlen als @italic{primitive Ausdrücke} und Ausdrücke die mit einer Klammer starten als @italic{nicht-primitive Ausdrücke}. 
+ Programmiersprache entweder eine Zahl, oder etwas, das mit einer linken Klammer "(" startet und mit
+ einer rechten Klammer ")" endet.
+ Wir bezeichnen Zahlen als @italic{atomare Ausdrücke} und Ausdrücke, die mit einer Klammer starten, als @italic{zusammengesetzte Ausdrücke}.
  Später werden andere Arten von Ausdrücken hinzukommen.
 
  
@@ -78,25 +88,28 @@ oder durch Addition mit mehr als zwei Argumenten:
 
 Immer wenn Sie in BSL eine Funktion wie @racket[+] oder @racket[sqrt] benutzen möchten,
 schreiben Sie eine öffnende Klammer, gefolgt vom Namen der Funktion, dann einem Lehrzeichen 
-(oder Zeilenumbruch) und dann die Argumente der Funktion, also in unserem Fall die Zahlen auf die die
+(oder Zeilenumbruch) und dann die Argumente der Funktion, also in unserem Fall die Zahlen, auf die die
 Funktion angewandt werden soll. 
 
-Am Beispiel der Schachtelung haben Sie gesehen, dass auch Ausdrücke als Argumente zugelassen sind.
+Am Beispiel der Schachtelung haben Sie gesehen, dass auch zusammengesetzte Ausdrücke als Argumente zugelassen sind.
 Diese Schachtelung kann beliebig tief sein:
 
 @ex[(+ (* 5 5) (+ (* 3 (/ 12 4)) 4))]
 
-
-Solche geschachtelten Ausdrücke werden so ausgewertet, wie Sie es auch auf einem Blatt Papier 
-machen würden: Wenn ein Argument ein nicht-primitiver Ausdruck ist, so wird zunächst dieser Ausdruck berechnet. 
+Das Ergebnis für einen solchen geschachtelten Ausdruck wird so berechnet, wie sie es auch auf einem Blatt Papier
+machen würden: Wenn ein Argument ein zusammengesetzter Ausdruck ist, so wird zunächst das Ergebnis für diesen Ausdruck berechnet. 
 Dieser Unterausdruck ist möglicherweise selber wieder geschachtelt; in diesem Fall wird diese
 Berechnungsvorschrift auch auf diese Unterausdrücke wieder angewendet (@italic{rekursive} Anwendung).
-Falls mehrer Argumente nicht-primitive Ausdrücke sind, so wird von links nach rechts ausgewertet.
+Falls mehrere Argumente zusammengesetzte Ausdrücke sind, so wird von links nach rechts berechnet.
+
+@todo{Hier würde passen: "Wie in der Mathematik können sie gleiches mit gleichem ersetzen."}
 
 Zusammengefasst ist Programmieren zu diesem Zeitpunkt das Schreiben von arithmetischen Ausdrücken.
-Ein Programm auszuführen bedeutet den Wert der darin enthaltenen Ausdrücke zu berechnen.
-Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Resultate
+Ein Programm auszuführen bedeutet, den Wert der darin enthaltenen Ausdrücke zu berechnen.
+Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Ergebnisse
 der Ausführung werden im Interaktionsbereich angezeigt.
+
+@todo{Hier sollte ein Link auf die HTML-Version des Skriptes sein.}
 
 Noch ein praktischer Hinweis: Wenn Sie dieses Dokument mit einem Webbrowser lesen, sollten alle Funktionen, die 
 in den Beispielausdrücken vorkommen, einen Hyperlink zu ihrer Dokumentation enthalten. Beispielsweise
@@ -128,24 +141,33 @@ der Buchstaben umzukehren, um in Groß- oder Kleinbuchstaben zu konvertieren usw
 Funktionen die @italic{Arithmetik der Strings}.
 
 
-Die Namen dieser ganzen Funktionen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
+Die Namen aller dieser Funktionen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
 Funktionen für Zahlen, Strings und andere Datentypen in der DrRacket Hilfe nachgeschlagen werden
 unter: Hilfe -> How to Design Programs Languages -> Beginning Student -> Pre-defined Functions
 
-Einige Funktionen haben die Eigenschaft, dass sie Werte eines Datentyps als Funktion erwarten, aber
-Werte eines anderen Datentyps als Ergebnis liefern, zum Beispiel die Funktion @racket[string-length]:
+Bisher haben wir nur Funktionen kennengelernt, bei denen alle Argumente und auch das Ergebnis zum
+selben Datentyp gehören müssen. Zum Beispiel arbeitet die Funktion @racket[+] nur mit Zahlen, und die
+Funktion @racket[string-append] arbeitet nur mit Strings. Es gibt aber auch Funktionen, die Werte
+eines Datentyps as Argument erwarten, aber Werte eines anderen Datentypes als Ergebnis liefern,
+zum Beispiel die Funktion @racket[string-length]:
 
 @ex[(+ (string-length "Programmiersprachen") 5)]
 
-Bei Funktionen, die mehrere Argumente erwarten, gibt es solche, die Argumente unterschiedlicher Datentypen
+Das Ergebnis von @racket[(string-length "Programmiersprachen")] ist die Zahl
+@ev[(string-length "Programmiersprachen")], die ganz normal als Argument für die Funktion @racket[+]
+verwendet werden kann. Sie können also Funktionen, die zu unterschiedlichen Datentypen gehören, in
+einem Ausdruck zusammen verwenden. Dabei müssen Sie allerdings darauf achten, daß jede Funktion Argumente
+des richtigen Datentyps bekommt. Es gibt sogar Funktionen, die Argumente unterschiedlicher Datentypen
 erwarten, zum Beispiel
 
 @ex[(replicate 3 "hi")]
 
-Es gibt auch Funktionen, die Datentypen ineinander umwandeln, zum Beispiel
+Schließlich gibt es auch Funktionen, die Datentypen ineinander umwandeln, zum Beispiel
 
 @ex[(number->string 42)
     (string->number "42")]
+
+Als Programmierer können Sie also viele verschiedene Datentypen benutzen, um Ihr Ziel zu erreichen.
 
 Ein weiterer wichtiger Datentyp sind Wahrheitswerte (Boolsche Werte). Die einzigen
 Konstruktoren hierfür sind die Literale @racket[true] und @racket[false]. Funktionen auf boolschen
@@ -158,7 +180,7 @@ Werten sind zum Beispiel die aussagenlogischen Funktionen:
 (or false false)
 (not false)] 
 
-Boolsche Werte werden auch häufig von Vergleichsfumktionen zurückgegeben:
+Boolsche Werte werden auch häufig von Vergleichsfunktionen zurückgegeben:
 
 @ex[(> 10 9) 
 (< -1 0) 
