@@ -3,11 +3,11 @@
 html:	
 	echo	"asdf"
 	racket	-l	racket/gui	-l-	scribble/run	++xref-in	setup/xref	load-collections-xref	--htmls	--redirect-main	http://docs.racket-lang.org/	script.scrbl
-	chmod a+r ./script/*
+	chmod a+rw ./script/*
 	
 pdf: 
 	racket	-l	racket/gui -l-	scribble/run	++xref-in	setup/xref	load-collections-xref	--pdf	script.scrbl	
-	chmod a+r script.pdf   
+	chmod a+rw script.pdf   
 	mv ./script.pdf ./script    
 	
 sync: 

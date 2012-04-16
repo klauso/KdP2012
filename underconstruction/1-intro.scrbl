@@ -100,16 +100,13 @@ Das Ergebnis für einen solchen geschachtelten Ausdruck wird so berechnet, wie s
 machen würden: Wenn ein Argument ein zusammengesetzter Ausdruck ist, so wird zunächst das Ergebnis für diesen Ausdruck berechnet. 
 Dieser Unterausdruck ist möglicherweise selber wieder geschachtelt; in diesem Fall wird diese
 Berechnungsvorschrift auch auf diese Unterausdrücke wieder angewendet (@italic{rekursive} Anwendung).
-Falls mehrere Argumente zusammengesetzte Ausdrücke sind, so wird von links nach rechts berechnet.
-
-@todo{Hier würde passen: "Wie in der Mathematik können sie gleiches mit gleichem ersetzen."}
+Falls mehrere Argumente zusammengesetzte Ausdrücke sind, so werden diese in einer nicht festgelegten Reihenfolge ausgewertet.
+Die Reihenfolge ist nicht festgelegt, weil das Ergebnis nicht von der Reihenfolge abhängt --- mehr dazu später.
 
 Zusammengefasst ist Programmieren zu diesem Zeitpunkt das Schreiben von arithmetischen Ausdrücken.
 Ein Programm auszuführen bedeutet, den Wert der darin enthaltenen Ausdrücke zu berechnen.
 Ein Drücken auf "Start" bewirkt die Ausführung des Programms im Definitionsbereich; die Ergebnisse
 der Ausführung werden im Interaktionsbereich angezeigt.
-
-@todo{Hier sollte ein Link auf die HTML-Version des Skriptes sein.}
 
 Noch ein praktischer Hinweis: Wenn Sie dieses Dokument mit einem Webbrowser lesen, sollten alle Funktionen, die 
 in den Beispielausdrücken vorkommen, einen Hyperlink zu ihrer Dokumentation enthalten. Beispielsweise
@@ -211,6 +208,10 @@ einer Zahl die Zahl selber ergibt, ergibt die Auswertung des Bilds das Bild selb
 @ev[rocket]
 
 Wie auf anderen Datentypen sind auch auf Bildern eine Reihe von Funktionen verfügbar.
+Diese Funktionen müssen allerdings erst durch das Aktivieren eines "Teachpacks" zu BSL 
+hinzugefügt werden. Aktivieren Sie in DrRacket das HtDP/2e Teachpack "image.ss", um selber
+mit den folgenden Beispielen zu experimentieren.
+
 Beispielsweise kann die Fläche des Bildes durch diesen Ausdruck berechnet werden:
 
 @racket[>] @racket[(* (image-width (unsyntax @ev[rocket]))  (image-height (unsyntax @ev[rocket])))]
@@ -235,7 +236,7 @@ um Bilder in verschiedener Weise zu kombinieren:
 
 Benutzen Sie die Dokumentation von BSL (z.B. über die Links in der Browser-Version dieses Dokuments) wenn
 Sie wissen wollen welche weiteren Funktionen auf Bildern es gibt und welche Parameter diese erwarten.             
-Zwei wichtige Funktionen die Sie noch kennen sollten sind @racket[empty-scence] und @racket[place-image]. Die erste
+Zwei wichtige Funktionen die Sie noch kennen sollten sind @racket[empty-scene] und @racket[place-image]. Die erste
 erzeugt eine Szene, ein spezielles Rechteck in dem Bilder plaziert werden können.
 Die zweite Funktionen setzt ein Bild in eine Szene:
 
@@ -265,12 +266,12 @@ Die zweite Funktionen setzt ein Bild in eine Szene:
  @item{Ein BSL Programm ist eine Sequenz von Ausdrücken.}
  @item{Ein Ausdruck ist eine Zahl, ein Bild, ein Boolscher Wert, ein String, oder ein Funktionsaufruf.}
  @item{Ein Funktionsaufruf hat die Form @racket[(f a1 a2 ...)] wobei @racket[f] der name einer Funktion ist und 
-                                        @racket[a1],@racket[a2],... Ausdrücke sind.}
+        die Argumente @racket[a1],@racket[a2],... Ausdrücke sind.}
  ]
 
 Die folgenden Programme sind alle syntaktisch korrekt, allerdings lassen sich nicht alle diese Programme auswerten: 
 
-@ex[ (+ 2 (* 3 4))
+@ex[ 
  (number->string "asdf")
  (string-length "asdf" "fdsa")
  (/ 1 0)
@@ -340,7 +341,7 @@ Wenn in BSL ein Laufzeitfehler auftritt, wird die Programmausführung abgebroche
  
 ]
 
-Diese Vorschriften können wir als Anleitung zur schrittweisen @italic{Reduktionen} von Programmen auffassen. Wir schreiben @e @step @(prime e) um zu
+Diese Vorschriften können wir als Anleitung zur schrittweisen @italic{Reduktion} von Programmen auffassen. Wir schreiben @e @step @(prime e) um zu
 sagen, dass @e in einem Schritt zu @(prime e) reduziert werden kann. Werte können nicht reduziert werden. Die Reduktion ist wie folgt definiert:
 
 @margin-note{Experimentieren Sie in DrRacket mit dem "Stepper" Knopf: Geben Sie einen komplexen
@@ -348,10 +349,10 @@ Ausdruck in den Definitionsbereich ein, drücken Sie auf "Stepper" und dann auf 
 Taste und beobachten was passiert.}
    @itemize[
        @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und
-                   die Anwendung von @racket[f] auf   @racket[v1], @racket[v2],... den Wert @racket[v] ergibt, dann 
+                   die Anwendung von @racket[f] auf   @racket[v1],...,@racket[vN] den Wert @racket[v] ergibt, dann 
                    @racket[(f (unsyntax @v1) ... (unsyntax @vN))]  @step @racket[v].}
        @item{Falls ein Audruck @e1 einen Unterausdruck @e2 in einer @italic{Auswertungsposition} enthält, der reduziert werden kann, also @e2 @step @(prime @e2), dann
-       gilt @e1 step @(prime @e1), wobei @(prime @e1) aus @e1 entsteht indem @e2 durch @(prime @e2) ersetzt wird.}]
+       gilt @e1 @step @(prime @e1), wobei @(prime @e1) aus @e1 entsteht indem @e2 durch @(prime @e2) ersetzt wird.}]
        
 Die letzte Regel nennen wir die @italic{Kongruenzregel}. In dem Teil der Sprache, den Sie bereits kennengelernt haben, 
 sind @italic{alle} Positionen von Unterausdrücken Auswertungspositionen. Da bisher nur Funktionsaufrufe Unterausdrücke haben, daher gilt in diesem Fall folgender Spezialfall der Kongruenzregel: Fall @eI @step @(prime @eI), 
@@ -376,7 +377,7 @@ Beispiele:
 
 @item{@racket[(+ (* 2 3) (* 4 5))] @step @racket[(+ (* 2 3) 20)] @step @racket[(+ 6 20)] @step @racket[26].}
 
-@item{@racket[(+ (* 2 (+ 1 2) (* 4 5)))] @step @racket[(+ (* 2 3) (* 4 5))].}
+@item{@racket[(+ (* 2 (+ 1 2)) (* 4 5))] @step @racket[(+ (* 2 3) (* 4 5))].}
 
 @item{@racket[(+ (* 2 3) (* 4 5))] @multistep @racket[26] aber nicht @racket[(+ (* 2 3) (* 4 5))] @step @racket[26].}
 

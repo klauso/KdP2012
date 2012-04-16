@@ -146,26 +146,30 @@ Die @racket[animate] Funktion bewirkt folgendes: Eine Stoppuhr wird mit dem Wert
 wird der Zählerwert um eins erhöht. Jedesmal wenn der Zähler um eins erhöht wird, wird die Funktion @racket[create-rocket-scene]
 ausgewertet und das resultierende Bild in dem Fenster angezeigt.
 
-@subsection{Bedeutung von Funktionsdefinitionen}
-Um die Bedeutung von Funktionsdefinitionen zu definieren, müssen wir sagen, wie Funktionsdefinitionen und Funktionsaufrufe ausgewertet werden. 
-Zu diesem Zweck erweitern wir die Auswertungsregeln aus @secref{semanticsofexpressions} wie folgt:
+@section{Bedeutung von Funktionsdefinitionen}
+Um die Bedeutung von Funktionsdefinitionen zu definieren, müssen wir sagen, wie Funktionsdefinitionen und Funktionsaufrufe ausgewertet werden.
+Durch Funktionsdefinitionen können Ausdrücke nicht mehr isoliert (ohne Berücksichtigung des Rests des Programms) ausgewertet werden; sie werden
+im @italic{Kontext} einer Menge von Funktionsdefinitionen ausgewertet. Dieser Kontext umfasst die Menge aller Funktionsdefinitionen, die 
+im Programmtext @italic{vor} dem auszuwertenden Ausdruck stehen. Um unsere formale Notation nicht unnötig schwergewichtig zu machen, 
+werden wir diesen Kontext nicht explizit zur Reduktionsrelation hinzufügen; stattdessen gehen wir einfach davon aus, dass es einen globalen
+Kontext mit einer Menge von Funktionsdefinitionen gibt.
+
+Die Auswertungsregeln aus @secref{semanticsofexpressions} werden nun zur Berücksichtigung von Funktionsdefinitionen wie folgt erweitert:
    @itemize[
-   @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und @racket[f] eine primitive Funktion ist und
-                   die Anwendung von @racket[f] auf   @racket[v1], @racket[v2],... den Wert @racket[v] ergibt, dann 
-                   @racket[(f a1 a2 ...)] @step @racket[v].}
+   @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und @racket[f] eine primitive (eingebaute) Funktion ist und
+                   die Anwendung von @racket[f] auf   @v1,...,@vN den Wert @racket[v] ergibt, dann 
+                   @racket[(f (unsyntax @v1) ... (unsyntax @vN))]  @step @racket[v].}
    @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und @racket[f] @italic{keine} primitive Funktion ist und
-                   das Programm die Funktionsdefinition @racketblock[(define (f (unsyntax @x1) ... (unsyntax @xN)) BodyExpression)] enthält, 
+                   der Kontext die Funktionsdefinition @racketblock[(define (f (unsyntax @x1) ... (unsyntax @xN)) BodyExpression)] enthält, 
                    dann @racket[(f (unsyntax @v1) ... (unsyntax @vN))] @step @racket[NewBody], wobei @racket[NewBody] aus @racket[BodyExpression]
                    entsteht, indem man alle Vorkommen von @xI durch @vI ersetzt (für i=1...n).}] 
 Unverändert gilt die Kongruenzregel aus @secref{semanticsofexpressions}. 
 
-Wie werden Funktionsdefinitionen ausgewertet? Funktionsdefinitionen sind, wie oben bereits gesagt, keine Ausdrücke, d
-aher werden Funktionsdefinitionen nicht reduziert. 
 @italic{Beispiel}: Unser Programm enthält folgende Funktionsdefinitionen.
 
 @racketblock[
-(define (f x) (* x 2))
 (define (g y z) (+ (f y) y (f z)))
+(define (f x) (* x 2))                                  
 ]
 
 Dann @racket[(g (+ 2 3) 4)] 
@@ -176,7 +180,16 @@ Dann @racket[(g (+ 2 3) 4)]
      @step @racket[(+ 10 5 8)]
      @step @racket[23]
 
-                 
+Beachten Sie, dass während der gesamten Reduktion der Kontext sowohl @racket[f] als auch @racket[g] enthält, daher ist
+ist kein Problem, dass im Body von @racket[g] die Funktion  @racket[f] aufgerufen wird, obwohl  @racket[f] erst @italic{nach}
+@racket[g] definiert wird. Die Auswertung des Programms
+
+@racketblock[
+(define (g y z) (+ (f y) y (f z)))
+(g (+ 2 3) 4)
+(define (f x) (* x 2))                                  
+]
+schlägt hingegen fehl, weil der Kontext bei der Auswertung von @racket[(g (+ 2 3) 4)] nur @racket[g] aber nicht @racket[f] enthält.
 
 
 @section{Konditionale Ausdrücke}
@@ -209,7 +222,7 @@ Einige Beispiele für die Benutzung des Notenschemas:
 (note 73)
 (note 24)]
 
-@subsection[#:tag "kondsem"]{Bedeutung konditionaler Ausdrücke}    
+@section[#:tag "kondsem"]{Bedeutung konditionaler Ausdrücke}    
 Im allgemeinen Fall sieht ein konditionaler Ausdruck wie folgt aus:
 
 @racketblock[
@@ -460,7 +473,7 @@ Normale Funktionen, bei deren Aufruf alle Argumente ausgewertet werden bevor die
 
 
      
-@section{Definition von Konstanten}
+@section{Definition von Variablen}
 
 Wenn wir uns @racket[(animate create-rocket-scene-v2)] anschauen, stellen wir fest, dass die Animation noch immer nicht befriedigend
 ist, denn die Rakete versinkt halb im Boden. Der Grund dafür ist, dass @racket[place-image] das Zentrum des Bildes an dem vorgegebenen
@@ -487,6 +500,8 @@ Allerdings ist offensichtlich, dass @racket[create-rocket-scene-v3] gegen das im
 verstößt, dass gute Programme keine Redundanz enthalten. Im Programmiererjargon wird dieses Prinzip auch häufig
 DRY-Prinzip --- Don't Repeat Yourself --- genannt. 
 
+@subsection{DRY durch Variablendefinitionen}
+
 @margin-note{Konstante Werte wie @racket[100] in Programmtexten werden von Programmierern häufig abfällig als @italic{magic numbers} bezeichnet.}
 Eine Art von Redundanz, die in @racket[create-rocket-scene-v3] auftritt, ist die, dass die Höhe und Breite der Szene 
 sehr häufig wiederholt wird. Stellen Sie sich vor, sie möchten statt einer 100 mal 100 Szene eine 200 mal 400 Szene haben.
@@ -496,14 +511,14 @@ und je nachdem durch den neuen Wert ersetzen. Der Aufwand ist bei @racket[create
 aber wenn Sie Programme mit vielen tausend Codezeilen betrachten
 wird schnell klar, dass dies ein großes Problem ist. 
 
-Idealerweise sollte die Beziehung zwischen den Anforderungen an ein Programm und dem Programmtext stetig sein: 
+Idealerweise sollte die Beziehung zwischen den Anforderungen an ein Programm und dem Programmtext @italic{stetig} sein: 
 Ein kleiner Änderungswunsch an den Anforderungen für ein Programm sollte auch nur eine kleine Änderung am Programmtext erfordern.
 In unserem konkreten Beispiel können wir dieses Problem mit @racket[define] lösen. Mit @racket[define] können nämlich
-nicht nur Funktionen, sondern auch @italic{Konstanten} definiert werden. Beispielsweise können wir in unser Programm diese
+nicht nur Funktionen, sondern auch @italic{Variablen} definiert werden. Beispielsweise können wir in unser Programm diese
 Definition hineinschreiben:
 
-@margin-note{Für die Bedeutung des Programms spielt es keine Rolle dass der Name der Konstanten nur aus Großbuchstaben besteht.
-Dies ist lediglich eine Namenskonvention, anhand derer Programmierer leicht erkennen können, welche Variablennamen sich auf Konstanten beziehen.}
+@margin-note{Für die Bedeutung des Programms spielt es keine Rolle dass der Name der Variablen nur aus Großbuchstaben besteht.
+Dies ist lediglich eine Namenskonvention, anhand derer Programmierer leicht erkennen können, welche Namen sich auf Konstanten beziehen.}
 @racketblock[(define HEIGHT 100)]
 
 Die Bedeutung einer solchen Definition ist, dass im Rest des Programms @racket[HEIGHT] ein gültiger Ausdruck ist, der bei Auswertung den
@@ -527,25 +542,25 @@ Testen Sie durch @racket[(animate create-rocket-scene-v4)] dass das Programm wei
 Im Programmiererjargon nennen sich Programmänderungen, die die Struktur des Programms verändern ohne sein Verhalten zu verändern, @italic{Refactorings}.
 Häufig werden Refactorings durchgeführt um die Wartbarkeit, Lesbarkeit, oder Erweiterbarkeit des Programms zu verbessern. In unserem Fall haben wir
 sowohl Wartbarkeit als auch Lesbarkeit durch dieses Refactoring verbessert. Die verbesserte Wartbarkeit haben wir bereits illustriert; die verbesserte
-Lesbarkeit rührt daher, dass wir an Namen wie @racket[WIDTH] die Bedeutung der Konstanten ablesen können, während wir bei magic numbers wie @racket[100]
+Lesbarkeit rührt daher, dass wir an Namen wie @racket[WIDTH] die Bedeutung der Variablen ablesen können, während wir bei magic numbers wie @racket[100]
 diese Bedeutung erst durch genaue Analyse des Programms herausfinden müssen (im Programmiererjargon auch @italic{reverse engineering} genannt).
 
-Es spielt übrigens keine Rolle, ob die Definitionen der Konstanten oberhalb oder unterhalb der @racket[create-rocket-scene] Definition stehen. Die Konstanten
-sind innerhalb der gesamten Programmdatei sichtbar. Man sagt, die Konstanten haben @italic{globalen Scope}. Um die Definitionen der Konstanten nicht
+Es spielt übrigens keine Rolle, ob die Definitionen der Variablen oberhalb oder unterhalb der @racket[create-rocket-scene] Definition stehen. Die Variablen
+sind innerhalb der gesamten Programmdatei sichtbar. Man sagt, die Variablen haben @italic{globalen Scope}. Um die Definitionen der Variablen nicht
 im Programmtext suchen zu müssen, ist es sinnvoll, diese immer an der gleichen Stelle zu definieren. In vielen Programmiersprachen gibt es die Konvention,
-dass Konstantendefinitionen immer am Anfang des Programmtextes stehen, daher werden auch wir uns an diese Konvention halten.
+dass Variablendefinitionen immer am Anfang des Programmtextes stehen, daher werden auch wir uns an diese Konvention halten.
 
 Allerdings verstößt @racket[create-rocket-scene-v4] immer noch gegen das DRY-Prinzip. Beispielsweise kommt der Ausdruck 
 
 @racketblock[(- HEIGHT (/ (image-height  (unsyntax @ev[rocket])) 2))]
 
-mehrfach vor. Diese Redundanz kann ebenfalls mit @racket[define] beseitigt werden, denn der Wert, mit dem eine Konstante belegt wird, kann durch
-einen beliebig komplexen Ausdruck beschrieben werden. Im Allgemeinen haben Konstantendefinitionen die folgende Form: 
+mehrfach vor. Diese Redundanz kann ebenfalls mit @racket[define] beseitigt werden, denn der Wert, mit dem eine Variable belegt wird, kann durch
+einen beliebig komplexen Ausdruck beschrieben werden. Im Allgemeinen haben Variablendefinitionen die folgende Form: 
 
-@racketblock[(define CONSTANTNAME CONSTANTExpression)]
+@racketblock[(define VARIABLENAME VARIABLEExpression)]
     
-Im vorherigen Beispiel können wir die Konstante zum Beispiel @racket[ROCKET-CENTER-TO-BOTTOM] nennen. Beachten Sie,
-wie durch die Wahl guter Namen die Bedeutung des Programms viel offensichtlicher wird. Ohne diesen Namen müssen wir jedesmal, wenn wir 
+Im vorherigen Beispiel können wir die Variable zum Beispiel @racket[ROCKET-CENTER-TO-BOTTOM] nennen. Beachten Sie,
+wie durch die Wahl guter Namen die Bedeutung des Programms viel offensichtlicher wird. Ohne diesen Namen müssten wir jedesmal, wenn wir 
 den komplexen Ausdruck oben lesen und verstehen wollen, wieder herausfinden, dass hier die gewünschte Distanz des Zentrums der Rakete zum Boden
 berechnet wird. 
 
@@ -553,9 +568,9 @@ berechnet wird.
 des Alphabets zu verwenden um Namen abzukürzen.  @racket[MTSCN] spricht man daher "empty scene".}
 Das gleiche können wir mit dem mehrfach vorkommenden Ausdruck @racket[(empty-scene WIDTH HEIGHT)] machen. Wir geben ihm den Namen @racket[MTSCN].
 
-Die letzte Art der Redundanz, die nun noch vorkommt, ist, dass die Rakete selber mehrfach im Programmtext vorkommt. Die Rakete ist zwar keine Zahl
+Die letzte Art der Redundanz, die nun noch vorkommt, ist, dass die Rakete selber mehrfach im Programmtext vorkommt. Die Rakete ist zwar kein Zahlenliteral
 und daher keine @italic{magic number}, aber ein @italic{magic image} --- mit genau den gleichen Nachteilen wie @italic{magic numbers}.
-Daher definieren wir auch für das Bild eine Konstante @racket[ROCKET]. Unser finales Programm, welches alle diese @italic{Refactorings} beinhaltet,
+Daher definieren wir auch für das Bild eine Variable @racket[ROCKET]. Das Programm, welches alle diese @italic{Refactorings} beinhaltet,
 sieht nun so aus:
 
 @racketblock[
@@ -571,25 +586,63 @@ sieht nun so aus:
     [(> height ROCKET-CENTER-TO-BOTTOM)
      (place-image ROCKET 50 ROCKET-CENTER-TO-BOTTOM MTSCN)]))]
 
-@subsection{Bedeutung von Konstantendefinitionen}
+@subsection{DRY Redux}
+Halt! Auch @racket[create-rocket-scene-v5] verstößt noch gegen das DRY-Prinzip. Allerdings werden wir die verbliebenen Redundanzen 
+nicht durch Funktions- oder Variablendefinitionen eliminieren.
 
-Wie am besten Rewriting ganzer Programme einführen?
-     
-@section{Abhängigkeiten zwischen Definitionen}
+Eine Redundanz ist die, dass die Kondition @racket[(> height ROCKET-CENTER-TO-BOTTOM)] genau dann wahr ist wenn 
+@racket[(<= height ROCKET-CENTER-TO-BOTTOM)] falsch ist. Diese Information steht jedoch nicht direkt im Programmtext; stattdessen 
+wird die Kondition wiederholt und negiert. Eine Möglichkeit wäre, eine Funktion zu schreiben, die diese Kondition abhängig vom 
+@racket[height] Parameter berechnet und diese Funktion dann in beiden Zweigen der Kondition aufzurufen (und einmal zu negieren). 
+In diesem Fall bietet sich allerdings eine einfachere Lösung an, nämlich 
+statt @racket[cond] @racket[if] zu verwenden. 
+Damit können wir diese Redundanz eliminieren:
 
-Wir haben oben gesagt, dass es keie Rolle spielt, ob die Konstanten oberhalb oder unterhalb der Funktionsdefinition definiert werden.
-Allerdings spielt es sehr wohl eine Rolle, in welcher Reihenfolge diese Konstanten definiert werden. Wie sie sehen, verwenden 
-einige der Konstantendefinitionen andere Konstanten. Zum Beispiel verwendet die Definition von @racket[MTSCN] @racket[WIDTH]. Dies ist
+@racketblock[
+(define WIDTH 100)             
+(define HEIGHT 100)
+(define MTSCN (empty-scene WIDTH HEIGHT))
+(define ROCKET (unsyntax @ev[rocket]))
+(define ROCKET-CENTER-TO-BOTTOM (- HEIGHT (/ (image-height ROCKET) 2)))
+(define (create-rocket-scene-v6 height)
+  (if
+    (<= height ROCKET-CENTER-TO-BOTTOM)
+    (place-image ROCKET 50 height MTSCN)
+    (place-image ROCKET 50 ROCKET-CENTER-TO-BOTTOM MTSCN)))]
+
+Die letzte Redundanz, die wir in @racket[create-rocket-scene-v6] eliminieren wollen, ist die, dass die beiden Aufrufe von 
+@racket[place-image] bis auf einen Parameter identisch sind. Falls in einem konditionalen Ausdruck die Bodies aller Zweige
+bis auf einen Unterausdruck identisch sind, können wir die Kondition in den Audruck @italic{hineinziehen}, und zwar so:
+
+@racketblock[
+(define WIDTH 100)             
+(define HEIGHT 100)
+(define MTSCN (empty-scene WIDTH HEIGHT))
+(define ROCKET (unsyntax @ev[rocket]))
+(define ROCKET-CENTER-TO-BOTTOM (- HEIGHT (/ (image-height ROCKET) 2)))
+(define (create-rocket-scene-v7 height)
+  (place-image 
+    ROCKET 
+    50 
+    (if (<= height ROCKET-CENTER-TO-BOTTOM) 
+        height 
+        ROCKET-CENTER-TO-BOTTOM) MTSCN))]
+
+@section{Bedeutung von Funktions- und Variablendefinitionen}
+
+Wir haben oben gesagt, dass es keine Rolle spielt, ob die Variablen oberhalb oder unterhalb der Funktionsdefinition definiert werden.
+Allerdings spielt es sehr wohl eine Rolle, in welcher Reihenfolge diese Variablen definiert werden. Wie sie sehen, verwenden 
+einige der Variablendefinitionen andere Variablen. Zum Beispiel verwendet die Definition von @racket[MTSCN] @racket[WIDTH]. Dies ist
 auch sinnvoll, denn andernfalls hätte man weiterhin die Redundanz die man eigentlich eliminieren wollte. 
 
-DrRacket wertet ein Programm von oben nach unten aus. Wenn es auf eine Konstantendefinition trifft, so wird sofort der Wert
-des Ausdrucks, an den der Name gebunden werden soll (die @racket[CONSTANTExpression]), berechnet. Wenn in diesem Ausdruck eine Konstante vorkommt, die DrRacket
+DrRacket wertet ein Programm von oben nach unten aus. Wenn es auf eine Variablendefinition trifft, so wird sofort der Wert
+des Ausdrucks, an den der Name gebunden werden soll (die @racket[VARIABLEExpression]), berechnet. Wenn in diesem Ausdruck eine Variable vorkommt, die DrRacket
 noch nicht kennt, so gibt es einen Fehler:
 
 @ex[(define A (+ B 1))
     (define B 42)]
 
-Daher dürfen in Konstantendefinitionen nur solche Konstanten (und Funktionen) verwendet werden, die oberhalb der Definition bereits definiert wurden.
+Daher dürfen in Variablendefinitionen nur solche Variablen (und Funktionen) verwendet werden, die oberhalb der Definition bereits definiert wurden.
 
 Tritt dieses Problem auch bei Funktionen auf? Hier ein Versuch:
 
@@ -598,9 +651,44 @@ Tritt dieses Problem auch bei Funktionen auf? Hier ein Versuch:
 @ex[(add6 5)]
 
 Der Grund, wieso die Reihenfolge von Funktionsdefinitionen nicht wichtig ist, ist der, dass DrRacket bei Auswertung einer Funktionsdefinition lediglich
-registriert, dass es eine neue Funktion des angegebenen Namens gibt, jedoch im Unterschied zu Konstantendefinitionen die @racket[BodyExpression] der Funktion nicht auswertet.
+registriert, dass es eine neue Funktion des angegebenen Namens gibt, jedoch im Unterschied zu Variablendefinitionen die @racket[BodyExpression] der Funktion nicht auswertet.
 
+Etwas formaler können wir die Bedeutung von Programmen mit Funktions- und Variablendefinitionen so definieren:
 
+@itemize[
+ @item{Ein Programm ist eine Sequenz von Ausdrücken, Variablendefinitionen und Funktionsdefinitionen. Diese können in beliebiger Reihenfolge auftreten.}
+ @item{Ein Kontext ist eine Menge von Funktions- und Variablendefinitionen. Der Kontext ist am Anfang der Programmausführung leer.}
+ @item{Ein Programm wird von links nach rechts (bzw. oben nach unten) ausgewertet. Hier sind nun drei Fälle zu unterscheiden.
+     @itemize[
+       @item{Ist das nächste Programmelement ein Ausdruck, so wird dieser gemäß der bekannten Reduktionsregeln im aktuellen Kontext zu einem Wert ausgewertet.
+             Für die Auswertung von Variablen gilt hierbei @racket[x] @step @racket[v], falls der Kontext die Definition @racket[(define x v)] enthält.}
+       @item{Ist das nächste Programmelement eine Funktionsdefinition, so wird diese Funktionsdefinition dem aktuellen Kontext hinzugefügt.}
+       @item{Ist das nächste Programmelement eine Variablendefinition @racket[(define VARIABLENAME VARIABLEExpression)], 
+            so wird @racket[VARIABLEExpression] im aktuellen Kontext zu einem Wert @racket[v] ausgewertet und zum Kontext die 
+            Definition @racket[(define VARIABLENAME v)] hinzugefügt.}]}]
+
+Der aktuelle Kontext wird im Stepper von DrRacket angezeigt, und zwar als die Menge der Funktions- und Variablendefinitionen, die oberhalb des aktuell zu reduzierenden 
+Ausdrucks stehen. Bitte benutzen Sie den Stepper um die Reduktion des folgenden Programms zu visualisieren. Am besten versuchen Sie erst auf einem Blatt 
+Papier vorherzusagen, welches die Reduktionsschritte sein werden und kontrollieren dann mit dem Stepper.
+
+@racketblock[
+(define WIDTH 100)             
+(define HEIGHT 100)
+(define MTSCN (empty-scene WIDTH HEIGHT))
+(define ROCKET (unsyntax @ev[rocket]))
+(define ROCKET-CENTER-TO-BOTTOM (- HEIGHT (/ (image-height ROCKET) 2)))
+(define (create-rocket-scene-v7 height)
+  (place-image 
+    ROCKET 
+    50 
+    (if (<= height ROCKET-CENTER-TO-BOTTOM) 
+        height 
+        ROCKET-CENTER-TO-BOTTOM) MTSCN))
+(create-rocket-scene-v7 42)]
+
+Randnotiz: Zählen Sie einmal die Anzahl der Reduktionsschritte, die Sie pro Aufruf von @racket[create-rocket-scene-7] zusätzlich benötigen (also wenn Sie
+noch weitere Aufrufe zum Programm hinzufügen). Wieviele zusätzliche Schritte benötigen Sie, wenn Sie stattdessen @racket[create-rocket-scene-v2] verwenden? 
+Wie kommt es zu den Unterschieden und was bedeuten sie?
 
 @section{Kommentare}
 
