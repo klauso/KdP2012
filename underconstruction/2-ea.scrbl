@@ -568,6 +568,10 @@ berechnet wird.
 des Alphabets zu verwenden um Namen abzukürzen.  @racket[MTSCN] spricht man daher "empty scene".}
 Das gleiche können wir mit dem mehrfach vorkommenden Ausdruck @racket[(empty-scene WIDTH HEIGHT)] machen. Wir geben ihm den Namen @racket[MTSCN].
 
+Auch die Zahl @racket[50] im Programmtext ist eine @italic{magic number}, allerdings hat sie eine andere Qualität als @racket[WIDTH] und @racket[HEIGHT]:
+Sie ist nämlich abhängig von dem Wert anderer Konstanten, in diesem Fall @racket[WIDTH]. Da diese Konstante für die horizontale Mitte steht, 
+definieren wir sie als @racket[(define MIDDLE (/ WIDTH 2))].
+
 Die letzte Art der Redundanz, die nun noch vorkommt, ist, dass die Rakete selber mehrfach im Programmtext vorkommt. Die Rakete ist zwar kein Zahlenliteral
 und daher keine @italic{magic number}, aber ein @italic{magic image} --- mit genau den gleichen Nachteilen wie @italic{magic numbers}.
 Daher definieren wir auch für das Bild eine Variable @racket[ROCKET]. Das Programm, welches alle diese @italic{Refactorings} beinhaltet,
@@ -576,15 +580,16 @@ sieht nun so aus:
 @racketblock[
 (define WIDTH 100)             
 (define HEIGHT 100)
+(define MIDDLE (/ WIDTH 2))
 (define MTSCN (empty-scene WIDTH HEIGHT))
 (define ROCKET (unsyntax @ev[rocket]))
 (define ROCKET-CENTER-TO-BOTTOM (- HEIGHT (/ (image-height ROCKET) 2)))
 (define (create-rocket-scene-v5 height)
   (cond
     [(<= height ROCKET-CENTER-TO-BOTTOM)
-     (place-image ROCKET 50 height MTSCN)]
+     (place-image ROCKET MIDDLE height MTSCN)]
     [(> height ROCKET-CENTER-TO-BOTTOM)
-     (place-image ROCKET 50 ROCKET-CENTER-TO-BOTTOM MTSCN)]))]
+     (place-image ROCKET MIDDLE ROCKET-CENTER-TO-BOTTOM MTSCN)]))]
 
 @subsection{DRY Redux}
 Halt! Auch @racket[create-rocket-scene-v5] verstößt noch gegen das DRY-Prinzip. Allerdings werden wir die verbliebenen Redundanzen 
@@ -601,14 +606,15 @@ Damit können wir diese Redundanz eliminieren:
 @racketblock[
 (define WIDTH 100)             
 (define HEIGHT 100)
+(define MIDDLE (/ WIDTH 2))
 (define MTSCN (empty-scene WIDTH HEIGHT))
 (define ROCKET (unsyntax @ev[rocket]))
 (define ROCKET-CENTER-TO-BOTTOM (- HEIGHT (/ (image-height ROCKET) 2)))
 (define (create-rocket-scene-v6 height)
   (if
     (<= height ROCKET-CENTER-TO-BOTTOM)
-    (place-image ROCKET 50 height MTSCN)
-    (place-image ROCKET 50 ROCKET-CENTER-TO-BOTTOM MTSCN)))]
+    (place-image ROCKET MIDDLE height MTSCN)
+    (place-image ROCKET MIDDLE ROCKET-CENTER-TO-BOTTOM MTSCN)))]
 
 Die letzte Redundanz, die wir in @racket[create-rocket-scene-v6] eliminieren wollen, ist die, dass die beiden Aufrufe von 
 @racket[place-image] bis auf einen Parameter identisch sind. Falls in einem konditionalen Ausdruck die Bodies aller Zweige
@@ -617,13 +623,14 @@ bis auf einen Unterausdruck identisch sind, können wir die Kondition in den Aud
 @racketblock[
 (define WIDTH 100)             
 (define HEIGHT 100)
+(define MIDDLE (/ WIDTH 2))
 (define MTSCN (empty-scene WIDTH HEIGHT))
 (define ROCKET (unsyntax @ev[rocket]))
 (define ROCKET-CENTER-TO-BOTTOM (- HEIGHT (/ (image-height ROCKET) 2)))
 (define (create-rocket-scene-v7 height)
   (place-image 
     ROCKET 
-    50 
+    MIDDLE 
     (if (<= height ROCKET-CENTER-TO-BOTTOM) 
         height 
         ROCKET-CENTER-TO-BOTTOM) MTSCN))]
@@ -674,13 +681,14 @@ Papier vorherzusagen, welches die Reduktionsschritte sein werden und kontrollier
 @racketblock[
 (define WIDTH 100)             
 (define HEIGHT 100)
+(define MIDDLE (/ WIDTH 2))
 (define MTSCN (empty-scene WIDTH HEIGHT))
 (define ROCKET (unsyntax @ev[rocket]))
 (define ROCKET-CENTER-TO-BOTTOM (- HEIGHT (/ (image-height ROCKET) 2)))
 (define (create-rocket-scene-v7 height)
   (place-image 
     ROCKET 
-    50 
+    MIDDLE 
     (if (<= height ROCKET-CENTER-TO-BOTTOM) 
         height 
         ROCKET-CENTER-TO-BOTTOM) MTSCN))
