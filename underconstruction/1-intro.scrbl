@@ -75,6 +75,7 @@ Zahl ein exaktes Ergebnis oder nur ein angenähertes Ergebnis ist.
  Später werden andere Arten von Ausdrücken hinzukommen.
 
  
+@margin-note{Programieren Sie einen Ausdruck, der die Summe der Zahlen 3, 5, 19, und 32 berechnet.}
  
  Wie kann man mehr als zwei Zahlen addieren? Hierzu gibt es zwei Möglichkeiten:
 
@@ -90,6 +91,8 @@ Immer wenn Sie in BSL eine Funktion wie @racket[+] oder @racket[sqrt] benutzen m
 schreiben Sie eine öffnende Klammer, gefolgt vom Namen der Funktion, dann einem Lehrzeichen 
 (oder Zeilenumbruch) und dann die Argumente der Funktion, also in unserem Fall die Zahlen, auf die die
 Funktion angewandt werden soll. 
+
+@margin-note{Programmieren Sie einen Ausdruck, der den Durchschnitt der Zahlen 3, 5, 19 und 32 berechnet.}
 
 Am Beispiel der Schachtelung haben Sie gesehen, dass auch zusammengesetzte Ausdrücke als Argumente zugelassen sind.
 Diese Schachtelung kann beliebig tief sein:
@@ -141,6 +144,8 @@ Funktionen die @italic{Arithmetik der Strings}.
 Die Namen aller dieser Funktionen muss man sich nicht merken; bei Bedarf können die zur Verfügung stehenden
 Funktionen für Zahlen, Strings und andere Datentypen in der DrRacket Hilfe nachgeschlagen werden
 unter: Hilfe -> How to Design Programs Languages -> Beginning Student -> Pre-defined Functions
+
+@margin-note{Programmieren Sie einen Ausdruck, der den String @racket["Der Durchschnitt ist ..."] erzeugt. Statt der drei Punkte soll der Durchschnitt der Zahlen 3, 5, 19 und 32 stehen. Verwenden Sie den Ausdruck, der diesen Durchschnitt berechnet, als Unterausdruck.}
 
 Bisher haben wir nur Funktionen kennengelernt, bei denen alle Argumente und auch das Ergebnis zum
 selben Datentyp gehören müssen. Zum Beispiel arbeitet die Funktion @racket[+] nur mit Zahlen, und die
@@ -207,6 +212,8 @@ einer Zahl die Zahl selber ergibt, ergibt die Auswertung des Bilds das Bild selb
 
 @ev[rocket]
 
+@margin-note{Achten Sie darauf, das Teachpack "image.ss" zu verwenden, das zu HtDP/2e gehört. Es steht im DrRacket-Teachpack-Dialog in der mittleren Spalte.}
+
 Wie auf anderen Datentypen sind auch auf Bildern eine Reihe von Funktionen verfügbar.
 Diese Funktionen müssen allerdings erst durch das Aktivieren eines "Teachpacks" zu BSL 
 hinzugefügt werden. Aktivieren Sie in DrRacket das HtDP/2e Teachpack "image.ss", um selber
@@ -225,7 +232,10 @@ Statt existierende Bilder in das Programm einzufügen kann man auch neue Bilder 
 @ex[(circle 10 "solid" "red")
     (rectangle 30 20 "solid" "blue")]
 
-
+@margin-note{@para{Programmieren Sie einen Ausdruck, der mehrere Kreise um denselben Mittelpunkt zeichnet.}
+             @para{}
+             @para{Programmieren Sie einen Ausdruck, der einen Kreis zeichnet, der durch eine schräge Linie geschnitten
+                   wird. Markieren Sie die Schnittpunkte durch kleine Kreise.}}
 
 Die Arithmetik der Bilder umfasst nicht nur Funktionen um Bilder zu konstruieren, sondern auch
 um Bilder in verschiedener Weise zu kombinieren:

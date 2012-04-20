@@ -154,6 +154,12 @@ im Programmtext @italic{vor} dem auszuwertenden Ausdruck stehen. Um unsere forma
 werden wir diesen Kontext nicht explizit zur Reduktionsrelation hinzufügen; stattdessen gehen wir einfach davon aus, dass es einen globalen
 Kontext mit einer Menge von Funktionsdefinitionen gibt.
 
+@margin-note{@para{Wie wird der Ausdruck @racket[(* (- 1 1) (+ 2 3))] ausgewert? Wieviele Schritte werden benötigt?}
+              @para{}
+              @para{Wie wird der Ausdruck @racket[(and (= 1 2) (= 3 3))] ausgewertet? Wieviele Schritte werden benötigt?}
+              @para{}
+              @para{Können Sie eine Funktion @racket[mul] programmieren, die dasselbe wie @racket[*] berechnet, aber (ähnlich wie @racket[and]) weniger Schritte benötigt?}}
+
 Die Auswertungsregeln aus @secref{semanticsofexpressions} werden nun zur Berücksichtigung von Funktionsdefinitionen wie folgt erweitert:
    @itemize[
    @item{Falls der Ausdruck die Form @racket[(f (unsyntax @v1) ... (unsyntax @vN))] hat und @racket[f] eine primitive (eingebaute) Funktion ist und
