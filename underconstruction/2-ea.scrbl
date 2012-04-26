@@ -710,7 +710,7 @@ Ein Programm kann neben dem eigentlichen Programmtext auch Kommentare enthalten.
 der besseren Lesbarkeit eines Programms. Kommentare werden durch ein Semikolon eingeleitet; alles was in einer Zeile nach einem Semikolon steht ist ein Kommentar.
 Wir werden später mehr dazu sagen, wo, wie und wie ausführlich Programme kommentiert werden sollten.
 
-@section{Programmieren ist mehr!}
+@section{Programmieren ist mehr als das Regelverstehen!}
 
 Ein guter Schachspieler muss die Regeln des Schachspiels verstehen. Aber nicht jeder, der die Schachregeln versteht ist auch ein guter Schachspieler.
 Die Schachregeln verraten nichts darüber, wie man eine gute Partie Schach spielt. Das Verstehen der Regeln ist nur ein erster kleiner Schritt auf dem Weg dahin.

@@ -9,7 +9,7 @@
 
 @margin-note{Dieser Teil des Skripts basiert auf [HTDP/2e] Kapitel 2}
 
-@section{Funktionale Dekomposition}
+@section[#:tag "letterprogram"]{Funktionale Dekomposition}
 Programme bestehen nur in den seltensten Fällen aus einer einzelnen Funktion.
 Typischerweise bestehen Programme enthalten typischerweise viele 
 Funktionsdefinitionen, die teilweise dadurch voneinander abhängig sind, dass
@@ -251,6 +251,25 @@ Hilfe der Dokumentation einen Überblick.
 Um den Programmierer zu unterstützen, zeigt DrRacket durch Färbung des Codes an, welche Teile ihres Programms bei der Ausführung der Tests
 durchlaufen wurden. Probieren Sie dieses Verhalten selbst aus!
 
+Selbstverständlich funktionieren Tests nicht nur mit Zahlen sondern mit allen Datentypen wie beispielsweise auch Bildern.
+Beispielsweise können wir diese Funktion
+@block[
+(define (ring innerradius outerradius color)
+  (overlay (circle innerradius "solid" "white")
+           (circle outerradius "solid" color)))]
+
+so testen:
+
+@racketblock[
+(check-expect (ring 5 10 "red") (unsyntax @ev[(ring 5 10 "red")]))]
+
+Da @racket[check-expect] beliebige Ausdrücke als Parameter erwartet, können statt dem
+Ergebnis selber auch auch @italic{Eigenschaften} von Ergebnissen überprüft werden, zum Beispiel so:
+
+@racketblock[(check-expect (image-width (ring 5 10 "red")) 20)]
+
+Wir werden später sehen, dass dies wichtig ist, um Tests nicht zu stark an die Implementation einer Funktion zu koppeln.
+
 @subsection{Informationen und Daten}
 
 Ein Programm beschreibt eine Berechnung, die @italic{Informationen} aus der Domäne des Programms verarbeitet und produziert.
@@ -400,7 +419,109 @@ Dieses Konzept nennt man auch @italic{Information Hiding}.
                  
                  ]
 
+@subsection{Programme mit vielen Funktionen}
+Die meisten Programme bestehen nicht aus einer sondern aus vielen Funktionen. Diese Funktionen
+sind häufig voneinander abhängig, da eine Funktion eine andere Funktion aufrufen kann.
+
+Sie haben oben ein Entwurfsrezept für den Entwurf einzelner Funktionen gesehen. Dieses sollten beim
+Entwurf jeder einzelnen Funktion verwenden. Wenn Sie viele Funktionen und globale Konstanten (Variablen)
+definiert haben, so sollten Sie im Funktionstemplate die Funktionen und Konstanten aufführen, von
+denen Sie glauben, dass sie im endgültigen Funktionsbody benötigt werden.
+
+Da sie nicht alle Funktionen auf einmal programmieren können, stellt sich die Frage, in welcher Reihenfolge
+sie vorgehen. Ein häufiger Ansatz ist der @italic{Top-Down Entwurf}, bei dem man zuerst die Hauptfunktion(en)
+der Anwendung programmiert. Diese Funktionen werden zweckmäßigerweise in weitere Hilfsfunktionen zerlegt, die
+während des Programmierens der Funktion noch gar nicht existieren. Deshalb bietet es sich an, stets eine
+"Wunschliste" der Funktionen, die noch programmiert werden müssen, zu führen. Ein Eintrag auf der Wunschliste
+besteht aus einem sinnvollen Funktionsnamen, einer Signatur und einer Aufgabenbeschreibung. Am Anfang steht auf dieser Liste
+nur die Hauptfunktion. Stellen Sie beim Programmieren einer Funktion fest, dass Sie eine neue Funktion benötigen, fügen
+Sie der Wunschliste einen entsprechenden Eintrag hinzu. Sind sie mit einer Funktion fertig, suchen Sie sich die nächste 
+Funktion von der Liste, die
+sie implementieren möchten.@margin-note{Recherchieren Sie was die Abkürzungen FIFO und LIFO bedeuten. Diskutieren
+Sie, ob FIFO oder LIFO für die Wunschliste geeignet sind und was für Konsequenzen dies hat.}
+Ist die Liste leer, sind sie fertig.
+
+Ein Vorteil von Top-Down Entwurf ist, dass Sie Schritt für Schritt ihr großes Entwurfsproblem in immer kleinere
+Probleme zerlegen können, bis die Probleme so klein werden, dass Sie sie direkt lösen können (im Fall von
+Funktionsdefinitionen sind dies Funktionen, die nur noch eingebaute Funktionen oder Bibliotheksfunktionen verwenden).
+
+Ein wichtiger Nachteil ist, dass Sie erst relativ spät die Details der Hilfsfunktionen programmieren. Falls Sie 
+einen Denkfehler gemacht haben und die Hilfsfunktionen so gar nicht implementiert werden können, müssen Sie unter
+Umständen einen großen Teil ihrer Arbeit wieder in den virtuellen Papierkorb werfen. Ein anderer wichtiger Nachteil
+ist der, dass Sie erst sehr spät ihre Funktionen testen können, nämlich erst wenn alle Hilfsfunktionen vollständig implementiert
+wurden. Eine Möglichkeit, dieses Problem zu umgehen, ist, eine Hilfsfunktion erstmal durch einen @italic{Test Stub}
+zu ersetzen. Ein Test Stub ist eine Dummy-Funktionsdefinition, die eine vordefinierte Antwort zurückliefert, wie sie im Kontext
+eines Tests erwartet wird. Nehmen Sie beispielsweise an, sie möchten eine @racket[area-of-cube] Funktion definieren, die
+die eine noch nicht programmierte @racket[area-of-square] Funktione benutzt. Um @racket[area-of-cube] trotzdem testen
+zu können, können Sie @racket[area-of-square] zunächst provisorisch durch einen Test Stub wie in diesem Beispiel zu implementieren.
+Wenn Sie sich später dafür entscheiden, diese Funktion zu implementieren, ersetzen Sie den Test Stub durch die 
+richtige Funktionsdefinition.
+
+@#reader scribble/comment-reader
+(racketblock
+; Number -> Number
+; computes the area of a cube with side length len
+(check-expect (area-of-cube 3) 54)
+(define (area-of-cube len) (* 6 (area-of-square len)))
+
+; Number -> Number
+; computes the area of a square with side length len
+(check-expect (area-of-square 3) 9)
+(define (area-of-square len) (if (= len 3) 9 (error "not yet implemented")))
+)
+
+Der Test Stub für @racket[area-of-square] benutzt die Funktion @racket[error]. Diese ist gut dafür geeignet, zu dokumentieren,
+dass eine Funktion noch nicht fertig implementiert wurde. Dies ist insbesondere besser, als stillschweigend ein falsches Ergebnis
+zurückzuliefern, denn dann fällt ihnen unter Umständen erst sehr spät auf, dass Sie diesen Teil noch implementieren müssen.
+
+@section{Information Hiding}
+Der Name, die Signatur, die Aufgabenbeschreibung und die Tests bilden zusammen die @italic{Spezifikation}
+einer Funktion. Die Spezifikation sollte ausreichend viele Informationen enthalten, um die Funktion
+benutzen zu können --- ein Aufrufer sollte also nicht erst die Implementation der Funktion (und vielleicht
+sogar rekursiv die Implementationen aller Funktionen die darin aufgerufen werden) studieren müssen, um 
+die Funktion nutzen zu können.
+
+Eines der wichtigsten Prinzipien, um in der Programmierung mit der Komplexität großer Programme umzugehen, heißt
+@italic{Information Hiding}, im Deutschen manchmal auch @italic{Geheimnisprinzip} genannt. In Bezug auf Funktionen
+sagt dieses Prinzip aus, dass ein Programm besser lesbar, verstehbar und wartbar ist, wenn alle Aufrufer von
+Funktionen sich nur auf die Spezifikationen der Funktion verlassen, aber nicht von Implementierungsdetails abhängen.
+Ferner sagt dieses Prinzip aus, dass es einen Unterschied zwischen Spezifikation und Implementation geben sollte, und
+zwar dergestalt, dass es viele mögliche Implementationen der gleichen Spezifikation gibt. Wenn sich alle an diese
+Regel halten, so ist garantiert, dass man die Implementation jeder Funktion beliebig modifizieren kann --- solange
+die Spezifikation weiterhin eingehalten wird, ist durch dieses Prinzip sichergestellt, dass das Programm weiterhin funktioniert.
 
 
+Betrachten Sie als Beispiel die @racket[body] Funktion aus dem Spam-Mail-Generator von oben.
+Hier ist die Definition mit einer möglichen Spezifikation:
 
+@#reader scribble/comment-reader
+(racketblock
+; String String -> String
+
+; generiert the pretense for money transfer for the victim fst last
+
+(check-range (string-length (body "Tillman" "Rendel")) 50 300)
+
+(define (body fst lst)
+  (string-append
+   "König Zabutu aus dem Tacka-Tucka-Land ist gestorben und hat Sie, "
+   fst
+   ", in seinem Testament als Alleinerben eingesetzt.\n"
+   "Lieber " fst " " lst ", gegen eine kleine Bearbeitungsgebühr überweise ich das Vermögen."))
+)
+
+Ein Beispiel für einen Aufrufer, der sich nicht an die Spezifikation hält und unzulässig an 
+die Implementation der koppelt wäre einer, der Folgetext für den Brief definiert, der sich
+auf Details des Textes wie Namen und Orte bezieht, die nicht in der Spezifikation gennant werden.
+
+Halten sich jedoch alle Aufrufer an das Geheimnisprinzip, so ist sichergestellt, dass sich
+die Implementation von @racket[body] weitgehend ändern läßt, solange es ein plausibler Text
+gemäß der Aufgabenbeschreibung ist, der zwischen 50 und 300 Zeichen lang ist.
+
+Dieses Beispiel illustriert weiterhin, wieso es häufig sinnvoll ist, in Tests nur
+bestimmte Eigenschaften des Ergebnisses zu testen, aber nicht das Ergebnis exakt vorzuschreiben.
+Im Beispiel wird nur getestet, dass die Länge des generierten Strings zwischen 50 und 300 ist --- 
+dies wird damit zum Teil der Spezifikation, auf die sich Aufrufer verlassen können. 
+Würde hingegen auf einen festen Ausgabestring getestet, so würde der Test zu viele Details über
+die Implementierung verraten und damit das Information Hiding Prinzip nutzlos gemacht.
 

@@ -9,3 +9,4 @@
 @include-section["1-intro.scrbl"]
 @include-section["2-ea.scrbl"]
 @include-section["3-functions.scrbl"]
+@include-section["4-batchuniverse.scrbl"]
