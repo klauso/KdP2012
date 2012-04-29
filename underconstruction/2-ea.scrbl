@@ -597,7 +597,7 @@ sieht nun so aus:
     [(> height ROCKET-CENTER-TO-BOTTOM)
      (place-image ROCKET MIDDLE ROCKET-CENTER-TO-BOTTOM MTSCN)]))]
 
-@subsection{DRY Redux}
+@subsection[#:tag "dryredux"]{DRY Redux}
 Halt! Auch @racket[create-rocket-scene-v5] verstößt noch gegen das DRY-Prinzip. Allerdings werden wir die verbliebenen Redundanzen 
 nicht durch Funktions- oder Variablendefinitionen eliminieren.
 

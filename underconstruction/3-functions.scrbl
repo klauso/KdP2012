@@ -11,7 +11,7 @@
 
 @section[#:tag "letterprogram"]{Funktionale Dekomposition}
 Programme bestehen nur in den seltensten Fällen aus einer einzelnen Funktion.
-Typischerweise bestehen Programme enthalten typischerweise viele 
+Typischerweise bestehen Programme aus vielen 
 Funktionsdefinitionen, die teilweise dadurch voneinander abhängig sind, dass
 sie sich untereinander aufrufen. Betrachten Sie das folgende Programm
 zur Erstellung etwas plumper "Nigerian-Scam" Briefe:
@@ -311,7 +311,7 @@ Zum jetzigen Zeitpunkt kennen Sie nur einige wenige Formen von Daten (Zahlen, St
 müssen Sie alle Informationen mit diesen Datentypen repräsentieren. Später werden wir andere Datentypen kennenlernen,
 in denen es deutlich anspruchsvoller wird, eine geeignete Repräsentation für seine Informationen zu wählen.
 
-@subsection{Entwurfsrezept zur Funktionsdefinition}
+@subsection[#:tag "entwurfsrezept"]{Entwurfsrezept zur Funktionsdefinition}
 
 Auf Basis der gerade besprochenen Trennung zwischen Informationen und Daten können wir nun den Entwurf einzelner Funktionen
 als eine Abfolge von Schritten beschreiben.

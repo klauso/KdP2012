@@ -140,7 +140,7 @@ informiert, welche dieser Funktionen welche Art von Eingaben verarbeitet und wel
 Ausgaben produziert. Jeder dieser Hauptfunktionen kann natürlich wieder Hilfsfunktionen verwenden.
 Wir werden zur Konstruktion interaktiver Programme das Universe Teachpack verwenden.
 
-@subsection{Das Universe Teachpack}
+@subsection[#:tag "universeteachpack"]{Das Universe Teachpack}
 
 Das "universe" Teachpack unterstützt die Konstruktion interaktiver Programme: Programme die auf Zeitsignale,
 Mausklicks, Tastatureingaben, oder Netzwerkverkehr reagieren und grafische Ausgaben erzeugen.
@@ -176,11 +176,10 @@ Sie vor dem weiterlesen aus, was dieses Programm macht.
 (check-expect (image? (render 0)) true)
 (define (render world)
   (if (> countdown 0)
-      (above
-       (text (string-append "Countdown for the bomb: " 
-                            (number->string world)) 
-             30 "red")
-       (text "Click to disarm!" 30 "red")) 
+      (above (text (string-append "Countdown for the bomb: " 
+                                  (number->string world)) 
+                   30 "red")
+             (text "Click to disarm!" 30 "red")) 
       (text "Boooom!!" 60 "red")))
 
       
@@ -199,12 +198,13 @@ Sie vor dem weiterlesen aus, was dieses Programm macht.
 )          
 
 Ein zentrales Konzept bei interaktiven Programmen ist das des @italic{WorldState}s.
-Eine interaktive Anwendung befindet sich typischerweise in einem bestimmten @italic{Zustand}. 
+Eine interaktive Anwendung befindet sich typischerweise in einem bestimmten @italic{Zustand},
+den wir WorldState nennen. 
+@margin-note{Falls Sie Pacman nicht kennen, suchen Sie bitte unverzüglich eine Online-Version
+             von Pacman im Internet und spielen eine Runde!}
 Der Zustand bei einem Pacman-Spiel umfasst beispielsweise die gegenwärtige Position
 aller Spielfiguren und den aktuellen Punktestand. Im Programm oben besteht der aktuelle
 Zustand lediglich aus einer Zahl, die den aktuellen Countdown zur Bombenexplosion enthält.
-@margin-note{Falls Sie Pacman nicht kennen, suchen Sie bitte unverzüglich eine Online-Version
-             von Pacman im Internet und spielen eine Runde!}
 
 Der Zustand eines interaktiven Programms ändert sich, wenn bestimmte @italic{Ereignisse} eintreten.
 Ereignisse können zum Beispiel das Drücken von Tasten auf der Tastatur, Aktionen mit der Maus oder
@@ -277,8 +277,8 @@ Da Event Handler nur Funktionen sind, kann man das letzte Resultat auch durch di
   (on-mouse-event 
     (on-tick-event 
       (on-tick-event 500)) 
-   123 456 "move") 
- 123 456 "button-down")] 
+    123 456 "move") 
+  123 456 "button-down")] 
                
 Die Reihenfolge der Ereignisse bestimmt also die Reihenfolge, in der die Event Handler Funktionen hintereinandergeschaltet werden.
 Möchte man, zum Beispiel in Tests, das Eintreten einer bestimmten Sequenz von Ereignissen simulieren, so kann man dies
