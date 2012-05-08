@@ -20,7 +20,7 @@ den Entwurf von Programmen beeinflussen.
 @section{Auzählungstypen}
 Häufig hat man den Fall, dass ein Datentyp nur eine endliche aufzählbare Menge von Werten enthält.
 Wir nennen solche Datentypen @italic{Aufzählungstypen} oder @italic{Enumerationstypen}.
-Hier ist ein Beispiel wie ein Aufzählungstyp definiert wird:
+Hier ist ein Beispiel, wie ein Aufzählungstyp definiert wird:
 
 @#reader scribble/comment-reader
 (racketblock
@@ -34,7 +34,7 @@ Hier ist ein Beispiel wie ein Aufzählungstyp definiert wird:
 
 Das Programmieren mit Aufzählungstypen ist sehr einfach. Wenn eine Funktion einen Parameter hat, der einen Aufzählungstyp  
 hat, dann enthält das Programm typischerweise eine Fallunterscheidung, in denen alle Alternativen des Aufzählungstyps
-separat voneinander definiert werden. Hier ein Beispiel:
+separat voneinander behandelt werden. Hier ein Beispiel:
 
 @#reader scribble/comment-reader
 (racketblock
@@ -67,7 +67,7 @@ erhält. @racket[MouseEvent] ist folgendermaßen definiert:
 ; – "leave"
 )
 
-Es kann auch sein, dass ein Funktionsparameter einen Aufzählungstyp hat, aber trotzdem keine Fallunterscheidung vornimmt, weil
+Es kann auch sein, dass ein Funktionsparameter einen Aufzählungstyp hat, aber die Funktion trotzdem keine Fallunterscheidung vornimmt, weil
 hierzu eine Hilfsfunktion aufgerufen wird. Dennoch ist es eine gute Heuristik, im Schritt 3 des Entwurfsrezepts 
 aus Abschnitt @secref{entwurfsrezept} mit einem Funktionstemplate zu starten, welches alle Fälle des Parameters unterscheidet.
 Beispielsweise würde das Template für die @racket[traffic-light-next] Funktion von oben so aussehen:
@@ -128,7 +128,7 @@ Betrachten Sie nun folgende Erweiterung der Problemstellung:
 It should switch to "closing in" below that. And finally, when the UFO has reached the bottom of the canvas, 
 the status should notify the player that the UFO has "landed."}
 
-Der Datentyp, die sich in dieser Problemstellung versteckt, ist kein Enumerationstyp, denn es gibt eine unendliche
+Der Datentyp, der sich in dieser Problemstellung versteckt, ist kein Enumerationstyp, denn es gibt eine unendliche
 Zahl unterschiedlicher Höhen (oder, sofern wir nur die ganzen Zahlen zählen, so viele unterschiedliche Höhen, dass
 es unpraktisch wäre, hierfür einen Aufzählungstypen zu definieren).
 
@@ -153,7 +153,7 @@ haben, die die Intention der Problemstellung besser erfasst.
 )
 
 Nicht alle Funktionen, die einen Intervalltypen als Argument bekommen, nutzen diese zusätzliche Struktur.
-So kann zum Beispiel die @racket[render] Funktion von oben so wie sie ist, weil das Intervall nur für die 
+So kann zum Beispiel die @racket[render] Funktion von oben so bleiben wie sie ist, weil das Intervall nur für die 
 Statusanzeige aber nicht für das Ufo relevant ist.
 
 Funktionen, die jedoch die zusätzliche Struktur des Intervalls benötigen, enthalten typischerweise einen
@@ -173,7 +173,7 @@ Funktionen, die jedoch die zusätzliche Struktur des Intervalls benötigen, enth
 Es empfiehlt sich, diesen @racket[cond] Ausdruck im Rahmen der Templatekonstruktion aus dem Entwurfsrezept direkt in das Template mit
 aufzunehmen. Allerdings findet die Fallunterscheidung nicht notwendigerweise als erstes statt sondern kann auch tiefer
 im Funktionsbody stattfinden. Dies bietet sich in unserem Beispiel an, denn wir haben gegen das DRY Prinzip verstossen (Wenn wir
-die Farbe des Textes beispielsweise auf "red" ändern möchten müssten wir drei Zeilen ändern). Deshalb ist es vorteilhaft,
+die Farbe des Textes beispielsweise auf "red" ändern möchten, müssten wir drei Zeilen ändern). Deshalb ist es vorteilhaft,
 den konditionalen Ausdruck nach innen zu ziehen:
 
 @#reader scribble/comment-reader
@@ -245,7 +245,7 @@ In der Dokumentation der HTDP-Sprachen ist die Signatur von
 Der Operator @racket[union] steht für die ``on-the-fly'' Konstruktion eines 
 anonymen Summentyps mit der gleichen Bedeutung wie unser @racket[NorF] oben.
 
-Was macht man mit einem Wert der einen Summentyp hat? Wie bei Aufzählungs- und Intervalltypen
+Was macht man mit einem Wert, der einen Summentyp hat? Wie bei Aufzählungs- und Intervalltypen
 auch ist typischerweise die einzige sinnvolle Operation die, welche die unterschiedlichen
 Alternativen voneinander trennt, beispielsweise im Rahmen eines @racket[cond] Ausdrucks.
 Hier ein Beispiel:
@@ -265,7 +265,7 @@ Funktion mit Summentypen entscheiden sich in ihrer Entwurfsmethodik etwas von de
 wir bisher kennengelernt haben. Deswegen gehen wir nochmal durch unser Entwurfsrezept (@secref{entwurfsrezept}) und beschreiben,
 wie sich der Entwurf von Funktionen mit Summentypen vom allgemeinen Entwurfsrezept unterscheidet.
 
-@italic{The tax on an item is either an absolute tax of 5or 10 currency units, or a linear tax. Design a function that computes the price
+@italic{The tax on an item is either an absolute tax of 5 or 10 currency units, or a linear tax. Design a function that computes the price
 of an item after applying its tax.}
 
 Das Entwurfsrezept für den Entwurf von Funktionen ergänzen wir wie folgt:
@@ -292,7 +292,7 @@ Das Entwurfsrezept für den Entwurf von Funktionen ergänzen wir wie folgt:
 @#reader scribble/comment-reader
 (racketblock
 ; Number Tax -> Number
-; computes price an an item after applying tax
+; computes price of an item after applying tax
 (define (total-price itemprice tax) 0)
 )             
              }
@@ -338,7 +338,7 @@ Das Entwurfsrezept für den Entwurf von Funktionen ergänzen wir wie folgt:
         den @racket[cond] Ausdruck nach innen zu ziehen (ähnlich wie 
         in @racket[create-rocket-scene-v6] in Abschnitt @secref{dryredux}), oder 
         vielleicht müssen Sie gar nicht alle Fälle unterscheiden, oder vielleicht 
-        möchten Sie die Unterscheidung auch in eine Hilfsfunktion auslagern --- 
+        möchten Sie die Unterscheidung auch in eine Hilfsfunktion auslagern -- 
         dennoch ist es in der Regel sinnvoll, mit diesem Template zu starten, selbst
         wenn am Ende ihre Funktion anders aussieht.
 
@@ -369,7 +369,7 @@ Spektrum hätten? Wir könnten unsere Datendefinition wie folgt abändern:
 ; - a Number representing a linear tax rate in percent
 ) 
 
-So weit so gut --- aber wie können wir in einem @racket[cond] Ausdruck diese Fälle unterscheiden? Wir haben
+So weit so gut -- aber wie können wir in einem @racket[cond] Ausdruck diese Fälle unterscheiden? Wir haben
 zwar das Prädikat @racket[number?], aber damit können wir nicht zwischen diesen beiden Fällen unterscheiden.
 
 In unseren Summentypen ist es wichtig, dass man eindeutig unterscheiden kann, welche Alternative in einem Wert, der
