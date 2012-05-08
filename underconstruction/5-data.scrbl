@@ -5,7 +5,7 @@
 @(require (for-label (except-in 2htdp/image image?)))
 @(require (for-label 2htdp/universe))
    
-@title[#:version ""]{Summentypen}
+@title[#:version ""]{Summen}
 
 @margin-note{Dieser Teil des Skripts basiert auf [HTDP/2e] Kapitel 2}
 
@@ -377,7 +377,8 @@ einen Summentyp hat, gewählt wurde. Daher müssen die Mengen der möglichen Wer
 
 @margin-note{Die Variante der Summentypen, die wir verwenden, bezeichnet man deshalb auch als @italic{untagged unions}.}
 Falls sie nicht disjunkt sind, muss man zu jedem Wert eine zusätzliche Information abspeichern, die aussagt, zu welcher
-Alternative dieser Wert gehört: ein sogenanntes @italic{tag}. Mit den Mitteln, die wir bisher kennengelernt haben, 
+Alternative dieser Wert gehört: ein sogenanntes @italic{tag} ("Etikett", "Anhänger"). 
+Mit den Mitteln, die wir bisher kennengelernt haben, 
 können wir den oben gewünschten Datentyp nicht sinnvoll ausdrücken. Im nächsten Kapitel werden wir jedoch
 ein Sprachkonstrukt kennenlernen, mit dem man solche @italic{tags} und damit auch solche Datentypen strukturiert
 definieren kann.

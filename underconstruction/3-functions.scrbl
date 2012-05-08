@@ -56,7 +56,7 @@ eines Serienbriefs); diese große Aufgabe wird in kleinere Aufgaben wie das Anfe
 der Eröffnung eines Serienbriefs zerlegt, diese können ggf. wieder in weitere kleine
 Aufgaben zerlegt werden.
 
-Die Struktur der Funktionen sollte der hierarchischen Struktur der Aufgaben folgen:
+Die Struktur der Funktionen sollte der hierarchischen Struktur der Aufgaben folgen. 
 Zu jeder Aufgabe gibt es eine Funktion die in ihrer Implementierung die Funktionen
 aufruft, die zu den Unteraufgaben korrespondieren. Die Funktionen können dementsprechend
 als Baum (oder azyklischer Graph) angeordnet werden, an dessen Wurzel die Hauptfunktion steht 
@@ -75,13 +75,13 @@ programmiert die in der Hauptfunktion aufgerufen werden, dann alle Funktionen di
 diesen Funktionen aufgerufen werden, und so weiter. "Bottom-Up" ist genau umgekehrt: Man
 programmiert zunächst die einfachsten Funktionen die nur primitive Funktionen aufrufen, dann
 die Funktionen, die die gerade programmierten Funktionen aufrufen, und so weiter bis man ganz
-zum Schluss die Hauptfunktion programmiert. Abzuschätzen welche Vorgehensweise in welcher 
-Situation die richtige ist ein wichtiges Thema in der Methodik der Softwarekonstruktion.
+zum Schluss die Hauptfunktion programmiert. Abzuschätzen, welche Vorgehensweise in welcher 
+Situation die richtige ist, ist ein wichtiges Thema in der Methodik der Softwarekonstruktion.
 
 Wenn die Aufrufstruktur der Funktionen ein azyklischer Graph ist, so ergibt sich automatisch
-eine Schichtenstruktur, in der alle Funktionen auf einer Schicht nur Funktionen aus darunter liegenden
+eine Schichtenstruktur, in der alle Funktionen in einer Schicht nur Funktionen aus darunter liegenden
 Schichten aufrufen. Eine noch stärkere Einschränkung ist die, dass Funktionen ausschliesslich
-Funktionen aus der Schicht direkt unter Ihnen aufrufen dürfen. Diese Einschränkung ist allerdings
+Funktionen aus der Schicht direkt unter ihnen aufrufen dürfen. Diese Einschränkung ist allerdings
 sinnvoll, denn sie ermöglicht bei geschickter Wahl der Funktionen, eine Schicht zu verstehen ohne 
 alle darunter liegenden Schichten verstehen zu müssen. Diese Situation nennt man 
 @italic{hierarchische Abstraktion}, und sie ist der Schlüssel, um mit Komplexität großer Softwaresysteme
@@ -365,7 +365,7 @@ als eine Abfolge von Schritten beschreiben.
                               
                               }
           @item{Im dritten Schritt überlegen Sie sich, welche der Ihnen zur Verfügung stehenden Eingabedaten und ggf. Hilfsfunktionen und Variablen Sie zur Berechnung benötigen.
-                Sie ersetzen den Dummy-Wert aus dem zweiten Schritt mit einem @italic{Template} (Schablone), indem die Eingabedaten/Funktionen/Variablen von oben vorkommen.
+                Sie ersetzen den Dummy-Wert aus dem zweiten Schritt mit einem @italic{Template} (Schablone), in dem die Eingabedaten/Funktionen/Variablen von oben vorkommen.
                 Im Moment sieht dieses Template so aus, dass einfach die Eingabedaten/Funktionen/Variablen durch @racket[...] voneinander getrennt unsortiert im 
                 Funktionsbody stehen. Später werden wir interessantere Templates kennenlernen.
                 
@@ -472,7 +472,7 @@ richtige Funktionsdefinition.
 
 Der Test Stub für @racket[area-of-square] benutzt die Funktion @racket[error]. Diese ist gut dafür geeignet, zu dokumentieren,
 dass eine Funktion noch nicht fertig implementiert wurde. Dies ist insbesondere besser, als stillschweigend ein falsches Ergebnis
-zurückzuliefern, denn dann fällt ihnen unter Umständen erst sehr spät auf, dass Sie diesen Teil noch implementieren müssen.
+zurückzuliefern, denn dann fällt Ihnen unter Umständen erst sehr spät auf, dass Sie diesen Teil noch implementieren müssen.
 
 @section{Information Hiding}
 Der Name, die Signatur, die Aufgabenbeschreibung und die Tests bilden zusammen die @italic{Spezifikation}

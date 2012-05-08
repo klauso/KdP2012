@@ -78,7 +78,8 @@ Diesen benötigt man, um die Funktion in Ausdrücken benutzen (oder: @italic{auf
 der Funktion. Die Parameter repräsentieren die Eingabe der Funktion, die erst bekannt wird wenn
 die Funktion aufgerufen wird. Die @racket[BodyExpression] ist ein Ausdruck der die
 Ausgabe der Funktion definiert. Innerhalb der @racket[BodyExpression] werden in der Regel
-die Parameter der Funktion benutzt. 
+die Parameter der Funktion benutzt. Wir nennen @racket[BodyExpression] die @italic{Implementation}
+der Funktion oder den @italic{Body} der Funktion.
 
 Funktionsaufrufe haben die Form:
 
