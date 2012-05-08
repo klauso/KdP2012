@@ -54,10 +54,10 @@ $ ls -l | grep "Mar" | sort +4n
 Ein gutes Beispiel für ein Batchprogramm in BSL ist die @racket[letter] Funktion aus Abschnitt @secref{letterprogram}.
 Wir rufen es im Interaktionsbereich mit der gewünschten Eingabe auf und erhalten dann die Ausgabe. Es ist möglich,
 dieses Programm auch außerhalb von DrRacket als Batchprogramm zu verwenden. Allerdings muss in diesem Fall die
-Eingabe anders übergeben werden, nämlich in Form von Kommandozeilenparametern. Wie dies aussehen kann
+Eingabe anders übergeben werden, nämlich in Form von Kommandozeilenparametern. Wie dies aussehen kann,
 zeigt das folgende Programm. Um auf die Kommandozeilenparameter zuzugreifen, sind 
 einige Sprachkonstrukte notwendig, die Sie bisher noch nicht kennen. Versuchen Sie daher nicht, die Details
-des unten stehenden Programms zu verstehen; es soll lediglich illustrieren, dass man Racket Programme ohne
+des unten stehenden Programms zu verstehen; es soll lediglich illustrieren, dass man Racket-Programme ohne
 DrRacket als Batchprogramme ausführen kann.
 
 @racketblock[
@@ -120,7 +120,7 @@ $ racket letter.rkt Tillmann Rendel Klaus | wc -w
      36
 }|
 
-Das Programm @tt{racket}, was in diesem Befehl aufgerufen wird, ist die Kommandozeilenversion von DrRacket.
+Das Programm @tt{racket}, das in diesem Befehl aufgerufen wird, ist die Kommandozeilenversion von DrRacket.
 Sie können Racket Programme aber natürlich auch ganz ohne die Racket Umgebung ausführen. Beispielsweise
 können Sie mit dem Menüeintrag Racket -> Programmdatei eine ausführbare Datei erzeugen, die unabhängig von DrRacket 
 auf jedem Rechner mit dem passenden Betriebssystem ausgeführt werden kann.
@@ -142,8 +142,8 @@ Wir werden zur Konstruktion interaktiver Programme das Universe Teachpack verwen
 
 @subsection[#:tag "universeteachpack"]{Das Universe Teachpack}
 
-Das "universe" Teachpack unterstützt die Konstruktion interaktiver Programme: Programme die auf Zeitsignale,
-Mausklicks, Tastatureingaben, oder Netzwerkverkehr reagieren und grafische Ausgaben erzeugen.
+Das "universe" Teachpack unterstützt die Konstruktion interaktiver Programme: Programme, die auf Zeitsignale,
+Mausklicks, Tastatureingaben oder Netzwerkverkehr reagieren und grafische Ausgaben erzeugen.
 Wir werden die Funktionsweise dieses Teachpacks anhand des folgenden Beispiels erklären. Bitte probieren
 Sie vor dem weiterlesen aus, was dieses Programm macht.
 
@@ -228,7 +228,7 @@ sich der aktuelle WorldState geändert hat.
 
 Die letzte Funktion, @racket[end-of-the-world], dient dazu, zu überprüfen, ob die Anwendung beendet
 werden soll. Hierzu prüft sie den WorldState und produziert als Ergebnis einen Wahrheitswert.
-In unserem Beispiel möchten wir die Anwendung beenden nachdem die Bombe explodiert ist.
+In unserem Beispiel möchten wir die Anwendung beenden, nachdem die Bombe explodiert ist.
 
 Der letzte @racket[big-bang] Ausdruck dient dazu, den WorldState zu initialisieren und alle Event Handler
 zu installieren. Der @racket[big-bang] Operator ist eine Sonderform, also keine normale BSL Funktion.
@@ -239,11 +239,11 @@ wählen wir einen initialen Countdown, @racket[500].
 Die Unterausdrücke wie @racket[(on-tick on-tick-event)] sind keine Funktionsaufrufe sondern spezielle
 Klauseln des @racket[big-bang] Operators, in denen man die Event-Handler Funktionen sowie die Funktionen
 zum Zeichnen (@racket[to-draw]) und Beenden (@racket[stop-when]) des Programms angibt. Selbstverständlich
-hätten wir den Event Handler Funktionen auch andere Namen geben können --- der @racket[big-bang] ist
-die Stelle, wo definiert wird, welcher Ereignistyp mit welcher Event Handler Funktion verknüpft wird.
+hätten wir den Event-Handler Funktionen auch andere Namen geben können -- der @racket[big-bang] ist
+die Stelle, wo definiert wird, welcher Ereignistyp mit welcher Event-Handler Funktion verknüpft wird.
 
-Einige dieser Klauseln erwarten außer dem Namen der Event Handler Funktion noch weitere Argumente.
-So sagt beispielsweise die Zahl in der @racket[(on-tick on-tick-event 0.1)] dass alle 0,1 Sekunden
+Einige dieser Klauseln erwarten außer dem Namen der Event-Handler Funktion noch weitere Argumente.
+So sagt beispielsweise die Zahl in der @racket[(on-tick on-tick-event 0.1)], dass alle 0,1 Sekunden
 ein Timer-Event ausgelöst werden soll. Man kann diese Angabe auch weglassen; dann wird als
 Standardwert 1/28 Sekunde angenommen. Es gibt noch eine Reihe weiterer Klauseln und Varianten der
 oben stehenden Klauseln; für weitere Informationen dazu siehe die Dokumentation des universe Teachpacks.
