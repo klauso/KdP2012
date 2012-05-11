@@ -293,9 +293,9 @@ strukturieren!
 (define WIDTH 200)
 (define HEIGHT 200)
 (define BALL-IMG (circle 10 "solid" "red"))
-(define BALL-CENTER-TO-EDGE (/ (image-width BALL-IMG) 2))
+(define BALL-RADIUS (/ (image-width BALL-IMG) 2))
 
-(define-struct vel (deltax deltay))
+(define-struct vel (delta-x delta-y))
 ; a Vel is (make-vel Number Number)
 ; interp. the velocity vector of a moving object
 
@@ -308,8 +308,8 @@ strukturieren!
 (check-expect (posn+vel (make-posn 5 6) (make-vel 1 2)) 
               (make-posn 6 8))
 (define (posn+vel p q)
-  (make-posn (+ (posn-x p) (vel-deltax q)) 
-             (+ (posn-y p) (vel-deltay q))))
+  (make-posn (+ (posn-x p) (vel-delta-x q)) 
+             (+ (posn-y p) (vel-delta-y q))))
 
 
 ; Ball -> Ball
@@ -329,9 +329,10 @@ strukturieren!
 ; - "left"
 ; - "right"
 ; - "none"
+; interp. the location where a ball collides with a wall
 
 ; Posn -> Collision
-; detects with which of the walls (if any) an object at posn collides
+; detects with which of the walls (if any) the ball collides
 (check-expect (collision (make-posn 0 12))  "left")
 (check-expect (collision (make-posn 15 HEIGHT)) "down")
 (check-expect (collision (make-posn WIDTH 12))  "right")
@@ -339,14 +340,10 @@ strukturieren!
 (check-expect (collision (make-posn 55 55)) "none")
 (define (collision posn)
   (cond 
-    [(<= (posn-x posn) BALL-CENTER-TO-EDGE) 
-     "left"]
-    [(<= (posn-y posn) BALL-CENTER-TO-EDGE) 
-     "top"]
-    [(>= (posn-x posn) (- WIDTH BALL-CENTER-TO-EDGE)) 
-     "right"]
-    [(>= (posn-y posn) (- HEIGHT BALL-CENTER-TO-EDGE)) 
-     "down"]
+    [(<= (posn-x posn) BALL-RADIUS) "left"]
+    [(<= (posn-y posn) BALL-RADIUS)  "top"]
+    [(>= (posn-x posn) (- WIDTH BALL-RADIUS)) "right"]
+    [(>= (posn-y posn) (- HEIGHT BALL-RADIUS)) "down"]
     [else "none"]))
   
 ; Vel Collision -> Vel  
@@ -360,21 +357,22 @@ strukturieren!
 (define (bounce vel collision)
   (cond [(or (string=? collision "left") 
              (string=? collision "right")) 
-         (make-vel (- (vel-deltax vel)) 
-                   (vel-deltay vel))]
+         (make-vel (- (vel-delta-x vel)) 
+                   (vel-delta-y vel))]
         [(or (string=? collision "down") 
              (string=? collision "top")) 
-         (make-vel (vel-deltax vel) 
-                   (- (vel-deltay vel)))]
+         (make-vel (vel-delta-x vel) 
+                   (- (vel-delta-y vel)))]
         [else vel]))
         
 ; WorldState is a Ball
 
 ; WorldState -> Image
 ; renders ball at its position
-(check-expect (image? (render initial-ball)) true)
+(check-expect (image? (render INITIAL-BALL)) true)
 (define (render ball)
-  (place-image BALL-IMG (posn-x (ball-loc ball)) 
+  (place-image BALL-IMG 
+               (posn-x (ball-loc ball)) 
                (posn-y (ball-loc ball)) 
                (empty-scene WIDTH HEIGHT)))
 
@@ -388,12 +386,11 @@ strukturieren!
                         (bounce (ball-velocity ball) 
                                 (collision (ball-loc ball))))))
 
-(define initial-ball (make-ball (make-posn 20 12)
+(define INITIAL-BALL (make-ball (make-posn 20 12)
                                 (make-vel 1 2)))
 
-(define (main ws) (big-bang ws 
-                            (on-tick tick 0.01) 
-                            (to-draw render)))
+(define (main ws) 
+  (big-bang ws (on-tick tick 0.01) (to-draw render)))
 
 ; start with: (main initial-ball)
 )
