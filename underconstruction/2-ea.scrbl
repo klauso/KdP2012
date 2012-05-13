@@ -147,7 +147,7 @@ Die @racket[animate] Funktion bewirkt folgendes: Eine Stoppuhr wird mit dem Wert
 wird der Zählerwert um eins erhöht. Jedesmal wenn der Zähler um eins erhöht wird, wird die Funktion @racket[create-rocket-scene]
 ausgewertet und das resultierende Bild in dem Fenster angezeigt.
 
-@section{Bedeutung von Funktionsdefinitionen}
+@section[#:tag "semanticsoffundefs"]{Bedeutung von Funktionsdefinitionen}
 Um die Bedeutung von Funktionsdefinitionen zu definieren, müssen wir sagen, wie Funktionsdefinitionen und Funktionsaufrufe ausgewertet werden.
 Durch Funktionsdefinitionen können Ausdrücke nicht mehr isoliert (ohne Berücksichtigung des Rests des Programms) ausgewertet werden; sie werden
 im @italic{Kontext} einer Menge von Funktionsdefinitionen ausgewertet. Dieser Kontext umfasst die Menge aller Funktionsdefinitionen, die 
@@ -642,7 +642,7 @@ bis auf einen Unterausdruck identisch sind, können wir die Kondition in den Aud
         height 
         ROCKET-CENTER-TO-BOTTOM) MTSCN))]
 
-@section{Bedeutung von Funktions- und Variablendefinitionen}
+@section[#:tag "semanticsofvardefs"]{Bedeutung von Funktions- und Variablendefinitionen}
 
 Wir haben oben gesagt, dass es keine Rolle spielt, ob die Variablen oberhalb oder unterhalb der Funktionsdefinition definiert werden.
 Allerdings spielt es sehr wohl eine Rolle, in welcher Reihenfolge diese Variablen definiert werden. Wie sie sehen, verwenden 
