@@ -395,6 +395,9 @@ strukturieren!
 ; start with: (main initial-ball)
 )
 
+Probieren Sie aus, was passiert, wenn der Ball genau in eine Ecke des Spielfeldes fliegt.
+Wie kann man dieses Problem lösen? Reflektieren Sie in Anbetracht dieses Problems darüber,
+wieso es wichtig ist, immer die Extremfälle (im Englischen: @italic{@bold{Corner} Cases}) zu testen ;-)
 
 @section{Erweiterung des Entwurfsrezepts}
 

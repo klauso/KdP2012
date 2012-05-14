@@ -153,13 +153,10 @@ bei dem oben angesprochenen @racket[overlaps] der Fall:
 
 Auch hier haben wir wieder die Implementierung der einzelnen Fälle in Funktionen ausgelagert. Die Tatsache, dass wir
 in den beiden letzten Fällen die gleiche Funktion aufrufen, illustriert, dass diese Hilfsfunktionen die Wiederverwendung
-von Code fördern. Hier die Implementation der Hilfsfunktionen. Beachten Sie, dass auch in @racket[overlaps-rectangle-rectangle]
-die Hilfsfunktion @racket[point-inside-rectangle] wiederverwendet wird.
+von Code fördern. Hier die Implementation der Hilfsfunktionen. 
 
 @margin-note{Wenn Sie Spass an Geometrie haben, ergänzen Sie die 
-             Implementation von @racket[collides-rectangle-circle]. 
-             Beachten Sie, wie die Kommentare innerhalb der Funktionen
-             sinnvoll die Implementation erklären.}
+             Implementation von @racket[overlaps-rectangle-rectangle] und  @racket[overlaps-rectangle-circle]. }
 @#reader scribble/comment-reader
 (racketblock
 ; GCircle GCircle -> Boolean
@@ -172,18 +169,7 @@ die Hilfsfunktion @racket[point-inside-rectangle] wiederverwendet wird.
 
 ; GRectangle GRectangle -> Boolean
 ; determines whether r1 overlaps with r2
-(define (overlaps-rectangle-rectangle r1 r2)
-  ; Two rectangles overlap if and only if any corner of
-  ; one rectangle is within the other rectangle
-  (or
-   (point-inside-rectangle r1 (grectangle-corner-ul r2))
-   (point-inside-rectangle r1 (grectangle-corner-dr r2))
-   (point-inside-rectangle r1 (make-posn 
-                                   (posn-x (grectangle-corner-ul r2))
-                                   (posn-y (grectangle-corner-dr r2))))
-   (point-inside-rectangle r1 (make-posn 
-                                   (posn-x (grectangle-corner-dr r2))
-                                   (posn-y (grectangle-corner-ul r2))))))
+(define (overlaps-rectangle-rectangle r1 r2) ...)
 
 ; GRectangle GCircle -> Boolean
 ; determines whether r overlaps with c
