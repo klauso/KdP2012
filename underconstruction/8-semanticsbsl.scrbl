@@ -556,6 +556,181 @@ Gemäß @italic{(PRIM)} gilt @mv{e-1} @step @racket[false]; gemäß @italic{(KON
 
 
 
-@section{Bedeutung von Datendefinitionen}
+@section{Bedeutung von Daten und Datendefinitionen}
+Datendefinitionen haben auf das Programmverhalten keinen Einfluss, da sie in Form eines Kommentars 
+definiert werden. Dennoch können wir ihnen eine präzise Bedeutung geben, die hilft, ihre
+Rolle zu verstehen.
 
-@section{Schliessen durch Gleichungen}
+Hierzu ist es wichtig, das @italic{Datenuniversum} eines Programms zu verstehen. Das Datenuniversum
+umfasst alle Daten, die in einem gegebenen Programm potentiell vorkommen können. Welche Werte
+das sind, wird durch unsere Grammatik für Werte, @nonterm{v}, oben beschrieben. Allerdings können
+nicht alle Werte, die durch @nonterm{v} beschrieben werden, in einem Programm vorkommen, sondern
+nur diese, für die die benutzen Strukturen auch wirklich im Programm definiert sind.
+
+Beispiel: Ein Programm enthält die Strukturdefinitionen
+
+@racketblock[
+(define-struct circle (center radius))
+(define-struct rectangle (corner-ul corner-dr))]
+
+Das Datenuniversum für dieses Programm umfasst alle Werte der Basistypen, aber auch alle
+Strukturinstanzen, die sich auf Basis dieser Strukturdefinitionen bilden lassen, also zum Beispiel
+@racket[<make-circle 5 6>] aber auch:
+
+@racketblock[<make-circle <make-circle <make-rectangle 5 <make-rectangle true "asdf">> 77> 88>]
+
+Das Datenuniversum sind also alle Werte, die sich durch die Grammatik von @nonterm{v} bilden lassen, eingeschränkt
+auf die Strukturen, die in dem Programm definiert sind.
+
+Eine Strukturdefinition erweitert also das Datenuniversum um neue Werte, nämlich alle Werte, in denen
+mindestens einmal diese Struktur verwendet wird.
+
+Eine Datendefinition, auf der anderen Seite, erweitert nicht das Datenuniversum. Eine Datendefinition
+definiert eine @italic{Teilmenge} des Datenuniversums.
+
+Beispiel:
+
+@#reader scribble/comment-reader
+(racketblock
+; a Posn is a structure: (make-posn Number Number)
+)
+
+@racket[<make-posn 3 4 >] ist ein Element der definierten Teilmenge, aber @racket[<make-posn true "x" >]
+oder @racket[<make-posn <make-posn 3 4> 5>] sind es nicht.
+
+Eine Datendefinition beschreibt im Allgemeinen eine kohärente Teilmenge des Datenuniversums. Funktionen
+können durch ihre Signatur deutlich machen, welche Werte des Datenuniversums sie als Argumente akzeptieren
+und welche Ergebnisse sie produzieren.
+
+@section{Refactoring und Schliessen durch Gleichungen}
+
+Dieser Abschnitt ist noch nicht fertig ausgearbeitet; im Moment können Sie ihn ignorieren oder, falls sie
+"mutig" sind, mal unverbindlich einen Blick riskieren :-)
+
+@subsection{Refactoring von Ausdrücken}
+
+Wir hatten in Abschnitt @secref{semanticsofexpressions} vorgestellt, wie man auf Basis der Reduktionsregeln
+eine Gleichheitsrelation auf Ausdrücken definieren kann. 
+Diese Gleichheiten können zum Refactoring von Programmen verwendet
+werden - also Programmänderungen, die nicht die Bedeutung verändern aber die Struktur des Programms verbessern.
+Außerdem können sie verwendet werden, um Eigenschaften seines Programmes herzuleiten, zum Beispiel
+dass die Funktion @racket[overlaps-circle] aus dem vorherigen Kapitel kommutativ ist, also 
+@racket[(overlaps-circle c1 c2)] @equiv @racket[(overlaps-circle c2 c1)].
+
+Die Gleichheitsrelation aus Abschnitt @secref{semanticsofexpressions} war allerdings zu klein für viele
+praktische Zwecke, denn sie erfordert beispielsweise, dass wir Funktionsaufrufe nur dann auflösen können,
+wenn alle Argumente Werte sind.
+
+BSL hat jedoch eine bemerkenswerte Eigenschaft, die es uns erlaubt, eine viel mächtigere Gleichheitsrelation
+zu definieren: Es ist für das Ergebnis eines Programms nicht von Bedeutung, in welcher Reihenfolge Ausdrücke ausgewertet
+werden. Insbesondere ist es nicht notwendig, vor einem Funktionsaufruf die Argumente auszuwerten; man kann auch
+einfach die Argumentausdrücke verwenden.
+
+Die Idee wird durch folgenden, allgemeineren Auswertungskontext ausgedrückt:
+
+@BNF[(list @nonterm{E} 
+      @litchar{[]}
+      @BNF-seq[open @nonterm{name} @kleenestar[@nonterm{e}] @nonterm{E} @kleenestar[@nonterm{e}]  close]
+      @BNF-seq[open @litchar{cond} @kleenestar[@BNF-group[@BNF-seq[lb @nonterm{e} @nonterm{e} rb]]] lb @nonterm{E} @nonterm{e} rb @kleenestar[@BNF-group[@BNF-seq[lb @nonterm{e} @nonterm{e} rb]]]  close]
+      @BNF-seq[open @litchar{cond} @kleenestar[@BNF-group[@BNF-seq[lb @nonterm{e} @nonterm{e} rb]]] lb @nonterm{e} @nonterm{E} rb @kleenestar[@BNF-group[@BNF-seq[lb @nonterm{e} @nonterm{e} rb]]]  close]      
+      @BNF-seq[open @litchar{and} @kleenestar[@nonterm{e}] @nonterm{E} @kleenestar[@nonterm{e}] ]
+)]
+Zusammen mit der folgenden Kongruenzregel für unsere Gleichheitsrelation, drückt dieser Auswertungskontext aus, 
+dass überall "gleiches mit gleichem" ersetzt werden darf:
+@elem[#:style inbox-style]{
+@italic{(EKONG): }Falls @mv{e-1} @equiv @mv{e-2}, dann @mv{E[e-1]} @equiv @mv{E[e-2]}.
+}      
+ 
+Eine Gleichheitsrelation sollte natürlich eine Äquivalenzrelation --- also reflexiv, kommutativ und transitiv --- sein:
+@elem[#:style inbox-style]{
+@italic{(EREFL): }@mv{e} @equiv @mv{e}.
+}      
+
+@elem[#:style inbox-style]{
+@italic{(EKOMM): }Falls @mv{e1} @equiv @mv{e2}, dann @mv{e2} @equiv @mv{e1}.
+}      
+
+@elem[#:style inbox-style]{
+@italic{(ETRANS): }Falls @mv{e-1} @equiv @mv{e-2} und @mv{e-2} @equiv @mv{e-3}, dann @mv{e-1} @equiv @mv{e-3}.
+}      
+
+@elem[#:style inbox-style]{
+@italic{(ERED): }Falls @mv{e-1} @step @mv{e-2} dann @mv{e-1} @equiv @mv{e-2}.
+}
+
+
+@elem[#:style inbox-style]{
+@italic{(EFUN): }Falls @BNF-seq[open @litchar{define} open @mv{name} @mv{name-1} "..." @mv{name-n} close @nonterm{e} close] in der Umgebung, @linebreak[]
+dann @BNF-seq[open @mv{name} @mv{e-1} "..." @mv{e-n} close] @equiv @mv{exp}[@mv{name-1} := @mv{e-1} ... @mv{name-n} := @mv{e-n}]}
+
+
+@elem[#:style inbox-style]{
+@italic{(EAND-1): }@BNF-seq[open @litchar{and} @litchar{true}  @litchar{true} close] @equiv @litchar{true}}
+
+@italic{(EAND-3): }@elem[#:style inbox-style]{@BNF-seq[open @litchar{and} "..." @litchar{false} "..." close] @equiv @litchar{false}}
+
+Einen kleinen Hackenfuss gibt es allerdings doch noch. Man würde sich von einer Gleichheitsrelation für Programme wünschen, dass folgende Eigenschaft
+gilt: Falls @mv{e-1} @equiv @mv{e-2} und @mv{e-1} @multistep @mv{v}, dann auch @mv{e-2} @multistep @mv{v}. Diese Eigenschaft gilt jedoch
+nicht, weil es sein kann, dass @mv{e-1} terminiert aber @mv{e-2} nicht. 
+
+Beispiel: Betrachten Sie folgendes Programm:
+
+@racketblock[
+(define (f x) (f x))
+(define (g x) 42)
+(g (f 1))
+]
+
+Da @racket[(f 1)] @step @racket[(f 1)], terminiert die Berechnung des Arguments für @racket[g] nicht, und gemäß der Kongruenzregel
+gilt damit @racket[(g (f 1))] @step @racket[(g (f 1))], daher terminiert die Berechnung des Ausdrucks @racket[(g (f 1))] @step @racket[(g (f 1))] nicht.
+Auf der anderen Seite gilt jedoch gemäß @italic{(EFUN)} @racket[(g (f 1))] @equiv 42. Man muss daher bei der Verwendung der Gleichheitsregeln
+berücksichtigen, dass diese das Terminierungsverhalten des Programms verändern können.
+
+Es gilt jedoch folgende etwas schwächere Eigenschaft, die wir ohne Beweis aufführen:
+
+Falls @mv{e-1} @equiv @mv{e-2} und @mv{e-1} @multistep @mv{v-1} und @mv{e-2} @multistep @mv{v-2}, dann @mv{v1} = @mv{v2}.
+
+Wenn also @mv{e-1} und @mv{e-2} gleich sind und beide terminieren, dann ist der Wert, der herauskommt, gleich.
+
+
+
+@subsection{Refactoring von Datentypen}
+
+Für Produkttypen, Summentypen und Funktionstypen gelten folgende Gleichungen.
+Wir sagen, Typ a ist @italic{isomorph} zu Typ b, falls a @equiv b gemäß 
+der unten stehenden Regeln.
+
+Um die Analogie zur Algebra zu verdeutlichen, schreiben wir den
+Funktionstyp a -> b als b@superscript{a}. Der Typ 2 steht für einen
+beliebigen Typen mit 2 Elementen (wie zum Beispiel Boolean), der Typ 1 
+steht für einen Typ mit einem Element, und so weiter.
+
+a*1 @equiv a
+
+a+0 @equiv a
+
+1+1 @equiv 2 bei tagged union
+
+1+1 @equiv 1 bei untagged union
+
+a+b @equiv b+a
+
+a*b @equiv b*a
+
+(a*b)*c @equiv a*(b*c)
+
+(a+b)+c @equiv a+(b+c)
+
+a+a @equiv 2*a bei tagged union
+
+a+a @equiv a   bei untagged union
+
+a*a @equiv a^2
+
+a^(b*c) @equiv (a^b)^c @equiv (a^c)^b (curry/uncurry)
+
+Isomorph bedeutet, dass es eine bijektive Abbildung zwischen den Typen gibt, die
+"strukturerhaltend" ist. Sei a @equiv b und seien a->b und b->a die Bijektionen zwischen
+den Typen. "Strukturerhaltend" heißt informell, dass man jedes Programm, welches den
+Typ a verwendet, systematisch so transformieren kann, dass die Bijektion auch auf
+das transformierte Programm übertragbar ist. 

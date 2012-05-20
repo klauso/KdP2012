@@ -14,4 +14,6 @@
 @include-section["6-structs.scrbl"]
 @include-section["7-polynomials.scrbl"]
 @include-section["8-semanticsbsl.scrbl"]
+@include-section["9-recdatastructures.scrbl"]
+
 
