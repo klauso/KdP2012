@@ -159,10 +159,10 @@ unserem Beispiel ergibt sich:
 @#reader scribble/comment-reader
 (racketblock
 (define (person-has-ancestor p a)
-  (cond [(person? a) 
-         ...(person-name a) ... 
-         ...(person-father a)...
-         ...(person-mother a) ...]
+  (cond [(person? p) 
+         ...(person-name p) ... 
+         ...(person-father p)...
+         ...(person-mother p) ...]
         [else ...]))
 )
 
@@ -179,11 +179,11 @@ haben, vor, eigene Hilfsfunktionen zu definieren. Dies können wir wie folgt and
 
 @#reader scribble/comment-reader
 (racketblock
-(define (person-has-ancestor a name)
-  (cond [(person? a) 
-         ... (person-name a) ...
-         ... (father-has-ancestor (person-father a) ...)...
-         ... (mother-has-ancestor (person-mother a) ...)...]
+(define (person-has-ancestor p a)
+  (cond [(person? p) 
+         ... (person-name p) ...
+         ... (father-has-ancestor (person-father p) ...)...
+         ... (mother-has-ancestor (person-mother p) ...)...]
         [else ...]))
 )
 
@@ -199,11 +199,11 @@ Zum Glück haben wir aber bereits eine Funktion, deren Aufgabe identisch mit der
 
 @#reader scribble/comment-reader
 (racketblock
-(define (person-has-ancestor a name)
-  (cond [(person? a) 
-         ... (person-name a) ...
-         ... (person-has-ancestor (person-father a) ...)...
-         ... (person-has-ancestor (person-mother a) ...)...]
+(define (person-has-ancestor p a)
+  (cond [(person? p) 
+         ... (person-name p) ...
+         ... (person-has-ancestor (person-father p) ...)...
+         ... (person-has-ancestor (person-mother p) ...)...]
         [else ...]))
 )
 
@@ -215,11 +215,11 @@ Die Vervollständigung des Templates ist nun eifach:
 @#reader scribble/comment-reader
 (racketblock
 (define (person-has-ancestor p a)
-  (cond [(person? a) 
+  (cond [(person? p) 
          (or
-          (string=? (person-name a) name)
-          (person-has-ancestor (person-father a) name)
-          (person-has-ancestor (person-mother a) name))]
+          (string=? (person-name p) a)
+          (person-has-ancestor (person-father p) a)
+          (person-has-ancestor (person-mother p) a))]
         [else false]))
 )
 
@@ -351,3 +351,309 @@ des @racket[make-person] Konstruktors ein:
 )
 
 @section{Listen}
+
+Die @racket[FamilyTree] Datendefinition von oben steht für eine Menge von Bäumen, in denen 
+jeder Knoten genau zwei ausgehende Kanten hat. Selbstverständlich können wir auch auf die
+gleiche Weise Bäume repräsentieren, die drei oder fünf ausgehende Kanten haben --- indem wir
+eine Alternative des Summentyps haben, in der der Datentyp drei bzw. fünfmal vorkommt.
+
+Ein besonders wichtiger Spezialfall ist der, wo jeder Knoten genau eine ausgehende Kante hat.
+Diese degenerierten Bäume nennt man auch @italic{Listen}.
+
+@subsection{Listen, hausgemacht}
+Hier ist eine mögliche Definition für Listen von Zahlen:
+
+@#reader scribble/comment-reader
+(racketblock
+(define-struct lst (first rest))
+
+; A List-of-Numbers is either:
+; - (make-lst Number List-Of-Numbers)
+; - false
+; interp. the head and rest of a list, or the empty list
+)
+
+Hier ist ein Beispiel, wie wir eine Liste mit den Zahlen 1 bis 3 erzeugen können:
+
+@racketblock[(make-lst 1 (make-lst 2 (make-lst 3 false)))]
+
+Der Entwurf von Funktionen auf Listen funktioniert genau wie der Entwurf von Funktionen auf 
+allen anderen Bäumen. Betrachten wir als Beispiel eine Funktion, die alle Zahlen in einer
+Liste aufaddiert.
+
+Hier ist die Spezifikation dieser Funktion:
+
+@#reader scribble/comment-reader
+(racketblock
+; List-Of-Numbers -> Number
+; adds up all numbers in a list
+(check-expect (sum (make-lst 1 (make-lst 2 (make-lst 3 false)))) 6)
+(define (sum l) ...)
+)
+
+Für das Template schlägt das Entwurfsrezept vor, die verschiedenen Alternativen zu unterscheiden und in den rekursiven
+Alternativen rekursive Funktionsaufrufe einzubauen:
+
+@racketblock[
+(define (sum l)
+  (cond [(lst? l) ... (lst-first l) ... (sum (lst-rest l)) ...]
+        [else ...]))
+]
+
+Auf Basis dieses Templates ist die Vervollständigung nun einfach:
+
+@racketblock[
+(define (sum l)
+  (cond [(lst? l) (+ (lst-first l) (sum (lst-rest l)))]
+        [else 0]))
+]
+
+
+@subsection{Listen aus der Konserve}
+
+Weil Listen so ein häufig vorkommender Datentyp sind, gibt es in BSL vordefinierte Funktionen für Listen.
+Wie @racket[List-of-Numbers] zeigt, benötigen wir diese vordefinierten Funktionen eigentlich nicht, weil wir
+Listen einfach als degenerierte Bäume repräsentieren können. Dennoch machen die eingebauten Listenfunktionen
+das Programmieren mit Listen etwas komfortabler und sicherer.
+
+Die eingebaute Konstruktorfunktion für Listen in BSL heißt @racket[cons]; die leere Liste wird nicht durch @racket[false]
+sondern durch die spezielle Konstante @racket[empty] repräsentiert. 
+
+Es ist sinnvoll, die leere Liste durch einen neuen Wert zu repräsentieren, der für nichts anderes steht, denn dann
+kann es niemals zu Verwechslungen kommen. Wenn wir etwas analoges in unserer selbstgebauten Datenstruktur für
+Listen machen wollten, könnten wir dies so erreichen, indem wir eine neue Struktur ohne Felder definieren und
+ihren einzigen Wert als Variable definieren:
+
+@racketblock[
+(define-struct empty-lst ())
+(define EMPTYLIST (make-empty-lst))]
+
+Dementsprechend würde die Beispielliste von oben nun so konstruiert:
+
+@racketblock[(make-lst 1 (make-lst 2 (make-lst 3 EMPTYLIST)))]
+             
+Die @racket[cons] Operation entspricht unserem @racket[make-lst]
+von oben, allerdings mit einem wichtigen Unterschied: Sie überprüft zusätzlich, dass das zweite
+Argument auch eine Liste ist:
+
+@ex[(cons 1 (cons 2 empty))]
+
+@ex[(cons 1 2)]
+
+Man kann sich @racket[cons] also so vorstellen wie diese selbstgebaute Variante von @racket[cons] auf Basis von @racket[List-Of-Numbers]:
+
+@racketblock[
+(define (our-cons x l)
+  (if (or (empty-lst? l) (lst? l)) 
+      (make-lst x l)
+      (error "second argument of cns must be a list")))]
+
+
+Die wichtigsten eingebauten Listenfunktionen sind: 
+
+@racket[empty], @racket[empty?], @racket[cons], @racket[first], @racket[rest] und @racket[cons?].
+
+Sie entsprechen in unserem selbstgebauten Listentyp: 
+
+@racket[EMPTYLIST], @racket[empty-lst?], @racket[our-cons], @racket[lst-first], @racket[lst-rest] und @racket[lst?].
+
+Die Funktion, die @racket[make-lst] entspricht, wird von BSL versteckt, um sicherzustellen, dass alle Listen
+stets mit @racket[cons] konstruiert werden und dementsprechend die Invariante forciert wird, dass das zweite
+Feld der Struktur auch wirklich eine Liste ist. Mit unseren bisherigen Mitteln können wir dieses "Verstecken"
+von Funktionen nicht nachbauen; dazu kommen wir später, wenn wir über Module reden.
+
+Unser Beispiel von oben sieht bei Nutzung der eingebauten Listenfunktionen also so aus:
+
+@#reader scribble/comment-reader
+(racketblock
+; A List-of-Numbers is one of:
+; - (cons Number List-Of-Numbers)
+; - empty
+
+; List-Of-Numbers -> Number
+; adds up all numbers in a list
+(check-expect (sum (cons 1 (cons 2 (cons 3 empty)))) 6)
+(define (sum l)
+  (cond [(cons? l) (+ (first l) (sum (rest l)))]
+        [else 0]))
+)
+
+@subsection{Die @racket[list] Funktion}
+
+Es stellt sich schnell als etwas mühselig heraus, Listen mit Hilfe von @racket[cons] und @racket[empty] zu konstruieren.
+Aus diesem Grund gibt es etwas syntaktischen Zucker, um Listen komfortabler zu erzeugen: Die @racket[list] Funktion.
+
+Mit der @racket[list] Funktion können wir die Liste @racket[(cons 1 (cons 2 (cons 3 empty)))] so erzeugen: 
+
+@racketblock[(list 1 2 3)]
+
+Die @racket[list] Funktion ist jedoch nur etwas syntaktischer Zucker, der wie folgt definiert ist:
+
+@racketblock[(list exp-1 ... exp-n)]
+
+steht für n verschachtelte @racket[cons] Ausdrücke:
+ 
+@racketblock[(cons exp-1 (cons ... (cons exp-n empty)))]
+
+Es ist wichtig, zu verstehen, dass dies wirklich nur eine abkürzende Schreibweise ist. Allerdings ist diese Schreibweise 
+nicht nur leichter zu schreiben, sondern auch leichter zu lesen. Aus diesem Grund sollten Sie ab diesem
+Zeitpunkt ein neues Sprachlevel aktivieren, nämlich "Anfänger mit Listenabkürzungen". Der Unterschied zum "Anfänger" Level
+liegt darin, dass im neuen Sprachlevel Listen in der Form @racket[(list 1 2 3)] ausgegeben werden
+und nicht @racket[(cons 1 (cons 2 (cons 3 empty)))]. Dennoch ist es weiterhin so, dass @racket[list] nur
+eine Abkürzung für die Benutzung von @racket[cons] und @racket[empty] ist.
+
+@subsection{Datentypdefinitionen für Listen}
+
+Wir haben oben eine Datendefinition @racket[List-of-Numbers] gesehen. Sollen wir auch für @racket[List-of-Strings]
+oder @racket[List-of-Booleans] eigene Datendefinitionen schreiben? Sollen diese die gleiche Struktur benutzen, oder
+sollen wir separate Strukturen für jede dieser Datentypen haben?
+
+Es ist sinnvoll, dass alle diese Datentypen die gleiche Struktur benutzen, nämlich in Form der eingebauten 
+Listenfunktionen. Hierfür gibt es zwei Gründe: Erstens wären all diese Strukturen sehr ähnlich und wir würden damit
+gegen das DRY Prinzip verstoßen. Zweitens gibt es eine ganze Reihe von Funktionen, die auf @italic{beliebigen}
+Listen arbeiten, zum Beispiel eine Funktion @racket[second], die das zweite Listenelement einer Liste zurückgibt:
+
+@racketblock[
+(define (second l)
+  (if (or (empty? l) (empty? (rest l)))
+      (error "need at least two list elements")
+      (first (rest l))))]
+
+Diese Funktion (die übrigens schon vordefiniert ist, genau wie @racket[third], @racket[fourth] und so weiter)
+funktioniert für beliebige Listen, unabhängig von der Art der gespeicherten Daten. Solche Funktionen könnten wir
+nicht schreiben, wenn wir für je nach Typ der Listenelemente andere Strukturen verwenden würden.
+
+Der häufigste Anwendungsfall von Listen ist der, dass die Listen @italic{homogen} sind. Das bedeutet, dass 
+alle Listenelemente einen gemeinsamen Typ haben. Dies ist keine sehr große Einschränkung, denn dieser
+gemeinsame Typ kann beispielsweise auch ein Summentyp mit vielen Alternativen sein. Für diesen Fall
+verwenden wir die Kurzschreibweise @racket[List-of-]@italic{name}, um die entsprechende Instanz
+des folgenden Schemas für Datendefinition zu bezeichnen:
+
+@#reader scribble/comment-reader
+(racketblock
+; A List-of-names is one of:
+; - (cons name List-Of-name)
+; - empty
+)
+
+In Zukunft werden wir also einfach Datentypen wie @racket[List-of-String], @racket[List-of-Boolean], 
+@racket[List-of-List-of-String] oder @racket[List-of-FamilyTree] verwenden und meinen damit implizit
+die oben angeführte Datendefinition.
+
+Was aber ist ein geeigneter Datentyp für die Signatur von @racket[second] oben, also im Allgemeinen
+für Funktionen, die auf beliebigen Listen funktionieren?
+
+Hierfür verwenden wir die Schreibweise @racket[List-of-X], @racket[List-of-Y] und so weiter, also zum Beispiel so:
+
+@#reader scribble/comment-reader
+(racketblock
+; List-of-X -> X
+(define (second l) ...)
+)
+
+Wir machen mit dieser Signatur deutlich, dass wir für @racket[X] (und jede andere vorkommende @italic{Typvariable})
+jeden beliebigen Typ einsetzen können und @racket[second] dann diesen Typ hat. Also hat @racket[second]
+zum Beispiel den Typ List-of-Number -> Number oder List-of-List-of-String -> List-of-String.
+
+Allerdings werden wir im Moment nur im Ausnahmefall Funktionen wie @racket[second] selber programmieren. 
+Die meisten Funktionen, die wir im Moment programmieren wollen, verarbeiten Listen mit einem konkreten Elementtyp.
+Auf sogenannte @italic{polymorphe} Funktionen wie @racket[second] werden wir später noch zurückkommen.
+
+@subsection{Aber sind Listen wirklich rekursive Datenstrukturen?}
+Wenn man sich Listen aus der realen Welt anschaut (auf einem Blatt Papier, in einer Tabellenkalkulation etc.), 
+so suggerieren diese häufig keine rekursive, verschachtelte Struktur sondern sehen "flach" aus. Ist es also
+"natürlich", Listen so wie wir es getan haben, über einen rekursiven Datentyp - als degenerierten Baum - zu definieren?
+
+In vielen (vor allem älteren) Programmiersprachen gibt es eine direktere Unterstützung für Listen. Listen sind in
+diesen Programmiersprachen fest eingebaut. Listen sind in diesen Sprachen nicht rekursiv; stattdessen wird häufig über
+einen Index auf die Elemente der Liste zugegriffen. Um die Programmierung mit Listen zu unterstützen, gibt es 
+einen ganzen Satz von Programmiersprachenkonstrukten (wie z.B. verschiedenen Schleifen- und Iterationskonstrukten), 
+die der Unterstützung dieser fest eingebauten Listen dienen.
+
+@margin-note{Es gibt allerdings auch durchaus Situationen, in denen rekursiv aufgebaute Listen effizienter
+             sind. Mehr dazu später.}
+Aus Hardware-Sicht sind solche Listen, über die man mit einem Index zugreift, sehr natürlich, denn sie entsprechen
+gut dem von der Hardware unterstützen Zugriff auf den Hauptspeicher. 
+Insofern sind diese speziellen Listenkonstrukte zum Teil durch ihre Effizienz begründet. Es gibt auch in Racket 
+(allerdings nicht in BSL) solche Listen; dort heißen sie @italic{Vektoren}.
+
+Der Reiz der rekursiven Formulierung liegt darin, dass man keinerlei zusätzliche Unterstützung für Listen in der
+Programmiersprache benötigt. Wir haben ja oben gesehen, dass wir uns die Art von Listen, die von BSL direkt
+unterstützt werden, auch selber programmieren können. Es ist einfach "yet another recursive datatype", und alle
+Konstrukte, Entwurfsrezepte und so weiter funktionieren nahtlos auch für Listen. Wir brauchen keine speziellen
+Schleifen oder andere Spezialkonstrukte um Listen zu verarbeiten, sondern machen einfach das, was wir auch
+bei jedem anderen rekursiven Datentyp machen. Das ist bei fest eingebauten
+Index-basierten Listen anders; es gibt viele Beispiele für Sprachkonstrukte, die für "normale Werte" funktionieren, 
+aber nicht für Listen, und umgekehrt. 
+
+BSL und Racket stehen in der Tradition der Programmiersprache @italic{Scheme}. Die Philosophie, die im ersten
+Satz der Sprachspezifikation von Scheme (@url{http://www.r6rs.org}) zu finden ist, ist damit auch für BSL und Racket gültig:
+
+@italic{Programming languages should be designed not by piling feature on top of feature, but by removing the weaknesses 
+and restrictions that make additional features appear necessary. Scheme demonstrates that a very small number of 
+rules for forming expressions, with no restrictions on how they are composed, suffice to form a practical and efficient 
+programming language that is flexible enough to support most of the major programming paradigms in use today.}
+
+Die Behandlung von Listen als rekursive Datentypen ist ein Beispiel für diese Philosophie.
+
+Manche Programmieranfänger finden es nicht intuitiv, Listen und Funktionen darauf rekursiv zu formulieren.
+Aber ist es nicht besser, ein Universalwerkzeug zu verwenden, welches in sehr vielen Situationen verwendbar ist,
+als ein Spezialwerkzeug, das in nichts besser ist als das Universalwerkzeug und nur in einer Situation anwendbar ist?
+
+@subsection{Natürliche Zahlen als rekursive Datenstruktur}
+Es gibt in BSL nicht nur Funktionen, die Listen konsumieren, sondern auch solche, die Listen
+produzieren. Eine davon ist @racket[make-list]. Hier ein Beispiel:
+
+@ex[(make-list 4 "abc")]
+
+Die @racket[make-list] Funktion konsumiert also eine natürliche Zahl n und einen Wert und produziert eine Liste mit n Wiederholungen
+des Werts. Obwohl diese Funktion also nur atomare Daten konsumiert, produziert sie ein beliebig großes
+Resultat. Wie ist das möglich?
+
+@margin-note{Auch in der Mathematik werden natürliche Zahlen ähnlich rekursiv definiert. Recherchieren
+             sie, was die @italic{Peano-Axiome} sind.}
+Eine erleuchtende Antwort darauf ist, dass man auch natürliche Zahlen als Instanzen eines rekursiven Datentyps
+ansehen kann. Hier ist eine mögliche Definition:
+
+@#reader scribble/comment-reader
+(racketblock
+; A Nat (Natural Number) is one of:
+; – 0
+; – (add1 Nat)
+)
+
+Beispielsweise können wir die Zahl @racket[3] repräsentieren als @racket[(add1 (add1 (add1 0)))]. Die @racket[add1]
+Funktion hat also eine Rolle ähnlich zu den Konstruktorfunktionen bei Strukturen. Die Rolle der Selektorfunktion
+wird durch die Funktion @racket[sub1] übernommen. Das Prädikat für die erste Alternative von Nat ist @racket[zero?];
+das Prädikat für die zweite Alternative heißt @racket[positive?].
+
+Mit dieser Sichtweise sind wir nun in der Lage, mit unserem Standard-Entwurfsrezept Funktionen wie @racket[make-list]
+selber zu definieren. Nennen wir unsere Variante von @racket[make-list] @racket[iterate-value]. Hier ist
+die Spezifikation:
+
+@#reader scribble/comment-reader
+(racketblock
+; Nat X -> List-of-X
+; creates a list with n occurences of x
+(check-expect (iterate-value 3 "abc") (list "abc" "abc" "abc"))
+(define (iterate-value n x) ...)
+)
+
+Gemäß unseres Entwurfsrezepts für rekursive Datentypen erhalten wir folgendes Template:
+
+@racketblock[
+(define (iterate-value n x)
+  (cond [(zero? n) ...]
+        [(positive? n) ... (iterate-value (sub1 n) ...)...]))]
+
+
+Dieses Template zu vervollständigen ist nun nur noch ein kleiner Schritt:
+
+@racketblock[
+(define (iterate-value n x)
+  (cond [(zero? n) empty]
+        [(positive? n) (cons x (iterate-value (sub1 n) x))]))]
+
+@section{Das neue Entwurfsrezept}
+
+Lesen Sie hierzu Abschnitt @hyperlink["http://www.ccs.neu.edu/home/matthias/HtDP2e/htdp2e-part2.html#%28part._design~3alists%29"]{4.2 in HTDP/2e}.

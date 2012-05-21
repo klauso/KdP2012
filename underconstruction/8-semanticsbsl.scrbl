@@ -385,13 +385,13 @@ Ist dies nicht erfolgreich, so kann der Ausdruck nicht reduziert werden.
 
 Ist die Funktion hingegen in der Umgebung definiert, so wird der Aufruf zum Body der Funktionsdefintion reduziert,
 wobei vorher alle Parameternamen durch die aktuellen Parameterwerte ersetzt werden. Dies ist die Bedeutung der
-Notation  @mv{exp}[@mv{name-1} := @mv{v-1} ... @mv{name-n} := @mv{v-n}].
+Notation  @mv{e}[@mv{name-1} := @mv{v-1} ... @mv{name-n} := @mv{v-n}].
 
 Die Reduktionsregeln sind also:
 
 @elem[#:style inbox-style]{
-@italic{(FUN): }Falls @BNF-seq[open @litchar{define} open @mv{name} @mv{name-1} "..." @mv{name-n} close @nonterm{e} close] in der Umgebung, @linebreak[]
-dann @BNF-seq[open @mv{name} @mv{v-1} "..." @mv{v-n} close] @step @mv{exp}[@mv{name-1} := @mv{v-1} ... @mv{name-n} := @mv{v-n}]}
+@italic{(FUN): }Falls @BNF-seq[open @litchar{define} open @mv{name} @mv{name-1} "..." @mv{name-n} close @mv{e} close] in der Umgebung, @linebreak[]
+dann @BNF-seq[open @mv{name} @mv{v-1} "..." @mv{v-n} close] @step @mv{e}[@mv{name-1} := @mv{v-1} ... @mv{name-n} := @mv{v-n}]}
 
 @italic{(PRIM): }@elem[#:style inbox-style]{Falls @mv{name} eine primitive Funktion @mv{f} ist und @italic{f(v-1,...,v-n)=v}, @linebreak[]
 dann @BNF-seq[open @mv{name} @mv{v-1} "..." @mv{v-n} close] @step @mv{v}. 
@@ -660,8 +660,8 @@ Eine Gleichheitsrelation sollte natürlich eine Äquivalenzrelation --- also ref
 
 
 @elem[#:style inbox-style]{
-@italic{(EFUN): }Falls @BNF-seq[open @litchar{define} open @mv{name} @mv{name-1} "..." @mv{name-n} close @nonterm{e} close] in der Umgebung, @linebreak[]
-dann @BNF-seq[open @mv{name} @mv{e-1} "..." @mv{e-n} close] @equiv @mv{exp}[@mv{name-1} := @mv{e-1} ... @mv{name-n} := @mv{e-n}]}
+@italic{(EFUN): }Falls @BNF-seq[open @litchar{define} open @mv{name} @mv{name-1} "..." @mv{name-n} close @mv{e} close] in der Umgebung, @linebreak[]
+dann @BNF-seq[open @mv{name} @mv{e-1} "..." @mv{e-n} close] @equiv @mv{e}[@mv{name-1} := @mv{e-1} ... @mv{name-n} := @mv{e-n}]}
 
 
 @elem[#:style inbox-style]{
