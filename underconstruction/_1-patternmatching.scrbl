@@ -10,6 +10,8 @@ We want to @italic{debitalize} the world to see the @italic{truth}!  Since bit
 is the smallest information unit in the bital world, we debitalize it first.
 
 @racketblock[
+; number -> symbol
+; debitalize a bit, via conditional test
 (define (debit b)
   (cond [(= b 0) 'F]
         [(= b 1) 'T] ) )
@@ -20,12 +22,16 @@ it works, to make sure that we will not get something other than @racket[0] or
 @racket[1].  The most basic functional units are the INV, AND, and OR gates.
 
 @racketblock[
+; number -> number
+; INV a bit, via conditional test
 (define (INV b)
   (cond [(= b 0) 1]
         [(= b 1) 0] ) )
 ]
 
 @racketblock[
+; number, number -> number
+; AND two bits, via conditional test
 (define (AND b1 b2)
   (cond [(and (= b1 0) (= b2 0)) 0]
         [(and (= b1 0) (= b2 1)) 0]
@@ -40,6 +46,8 @@ the bital world like streams.  Those logic gates in the bital world all can hand
 bit streams.
 
 @racketblock[
+; list-of number -> list-of number
+; bit-wise INV a bit stream, via conditional test
 (define (INVs bs)
   (cond [(empty? bs) bs]
         [else (cons (INV (first bs))
@@ -47,6 +55,8 @@ bit streams.
 ]
 
 @racketblock[
+; list-of number, list-of number -> list-of number
+; bit-wise AND two bit streams, via conditional test
 (define (ANDs bs1 bs2)
   (cond [(or (empty? bs1) (empty? bs2)) empty]
         [else (cons (AND (first bs1) (first bs2))
@@ -58,6 +68,8 @@ So does an OR gate.
 Accordingly, we must also be able to @italic{debitalize} a bit stream.
 
 @racketblock[
+; list-of number -> list-of number
+; debitalize a bit stream, via conditonal test
 (define (debits bs)
   (cond [(empty? bs) bs]
         [else (cons (debit (first b))
@@ -68,9 +80,9 @@ Accordingly, we must also be able to @italic{debitalize} a bit stream.
 
 @racketblock[
 (define-struct card (shape color value))
-; shape: 'heart, 'diamond, 'spade, 'club, 'wild
-; color: 'red, 'black
-; value: 'A, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'J, 'Q, 'K
+; shape: 'club, 'diamond, 'heart, 'spade, 'wild
+; color: 'black, 'red
+; value: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J, 'Q, 'K, 'A
 ]
 
 @section{Pattern Matching}
@@ -78,6 +90,8 @@ Accordingly, we must also be able to @italic{debitalize} a bit stream.
 @subsection{Matching Literals}
 
 @racketblock[
+; number -> number
+; debitalize a bit, via pattern matching
 (define (debit b)
   (match b
     [0 'F]
@@ -85,6 +99,8 @@ Accordingly, we must also be able to @italic{debitalize} a bit stream.
 ]
 
 @racketblock[
+; number -> number
+; INV a bit, via pattern matching
 (define (INV b)
   (match b
     [0 1]
@@ -96,6 +112,8 @@ Accordingly, we must also be able to @italic{debitalize} a bit stream.
 @subsubsection{Matching built-in data structures}
 
 @racketblock[
+; list-of number -> list-of number
+; debitalize a bit stream, via pattern matching
 (define (debits bs)
   (match bs
     [(list) bs]
@@ -103,3 +121,4 @@ Accordingly, we must also be able to @italic{debitalize} a bit stream.
 ]
 
 @subsubsection{Matching user-defined data structures}
+
