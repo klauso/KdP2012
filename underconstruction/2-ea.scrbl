@@ -500,7 +500,7 @@ absinken sollte. Das bedeutet, dass wir unsere @racket[create-rocket-scene-v2] F
      (place-image  (unsyntax @ev[rocket]) 50 (- 100 (/ (image-height  (unsyntax @ev[rocket])) 2))
                   (empty-scene 100 100))]))]
 
-@section{DRY: Don't Repeat Yourself!}
+@section[#:tag "dry"]{DRY: Don't Repeat Yourself!}
 
 Ein Aufruf von @racket[(animate create-rocket-scene-v3)] illustriert, dass die Rakete nun wie von uns gewünscht landet.
 Allerdings ist offensichtlich, dass @racket[create-rocket-scene-v3] gegen das im Abschnitt @secref{redundanz} angesprochene Prinzip

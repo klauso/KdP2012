@@ -446,7 +446,7 @@ Man kann sich @racket[cons] also so vorstellen wie diese selbstgebaute Variante 
 (define (our-cons x l)
   (if (or (empty-lst? l) (lst? l)) 
       (make-lst x l)
-      (error "second argument of cns must be a list")))]
+      (error "second argument of our-cons must be a list")))]
 
 
 Die wichtigsten eingebauten Listenfunktionen sind: 
@@ -526,34 +526,35 @@ nicht schreiben, wenn wir für je nach Typ der Listenelemente andere Strukturen 
 Der häufigste Anwendungsfall von Listen ist der, dass die Listen @italic{homogen} sind. Das bedeutet, dass 
 alle Listenelemente einen gemeinsamen Typ haben. Dies ist keine sehr große Einschränkung, denn dieser
 gemeinsame Typ kann beispielsweise auch ein Summentyp mit vielen Alternativen sein. Für diesen Fall
-verwenden wir die Kurzschreibweise @racket[List-of-]@italic{name}, um die entsprechende Instanz
-des folgenden Schemas für Datendefinition zu bezeichnen:
+verwenden wir Datendefinitionen mit @italic{Typparametern}, und zwar so:
 
 @#reader scribble/comment-reader
 (racketblock
-; A List-of-names is one of:
-; - (cons name List-Of-name)
+; A (List-of X) is one of:
+; - (cons name (List-of X)
 ; - empty
 )
 
-In Zukunft werden wir also einfach Datentypen wie @racket[List-of-String], @racket[List-of-Boolean], 
-@racket[List-of-List-of-String] oder @racket[List-of-FamilyTree] verwenden und meinen damit implizit
+Diese Datendefinitionen benutzen wir, indem wir einen Typ für den Typparameter angeben. Hierzu
+verwenden wir die Syntax für Funktionsanwendung; wir schreiben also @racket[(List-of String)], @racket[(List-of Boolean)], 
+@racket[(List-of (List-of String))] oder @racket[(List-of FamilyTree)] verwenden und meinen damit implizit
 die oben angeführte Datendefinition.
 
 Was aber ist ein geeigneter Datentyp für die Signatur von @racket[second] oben, also im Allgemeinen
 für Funktionen, die auf beliebigen Listen funktionieren?
 
-Hierfür verwenden wir die Schreibweise @racket[List-of-X], @racket[List-of-Y] und so weiter, also zum Beispiel so:
+Um deutlich zu machen, dass die Funktionen für Listen mit beliebigem Elementtyp funktionieren, sagen wir
+dies in der Signatur explizit. Im Beispiel der Funktion @racket[second] sieht das so aus:
 
 @#reader scribble/comment-reader
 (racketblock
-; List-of-X -> X
+; [X] (List-of X) -> X
 (define (second l) ...)
 )
-
-Wir machen mit dieser Signatur deutlich, dass wir für @racket[X] (und jede andere vorkommende @italic{Typvariable})
-jeden beliebigen Typ einsetzen können und @racket[second] dann diesen Typ hat. Also hat @racket[second]
-zum Beispiel den Typ List-of-Number -> Number oder List-of-List-of-String -> List-of-String.
+Das [X] am Anfang der Signatur sagt, dass diese Funktion die nachfolgende Signatur für jeden Typ X hat,
+also (List-of X) -> X für jede mögliche Ersetzung von X durch einen Typen.
+Man nennt Variablen wie @racket[X]  @italic{Typvariablen}.
+Also hat @racket[second] zum Beispiel den Typ (List-of Number) -> Number oder(List-of (List-of String) -> (List-of String).
 
 Allerdings werden wir im Moment nur im Ausnahmefall Funktionen wie @racket[second] selber programmieren. 
 Die meisten Funktionen, die wir im Moment programmieren wollen, verarbeiten Listen mit einem konkreten Elementtyp.
@@ -633,7 +634,7 @@ die Spezifikation:
 
 @#reader scribble/comment-reader
 (racketblock
-; Nat X -> List-of-X
+; [X] Nat X -> (List-of X)
 ; creates a list with n occurences of x
 (check-expect (iterate-value 3 "abc") (list "abc" "abc" "abc"))
 (define (iterate-value n x) ...)
