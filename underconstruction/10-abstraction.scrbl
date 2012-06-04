@@ -4,6 +4,7 @@
 @(require (for-label lang/htdp-intermediate))
 @(require (for-label (except-in 2htdp/image image?)))
 @(require (for-label 2htdp/universe))
+@(require scribble/bnf)
    
 @title[#:version ""]{DRY: Abstraktion überall!}
 
@@ -255,11 +256,589 @@ mit Hilfe von @racket[op-elements] bilden, auch terminieren (sofern die Funktion
 übergeben, terminiert). Wenn wir nicht @racket[op-elements] benutzen würden, müssten wir diese Überlegung
 jedes mal aufs neue anstellen.
 
-@section{Abstraktion in Signaturen und Datendefinitionen}
+@section{Abstraktion in Signaturen, Typen und Datendefinitionen}
+
+@subsection{Abstraktion in Signaturen}
+Redundanz kann auch in Signaturen auftreten, und zwar in dem Sinne, dass es viele Signaturen für den gleichen
+Funktionsbody geben kann.
+
+
+Betrachten wir zum Beispiel die Funktion @racket[second], die das zweite Element aus einer Liste von Strings berechnet:
+
+@#reader scribble/comment-reader
+(racketblock
+; (list-of String) -> String
+(define (second l) (first (rest l)))
+)
+
+Hier ist eine Funktion, die das zweite Element aus einer Liste von Zahlen berechnet:
+
+@#reader scribble/comment-reader
+(racketblock
+; (list-of Number) -> Number
+(define (second l) (first (rest l)))
+)
+
+Die Funktionsdefinitionen sind bis auf die Signatur identisch. Wir könnten, um den Code nicht zu duplizieren,
+mehrere Signaturen zu der gleichen Funktion schreiben:
+
+@#reader scribble/comment-reader
+(racketblock
+; (list-of String) -> String
+; (list-of Number) -> Number
+(define (second l) (first (rest l)))
+)
+
+Offensichtlich ist dies aber keine sehr gute Idee, weil wir die Liste der Signaturen erweitern müssen, immer
+wenn die Funktion mit einem neuem Elementtyp verwendet werden soll. Es ist auch nicht möglich, alle Signaturen
+hinzuschreiben, denn es gibt unendlich viele, z.B. folgende unendliche Sequenz von Signaturen:
+
+@#reader scribble/comment-reader
+(racketblock
+; (list-of String) -> String
+; (list-of (list-of String)) -> (list-of String)
+; (list-of (list-of (list-of String))) -> (list-of (list-of String))
+; (list-of (list-of (list-of (list-of String)))) -> (list-of (list-of (list-of String)))
+; ...
+)
+
+Wir haben jedoch bereits informell einen Abstraktionsmechanismus kennengelernt, mit dem wir diese Art von
+Redundanz eliminieren können: Typvariablen. Eine Signatur mit Typvariablen steht implizit für alle möglichen
+Signaturen, die sich ergeben, wenn man die Typvariablen durch Typen ersetzt. Wir kennzeichnen Namen
+als Typvariablen, indem wir den Namen der Typvariablen in eckige Klammern vor die Signatur setzen. In der
+Signatur können wir dann die Typvariable verwenden. Hier ist das Beispiel von oben mit Typvariablen:
+
+@#reader scribble/comment-reader
+(racketblock
+; [X] (list-of X) -> X
+(define (second l) (first (rest l)))
+)
+
+Der Typ, durch den eine Typvariable ersetzt wird, darf zwar beliebig sein, aber er muss für alle Vorkommen der
+Typvariablen der gleiche sein. So ist zum Beispiel diese Signatur nicht äquivalent zur vorherigen, sondern falsch:
+@#reader scribble/comment-reader
+(racketblock
+; [X Y] (list-of X) -> Y
+(define (second l) (first (rest l)))
+)
+Der Grund ist, dass die Signatur auch für konkrete Signaturen wie 
+
+@#reader scribble/comment-reader
+(racketblock
+; (list-of Number) -> String
+)
+
+steht, aber dies ist keine gültige Signatur für @racket[second].
+
+@subsection{Signaturen für Argumente, die Funktionen sind}
+Wir haben in diesem Kapitel die Möglichkeit eingeführt, Funktionen als Parameter an andere Funtionen zu übergeben. 
+Wir wissen aber noch nicht, wie wir Signaturen solcher Funktionen beschreiben.
+
+Dieses Problem lösen wir dadurch, dass wir es zulassen, Signaturen als Typen zu verwenden. Betrachten wir beispielsweise
+eine Funktion, die ein Bild mit einem Kreis kombiniert, aber die Art, wie es kombiniert werden soll, zu einem
+Parameter der Funktion macht:
+
+@block[
+(define (add-circle f img)
+  (f img (circle 10 "solid" "red")))]
+
+Beispielsweise kann diese Funktion so verwendet werden:
+
+@ex[(add-circle beside (rectangle 10 10 "solid" "blue"))]
+
+oder so:
+
+@ex[(add-circle above (rectangle 10 10 "solid" "blue"))]
+
+Die Signatur von @racket[add-circle] können wir nun so beschreiben:
+
+@#reader scribble/comment-reader
+(racketblock
+; (Image -> Image) Image -> Image
+(define (add-circle f img)
+  (f img (circle 10 "solid" "red")))
+)
+
+Diese Signatur sagt aus, dass der erste Parameter eine Funktion mit der Signatur Image -> Image sein muss.
+Wir verwenden also nun Signaturen als Typen oder, anders gesagt, wir unterscheiden nicht
+mehr zwischen Signaturen und Typen.
+
+Funktionen können nicht nur Funktionen als Argumente bekommen, sondern auch Funktionen als Ergebnis zurückliefern.
+Beispiel:
+
+
+@#reader scribble/comment-reader
+(block
+; Color -> Image
+(define (big-circle color) (circle 20 "solid" color))
+
+; Color -> Image
+(define (small-circle color) (circle 10 "solid" color))
+
+; String -> (Color -> Image)
+(define (get-circle-maker size)
+  (cond [(string=? size "big") big-circle]
+        [(string=? size "small") small-circle]))
+)
+
+Die Funktion @racket[get-circle-maker] können wir nun aufrufen und sie liefert eine Funktion zurück.
+Das bedeutet, dass wir einen Aufruf von @racket[get-circle-maker] an der @italic{ersten} Position
+eines Funktionsaufrufs haben können. Bisher stand an dieser Position immer der Name einer Funktion
+oder (seit wir Funktionen als Parameter kennen) Namen von Funktionsparametern.
+
+Beispiel:
+
+@ex[((get-circle-maker "big") "cyan")]
+
+Beachten Sie in dem Beispiel die Klammersetzung: Dieser Aufruf ist ein Funtionsaufruf einer Funktion 
+mit einem Parameter. Die Funktion, die wir aufrufen, ist @racket[(get-circle-maker "big")] und ihr
+Parameter ist @racket["cyan"]. Dies ist also etwas völlig anderes als der ähnlich aussehende, in diesem
+Beispiel aber unsinnige Ausdruck @racket[(get-circle-maker "big" "cyan")].
+
+@subsection{Funktionen höherer Ordnung}
+Funktionstypen können beliebig verschachtelt werden. Nehmen wir beispielsweise an, wir haben
+noch andere Funktionen mit der gleichen Signatur wie @racket[add-circle], zum Beispiel @racket[add-rectangle].
+Eine Funktion, die wir mit einer dieser Funktionen parametrisieren können, ist zum Beispiel:
+
+@#reader scribble/comment-reader
+(block
+; ((Image Image -> Image) Image -> Image) Image Image -> Image
+(define (add-two-imgs-with f img1 img2)
+  (above (f beside img1) (f beside img2)))
+)
+Diese Funktion können wir jetzt mit Funktionen wie @racket[add-circle] parametrisieren:
+@ex[(add-two-imgs-with add-circle (circle 10 "solid" "green") (circle 10 "solid" "blue"))]
+
+Funktionen, in deren Signatur nur ein einziger Pfeil vorkommt (also Funktionen, die keine
+Funktionen als Parameter haben oder zurückgeben), heißen in diesem Kontext auch @italic{Funktionen erster Ordnung}
+oder @italic{first-order functions}. Beispiele für Funktionen erster Ordnung sind @racket[circle]
+oder @racket[cons]. Funktionen, die Funktionen als Parameter bekommen oder
+als Ergebnis zurückgeben, nennt man auch @italic{Funktionen höherer Ordnung} oder @italic{higher-order functions}.
+Beispiele für Funktionen höherer Ordnung sind @racket[add-circle] und @racket[add-two-imgs-with].
+
+Manchmal unterscheidet man bei Funktionen höherer Ordnung noch, was die maximale Schachtelungstiefe
+der Funktionspfeile in den Argumenten einer Funktion ist. Beispielsweise nennt man @racket[add-circle] eine @italic{Funktion
+zweiter Ordnung} und @racket[add-two-imgs-with] eine @italic{Funktion dritter Ordnung}. 
+
+In der alltäglichen Programmierung sind Funktionen zweiter Ordnung sehr häufig, aber Funktionen von 
+drittem und höherem Grad werden recht selten gebraucht.
+
+@subsection{Polymorphe Funktionen höherer Ordnung}
+Auch polymorphe Funktionen können Funktionen höherer Ordnung sein. Wir haben bereits die Funktion 
+@racket[op-elements] oben kennengelernt. Schauen wir uns an, mit welchen Typen
+sie in den Beispielen verwendet wird.
+
+Im Beispiel @racket[(op-elements + 0 (list 5 8 12))] benötigen wir für @racket[op-elements] offensichtlich
+die Signatur
+@#reader scribble/comment-reader
+(racketblock
+; (Number Number -> Number) Number (list-of Number) -> Number
+)
+während wir für @racket[(op-elements string-append "" (list "ab" "cd" "ef"))] die Signatur
+@#reader scribble/comment-reader
+(racketblock
+; (String String -> String) String (list-of String) -> String
+)
+erwarten. Diese Beispiele suggerieren folgende Verallgemeinerung durch Typvariablen:
+
+@#reader scribble/comment-reader
+(racketblock
+; [X] (X X -> X) (list-of X) X -> X
+(define (op-elements op z l)
+  (cond
+    [(empty? l) z]
+    [else
+     (op (first l)
+         (op-elements op z (rest l)))]))
+)
+
+Allerdings passt diese Signatur nicht zu allen Beispielen von oben.
+Beispielsweise benötigen wir für das @racket[(op-elements cons empty (list 5 8 12 2 9))]
+die Signatur
+
+@#reader scribble/comment-reader
+(racketblock
+; (Number (list-of Number) -> (list-of Number)) (list-of Number) (list-of Number) -> (list-of Number)
+)
+
+Es gibt keine Ersetzung von X durch einen Typ in der Signatur oben, die diese Signatur erzeugt.
+Wenn wir uns die Funktionsdefinition etwas genauer hinschauen, können
+wir allerdings auch noch eine allgemeinere Signatur finden, nämlich diese:
+
+@#reader scribble/comment-reader
+(racketblock
+; [X Y] (X Y -> Y) (list-of X) Y -> Y
+(define (op-elements op z l)
+  (cond
+    [(empty? l) z]
+    [else
+     (op (first l)
+         (op-elements op z (rest l)))]))
+)
+
+Die Signatur ist allgemeiner, weil sie für mehr konkrete Signaturen (ohne Typvariablen) steht 
+und ist ausreichend für alle Beispiele, die wir betrachet haben.
+
+@subsection{Abstraktion in Datendefinitionen}
+Bei generischen Datentypen wie solchen für Listen oder Bäume haben wir bereits gesehen, dass man
+in diesem Fall nicht redundante Datendefinitionen wie folgt schreiben möchte:
+
+@#reader scribble/comment-reader
+(racketblock
+; a List-of-String is either
+; - empty
+; - (cons String List-of-String)
+
+; a List-of-Number is either
+; - empty
+; - (cons String List-of-Number)
+)
+
+Ähnlich wie bei Funktionssignaturen abstrahieren wir über die Unterschiede mit Hilfe von Typvariablen:
+
+@#reader scribble/comment-reader
+(racketblock
+; a (list-of X) is either
+; - empty
+; - (cons X (list-of X))
+)
+
+Im Unterschied zu Funktionssignaturen verzichten wir bei Datendefinitionen darauf, die verwendeten Typvariablen
+separat zu kennzeichnen (wie bei Funktionssignaturen mit den eckigen Klammern), weil bei Datendefinitionen
+durch die Position der Typvariablen in der ersten Zeile einer Datendefinition klar ist, dass es sich um eine
+Typvariable handelt.
+
+Wir können Datendefinitionen auch nutzen, um viele weitere Eigenschaften der Werte, die durch die Datendefinition
+beschrieben werden, festzulegen. Zum Beispiel können wir so die Menge der nicht-leeren Listen definieren:
+
+@#reader scribble/comment-reader
+(racketblock
+; a (nonempty-list-of X) is: (cons X (list-of X))
+)
+
+
+
+@subsection{Grammatik der Typen und Signaturen}
+
+Wir können die Typen und Signaturen, mit denen wir nun programmieren können, durch eine Grammatik beschreiben.
+Diese Grammatik spiegelt gut die rekursive Struktur von Typen wieder. Nicht alle Typen, die mit dieser
+Grammatik gebildet werden können, sind sinnvoll. Beispielsweise ist @nonterm{X} ein Typ, der nicht sinnvoll
+ist. Eine Bedeutung haben nur die Typen, bei denen alle vorkommenden Typvariablen durch ein 
+im Ableitungsbaum darüber liegende Typabstraktion der Form @BNF-seq{@litchar{[} @nonterm{X} @litchar{]} @nonterm{Typ}})
+gebunden wurden.
+
+@BNF[
+  (list @nonterm{Typ} 
+          @nonterm{Basistyp}
+          @nonterm{Datentyp}
+          @BNF-seq[@litchar{(}@nonterm{TypKonstruktor} @kleeneplus[@nonterm{Typ}] @litchar{)}]
+          @BNF-seq[@litchar{(}@kleeneplus[@nonterm{Typ}] @litchar{->} @nonterm{Typ}@litchar{)}]
+          @nonterm{X}
+          @BNF-seq{@litchar{[} @kleeneplus[@nonterm{X}] @litchar{]} @nonterm{Typ}})
+  (list @nonterm{Basistyp}
+          @litchar{Number}
+          @litchar{String}
+          @litchar{Boolean}
+          @litchar{Image})
+  (list @nonterm{Datentyp} 
+        @litchar{Posn}
+        @litchar{WorldState}
+        "...")
+  (list @nonterm{TypKonstruktor} 
+        @litchar{list-of}
+        @litchar{tree-of}
+        "...")
+  (list @nonterm{X} 
+        @litchar{X}
+        @litchar{Y}
+        "...")]
+
+Wir haben bisher nicht gesagt, wie wir Funktionstypen interpretieren sollen. Im Moment können wir es als
+die Menge aller Funktionen, die diesem Typ genügen, interpretieren. Später werden wir dies noch präzisieren.
 
 @section{Lokale Abstraktion}
+Häufig benötigt man Variablen, Funktionen oder Strukturen nur @italic{lokal}, innerhalb einer Funktion. Für diesen Fall
+gibt es die Möglichkeit, Definitionen lokal zu definieren, und zwar mit @racket[local] Ausdrücken.
 
-@section{Funktionen als Werte}
+@subsection{Lokale Funktionen}
+Betrachten wir als erstes lokale Funktionen. Hier ein Beispiel: 
+
+@margin-note{Beachten Sie, dass @racket[foldr] der Name der eingebauten Funktion ist, die unserem @racket[op-elements] entspricht.}
+@#reader scribble/comment-reader
+(racketblock
+; (list-of String) -> String
+; appends all strings in l with blank space between elements
+(check-expect (append-all-strings-with-space (list "a" "b" "c")) " a b c ")
+(define (append-all-strings-with-space l)
+  (local (; String String -> String
+          ; juxtapoint two strings and prefix with space
+          (define (string-append-with-space s t)
+            (string-append " " s t)))
+    (foldr string-append-with-space
+           " "
+           l))))
+)
+Die Funktion @racket[string-append-with-space] ist eine @italic{lokale} Funktion, die nur innerhalb der Funktion @racket[append-all-strings-with-space]
+sichtbar ist. Sie kann außerhalb von @racket[append-all-strings-with-space] nicht aufgerufen werden.
+
+Da @racket[local] Ausdrücke Ausdrücke sind, können sie überall stehen, wo ein Ausdruck erwartet wird. Häufig werden als
+äußerster Ausdruck eines Funktionsbodies verwendet, aber sie können auch an jeder anderen Stelle stehen.
+
+Diese Ausdrücke sind daher äquivalent:
+
+@ex[(local [(define (f x) (+ x 1))] (+ (* (f 5) 6) 7))]
+
+@ex[(+ (local [(define (f x) (+ x 1))] (* (f 5) 6)) 7)]
+
+Ein Extremfall ist der, die lokale Definition so weit nach innen zu ziehen, dass sie direkt an der Stelle steht, wo sie verwendet wird.
+
+@ex[(+ (* ( (local [(define (f x) (+ x 1))] f) 5) 6) 7)]
+           
+Wir werden später sehen, dass es für diesen Fall noch eine bessere Notation gibt.
+
+@subsection{Lokale Variablen}
+Nicht nur Funktionen können lokal sein, sondern auch Variablen und Strukturdefinitionen.
+
+Betrachten wir beispielsweise eine Funktion zum Exponentieren von Zahlen mit der Potenz 8:
+
+@margin-note{Alternativ hätten wir im Body die Kurzschreibweise @racket[(* x x x x x x x x)] verwenden können.}
+@block[
+(define (power8 x)
+  (* x (* x (* x (* x (* x (* x (* x x))))))))]
+
+Zum Beispiel:
+
+@ex[(power8 2)]
+
+Diese Funktion benötigt acht Multiplikationen zum Berechnen des Ergebnis. Eine effizientere Methode
+zum Berechnen der Potenz nutzt die Eigenschaft der Exponentialfunktion, dass a@superscript{2*b} = a@superscript{b} * a@superscript{b}.
+
+@racketblock[
+(define (power8-fast x)
+  (local 
+    [(define r1 (* x x))
+     (define r2 (* r1 r1))
+     (define r3 (* r2 r2))]
+         r3))]
+
+Mit Hilfe einer Sequenz lokaler Variablendeklarationen können wir also die Zwischenergebnisse repräsentieren und mit nur 3 Multiplikationen
+das Ergebnis berechnen. Diese Variablendeklarationen könnte man nicht durch (globale) Variablendeklarationen ersetzen, denn ihr Wert hängt
+von dem Funktionsparameter ab.
+
+Im Allgemeinen verwendet man lokale Variablen aus zwei Gründen: 1) Um Redundanz zu vermeiden, oder 2) um Zwischenergebnissen einen Namen zu geben.
+Auf den ersten Punkt kommen wir gleich nochmal zu sprechen; hier erstmal ein Beispiel für den zweiten Fall:
+
+Im Abschnitt @secref{ballinbewegung} haben wir eine Funktion programmiert, die einen Bewegungsvektor zu einer Position addiert:
+
+@racketblock[
+(define (posn+vel p q)
+  (make-posn (+ (posn-x p) (vel-delta-x q))
+             (+ (posn-y p) (vel-delta-y q))))]
+
+
+Mit Hilfe lokaler Variablen können wir den Zwischenergebnissen für die neue x- und y-Koordinate einen Namen geben
+und deren Berechnung von der Konstruktion der neuen Position trennen:
+
+@racketblock[
+(define (posn+vel p q)
+  (local [(define new-x (+ (posn-x p) (vel-delta-x q)))
+          (define new-y (+ (posn-y p) (vel-delta-y q)))]
+    (make-posn new-x new-y)))]
+
+@margin-note{Es gibt sogar Programmiersprachen und Programmierstile, in denen man @italic{jedem} Zwischenergebnis einen Namen geben muss. Wenn Sie dies interessiert,
+             recherchieren Sie was @italic{three address code}, @italic{administrative normal form} oder @italic{continuation-passing style} ist.}
+Das Einführen von Namen für Zwischenergebnisse kann helfen, Code leichter lesbar zu machen, weil der Name hilft, zu verstehen, was das Zwischenergebnis repräsentiert.
+Es kann auch dazu dienen, eine sehr tiefe Verschachtelung von Ausdrücken flacher zu machen.
+
+Die andere wichtige Motivation für lokale Variablen ist die Vermeidung von Redundanz. Tatsächlich können wir mit lokalen Variablen
+sogar zwei unterschiedliche Arten von Redundanz vermeiden: Statische Redundanz und dynamische Redundanz.
+
+Mit statischer Redundanz ist unser DRY Prinzip gemeint: Wir verwenden lokale Variablen, um uns nicht im Programtext wiederholen zu müssen.
+Dies illustriert unser erstes Beispiel. Illustrieren wir dies, indem wir unsere @racket[power8-fast] Funktion wieder de-optimieren
+indem wir alle Vorkommen der Variablen durch ihre Definition ersetzen:
+
+@racketblock[
+(define (power8-fast-slow x)
+  (local 
+    [(define r1 (* x x))
+     (define r2 (* (* x x) (* x x)))
+     (define r3 (* (* (* x x) (* x x)) (* (* x x) (* x x))))]
+         r3))]
+
+Diese Funktion ist, bis auf die Assoziativität der Multiplikationen, äquivalent zu @racket[power-8] von oben. Offensichtlich ist hier aber das DRY-Prinzip verletzt,
+weil die Unterausdrücke @racket[(* x x)] und @racket[(* (* x x) (* x x))] mehrfach vorkommen. Diese Redundanz wird durch die Verwendung der lokalen
+Variablen in @racket[power8-fast] vermieden.
+
+Die zweite Facette der Redundanz, die wir durch lokale Variablen vermeiden können, ist die dynamische Redundanz. Damit ist gemeint, dass wir
+das mehrfache Auswerten eines Ausdrucks vermeiden können. Dies liegt daran, dass der Wert einer lokale Variable nur einmal bei ihrer Definition
+berechnet wird und im folgenden nur das bereits berechnete Ergebnis verwendet wird. 
+Im Beispiel @racket[power8-fast] haben wir gesehen, dass wir dadurch die Anzahl
+der Multiplikationen von 8 auf 3 senken konnten. Im Allgemeinen "lohnt" sich die Definition einer lokalen Variable aus Sicht der dynamischen Redundanz dann,
+wenn sie mehr als einmal ausgewertet wird.
+
+Zusammengefasst haben lokale Variablen also den gleichen Zweck wie nicht-lokale (globale) Variablen, nämlich der Benennung von Konstanten bzw. Zwischenergebnissen und der Vermeidung
+von statischer und dynamischer Redundanz; lokale Variablen sind allerdings dadurch mächtiger, dass sie
+die aktuellen Funktionsparameter und andere lokale Definitionen verwenden können.
+
+@subsection{Intermezzo: Successive Squaring}
+Als fortgeschrittenes Beispiel für die Verwendung lokaler Variablen können wir die Verallgemeinerung des Potenzierungsbeispiels auf beliebige Exponenten betrachten.
+Dieser Abschnitt kann übersprungen werden.
+
+Um den Effekt der Vermeidung dynamischer Redundanz noch deutlicher zu illustrieren, betrachten wir die Verallgemeinerung von @racket[power8] auf beliebige (natürlichzahlige) Exponenten.
+Wenn wir den Exponenten wie in Abschnitt @secref{natrec} beschrieben als Instanz eines rekursiven Datentyps auffassen, so ergibt sich folgende Definition:
+
+@#reader scribble/comment-reader
+(block
+; NaturalNumber Number -> Number       
+(define (exponential n x)
+  (if (zero? n) 
+      1
+      (* x (exponential (sub1 n) x))))
+)      
+
+@margin-note{Dieses "Ausfalten" ist ein Spezialfall einer allgemeineren Technik, die @italic{partial evaluation} heißt.}
+Die Redundanz in diesem Programm ist nicht offensichtlich; sie wird erst dann offenbar, wenn man die "Ausfaltung" der Definition für einen festen Exponenten
+betrachtet; also die Version, die sich ergibt, wenn man die rekursiven Aufrufe für ein festgelegtes @racket[n] expandiert. 
+Beispielsweise ergibt das Ausfalten von @racket[exponential] für den Fall @racket[n] = 8 genau die @racket[power8] Funktion von oben.
+Die Redundanz wird also erst dann offensichtlich, wenn man, unter Ausnutzung der Assoziativität der Multiplikation, 
+@racket[(* x (* x (* x (* x (* x (* x (* x x)))))))] umformt zu 
+@racket[(* (* (* x x) (* x x)) (* (* x x) (* x x)))].
+
+Eine kleine Komplikation der Anwendung der Technik von oben auf den allgemeinen Fall ist, dass der Exponent im Allgemeinen keine Potenz von 2 ist.
+Wir gehen mit diesem Problem so um, dass wir die Fälle unterscheiden, ob der Exponent eine gerade oder eine ungerade Zahl ist.
+Insgesamt ergibt sich dieser Algorithmus, der in der Literatur auch als Exponentiation durch @italic{successive squaring} bekannt ist.
+
+@block[
+(define (exponential-fast x n)
+  (if (zero? n) 
+      1
+      (local
+        [(define y (exponential-fast x (quotient n 2)))
+         (define z (* y y))]
+         (if (odd? n) (* x z) z))))]
+
+@margin-note{Überlegen Sie, wieso @racket[exponential-fast] nur etwa log@subscript{2}(@racket[n]) Multiplikationen benötigt.}
+Im @racket[power8] Beispiel oben haben wir die Anzahl der benötigten Multiplikationen von 8 auf 3 reduziert. In dieser allgemeinen Version ist der Unterschied
+noch viel drastischer: Die @racket[exponential] Funktion benötigt @racket[n] Multiplikationen während @racket[exponential-fast] nur etwa
+log@subscript{2}(@racket[n]) Multiplikationen benötigt. Das ist ein riesiger Unterschied. Beispielsweise benötigt 
+auf meinem Rechner die Auswertung von @racket[(exponential 2 100000)] fast eine Sekunde, während @racket[(exponential-fast 2 100000)] weniger
+als eine Millisekunde benötigt. Probieren Sie es selbst aus. Sie können beispielsweise die @racket[time] Funktion zur Messung
+der Performance verwenden. 
+
+@subsection{Lokale Strukturen}
+Es ist möglich, auch Strukturen mit @racket[define-struct] lokal zu definieren. Wir werden diese Möglichkeit bis auf weiteres nicht verwenden.
+
+@subsection{Scope lokaler Definitionen}
+Der @italic{Scope} einer Definition eines Namens ist der Bereich im Programm, in dem sich eine Verwendung des Namens auf diese Definition bezieht.
+Unserer Programmiersprache verwendet @italic{lexikalisches Scoping}, auch bekannt als @italic{statisches Scoping}. Dies bedeutet, dass der Scope einer lokalen Definition die Unterausdrücke 
+des @racket[local] Ausdrucks sind.
+
+In diesem Beispiel sind alle Verwendungen von @racket[f] und @racket[x] im Scope ihrer Definitionen.
+
+@racketblock[
+(local [(define (f n) (if (zero? n) 
+                          0 
+                          (+ x (f (sub1 n)))))
+        (define x 5)]
+  (+ x (f 2)))]
+
+In diesem Ausdruck hingegen ist die zweite Verwendung von @racket[x] nicht im Scope der Definition:
+
+@racketblock[
+(+ (local [(define x 5)] (+ x 3))
+   x)]
+
+Es kann vorkommen, dass es mehrere Definitionen eines Namens (Variablen, Funktion, Strukturkonstruktoren/-selektoren) gibt, die einen
+überlappenden Scope haben. In diesem Fall bezieht sich eine Verwendung des Namens immer auf die syntaktisch näheste Definition.
+Wenn man also im abstrakten Syntaxbaums eines Programms nach außen geht, so "gewinnt" die erste Definition, die man auf dem Weg von dem
+Auftreten eines Namens zur Wurzel des Baums trifft. 
+
+Beispiel: Kopieren Sie das folgende Programm in den Definitionsbereich von DrRacket und drücken auf "Syntaxprüfung".
+Gehen Sie nun mit dem Mauszeiger über eine Definition oder Benutzung eines Funktions- oder Variablennamens.
+Die Pfeile, die Sie nun angezeigt bekommen, illustrieren, auf welche Definition sich ein Name bezieht.
+
+@racketblock[
+(add1 (local 
+        [(define (f y)
+                (local [(define x 2)
+                        (define (g y) (+ y x))]
+                  (g y)))
+              (define (add1 x) (sub1 x))]
+        (f (add1 2))))]
+
+@section{Funktionen als Werte: Closures}
+
+Betrachten Sie folgende Funktion zur numerischen Berechnung der Ableitung einer Funktion:
+
+@#reader scribble/comment-reader
+(racketblock
+; (Number -> Number) Number -> Number
+(define (derivative f x)
+  (/ (- (f (+ x 0.001)) (f x))
+     0.001))
+)
+
+Diese Funktion gibt uns die (numerische) Ableitung einer Funktion an einem speziellen Punkt.
+
+Aber es wäre eigentlich besser, wenn uns diese Funktion die Ableitung selber als Funktion als
+Ergebnis liefert. Wenn wir zum Beispiel eine Funktion 
+
+@#reader scribble/comment-reader
+(racketblock
+; (Number -> Number) -> Image
+(define (plot-function f) ...)
+)
+hätten, so könnten wir die Ableitung einer Funktion damit nicht zeichnen. Eigentlich möchten wir,
+dass @racket[derivative] die Signatur
+
+@#reader scribble/comment-reader
+(racketblock
+; (Number -> Number) -> (Number -> Number)
+(define (derivative f) ...)
+)
+hat. Aber wie können wir diese Version von @racket[derivative] implementieren? Offensichtlich kann die
+Funktion, die wir zurückgeben, keine global definierte Funktion sein, denn diese Funktion hängt ja
+von dem Parameter @racket[f] ab. Wir können jedoch diese Funktion @italic{lokal} definieren (und
+auch gleich etwas besser strukturieren), und dann diese Funktion zurückgeben:
+
+@#reader scribble/comment-reader
+(racketblock
+; (Number -> Number) -> (Number -> Number)
+(define (derivative f)
+  (local 
+    [(define delta-x 0.001)
+     (define (delta-f-x x) (- (f (+ x delta-x)) (f x)))
+     (define (g x) (/ (delta-f-x x) delta-x))]
+    g)))
+
+Was für eine Art von Wert ist es, der von @racket[derivative] zurückgegeben wird?
+
+Nehmen wir es an, es wäre sowas wie die Definition von @racket[g], also 
+@racket[(define (g x) (/ (delta-f-x x) delta-x))]. Wenn dem so wäre, was passiert mit
+der Variablen @racket[delta-x] und der Funktion @racket[delta-f-x]? Diese sind ja
+in @racket[derivative] nur lokal gebunden. Was passiert beispielsweise bei
+der Auswertung von diesem Ausdruck: 
+
+@racketblock[
+(local [(define f (derivative exp))
+        (define delta-x 10000)]
+  (f 5))]
+
+Wird die @racket[delta-x] Variable während der Auswertung von @racket[(f 5)] etwa zu @racket[10000]
+ausgewertet? Das wäre ein Verstoß gegen lexikalisches Scoping und würde zu unvorhersehbaren
+Interaktionen zwischen unterschiedlichen Programmteilen führen. Offensichtlich sollte
+@racket[delta-x] in der zurückgegebenen Funktion sich immer auf die lokale Definition beziehen.
+
+Wenn wir eine Funktion als Wert behandeln, so ist dieser Wert mehr als nur die Definition
+der Funktion. Es ist nämlich die Definition der Funktion @italic{und} die Menge der lokal
+definierten Namen (Variablen, Funktionen, Strukturen, Funktionsparameter). Diese Kombination
+aus Funktionsdefinition und lokaler @italic{Umgebung} nennt man @italic{Funktionsabschluss} oder @italic{Closure}. 
+Die Auswertung einer Funktion (nicht eines Funktionsaufrufs) ergibt also einen Closure.
+Wird dieser Closure irgendwann später wieder im Rahmen eines Funktionsaufrufs angewendet, so 
+wird die gespeicherte lokale Umgebung wieder aktiviert.
+Später werden wir das Konzept des Closure noch präzisieren; im Moment merken wir uns, dass
+die Auswertung einer Funktion die Funktionsdefinition plus ihre lokale Umgebung ergibt, und diese
+lokale Umgebung bei Anwendung des Closure verwendet wird, um Namen im Funktionsbody auszuwerten.
 
 @section{Lambda, die ultimative Abstraktion}
 

@@ -283,7 +283,7 @@ sinnvolles gemeinsames Konzept für @racket[Ball] und @racket[Posn]; daher ist e
 Ein anderes sinnvolles Kriterium, um über Wiederverwendung zu entscheiden, ist die Frage, ob es wichtig ist, dass man mit einem Prädikat die
 unterschiedlichen Daten unterscheiden kann --- falls ja, so sollte man jeweils eigene Strukturen verwenden.
 
-@section{Fallstudie: Ein Ball in Bewegung}
+@section[#:tag "ballinbewegung"]{Fallstudie: Ein Ball in Bewegung}
 
 Probieren Sie aus, was das folgende Programm macht. Verstehen Sie, wie Strukturen und Datendefinitionen verwendet wurden, um das Programm zu
 strukturieren!

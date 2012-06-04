@@ -531,7 +531,7 @@ verwenden wir Datendefinitionen mit @italic{Typparametern}, und zwar so:
 @#reader scribble/comment-reader
 (racketblock
 ; A (List-of X) is one of:
-; - (cons name (List-of X)
+; - (cons X (List-of X)
 ; - empty
 )
 
@@ -601,7 +601,7 @@ Manche Programmieranfänger finden es nicht intuitiv, Listen und Funktionen dara
 Aber ist es nicht besser, ein Universalwerkzeug zu verwenden, welches in sehr vielen Situationen verwendbar ist,
 als ein Spezialwerkzeug, das in nichts besser ist als das Universalwerkzeug und nur in einer Situation anwendbar ist?
 
-@subsection{Natürliche Zahlen als rekursive Datenstruktur}
+@subsection[#:tag "natrec"]{Natürliche Zahlen als rekursive Datenstruktur}
 Es gibt in BSL nicht nur Funktionen, die Listen konsumieren, sondern auch solche, die Listen
 produzieren. Eine davon ist @racket[make-list]. Hier ein Beispiel:
 
