@@ -1,6 +1,6 @@
 #lang scribble/manual
 
-@(require "utilities.rkt")
+@(require "scribbleUtilities.rkt")
 
 @title{Pattern Matching}
 
@@ -86,7 +86,7 @@ operations, we can easily define three Racket functions that act the same.
 ;; ...
 )
 
-As an exercise, you are encouraged to supply the definition for @racket[NOT] and @racket[OR].
+@bold{Exercise.}  Supply the definitions for @racket[NOT] and @racket[OR].
 
 With these three functions, we can simulate any arbitrary complicated operations in the bital
 world.  After we get the final result of the simulation, we can readily see the truth by
@@ -115,7 +115,7 @@ Indeed, we can rewrite @racket[AND] as follows:
 ;; ...
 )
 
-Try to rewrite your @racket[OR] definition if you also use too many equality tests.
+@bold{Exercise.}  Rewrite your @racket[OR] definition if you also use too many equality tests.
 
 In this version, we have decreased the number of equality tests by half.  Though, can we do
 better?  In other words, can we write even less but still maintain the behavior of the
@@ -163,20 +163,14 @@ In general, when you construct a @racket[match]-expression, you should make sure
 take all possible cases into account and provide at least one pattern that covers each case,
 just as you did before with a @racket[cond]-expression.
 
-Now try to write the pattern-matching version of @racket[NOT] using the @racket[match] form.
-
-@#reader scribble/comment-reader
-(racketblock
-;; NOT : number -> number
-;; negates a bit, via pattern matching
-;; ...
-)
+@bold{Exercise.}  Write the pattern-matching version of @racket[NOT] using the
+@racket[match] form.
 
 A @racket[match]-expression is like any other expression.  That is, it can appear anywhere a
 normal expression is expected.  In particular, it can appear as the expression associated to
 a pattern inside another @racket[match]-expression.  In this case, we say we have a nested
 @racket[match]-expression, as we can have nested @racket[cond]-expression.  @racket[AND] can
-can be rewritten using a nested @racket[match]-expression.
+can be rewritten using nested @racket[match]-expressions.
 
 @#reader scribble/comment-reader
 (racketblock
@@ -194,8 +188,7 @@ can be rewritten using a nested @racket[match]-expression.
 ;; ...
 )
 
-Try to write the pattern-matching version of @racket[OR] using a nested
-@racket[match]-expression.
+@bold{Exercise.}  Write the pattern-matching version of @racket[OR].
 
 @section{Matching Data Structures}
 
@@ -241,7 +234,7 @@ defined on top of those functions that simulate single-bit operations.
 ;; ...
 )
 
-Again, @racket[NOTs] and @racket[ORs] are left to you as an exercise.
+@bold{Exercise.}  Supply the definitinos for @racket[NOTs] and @racket[ORs].
 
 These definitions are all defined by recursion on the built-in list data structure by the
 so-called isomorphism tests.  Two data structures are said to be isomorphic if they have
@@ -264,7 +257,7 @@ to avoid this clutter is by moving the decompositions into the binding part of a
                       (ANDs bs1 bs2) ) ) ] ) )
 )
 
-Try to rewrite @racket[debits] and @racket[ORs] in the same way.
+@bold{Exercise.}  Rewrite @racket[debits] and @racket[ORs] in the same way.
 
 This version is clearer but feels heavy.  Here comes is the same question that whether we
 can do it by saying less.  Yes, pattern matching helps again.  Racket supports pattern
@@ -341,10 +334,10 @@ patterns are never evaluated.  A good way to understand their roles is by thinki
 as keywords.  It is important to distinghuish them from variables in a pattern.  They are
 used for identifying a particular type of data, thus @racket[list] for a list.
 
-Now you should be able to rewrite @racket[NOTs] using pattern matching.
+@bold{Exercise.}  Rewrite @racket[NOTs] using pattern matching.
 
 As before, @racket[match]-expressions can be nested.  Back to our debitalization example,
-we can rewrite @racket[ANDs] using a nested @racket[match]-expression.
+we can rewrite @racket[ANDs] using nested @racket[match]-expressions.
 
 @#reader scribble/comment-reader
 (racketblock
@@ -360,7 +353,7 @@ we can rewrite @racket[ANDs] using a nested @racket[match]-expression.
                                 (ANDs bs1 bs2) ) ] ) ] ) )
 )
 
-Try to rewrite @racket[ORs] in the same way.
+@bold{Exercise.}  Rewrite @racket[ORs] in the same way.
 
 Since list is such an important data structure.  Racket supports rich patterns around it.
 Here are more examples.
@@ -420,107 +413,185 @@ to the interesting components of a complex data structure.  Be creative!
 
 @subsection{Matching User-defined Data Structures}
 
-Every poker card has a rank and a suit.  The rank of a card is one of the
-numbers from 2 to 10, or one of the symbols A (Ace), J (Jack), Q (Queen) and
-K (King).  The suit of a card is one of the the symbols ♠ (Spade), ♥ (Heart),
-♦ (Diamond), and ♣ (Club).
+In addition to built-in data structures, Racket also support pattern matching on user-defined
+data structures defined using @racket[struct] or @racket[define-struct].  We will illustrate
+its usage through a second motivating example, playing cards.
 
-We can represent a poker card as a @racket[struct].
+@subsubsection{Motivating Example 2 --- Playing Cards}
 
-@racketblock[
-(define-struct card (suit rank))
-;; suit : 'Spade, 'Heart, 'Diamond, 'Club, 'Joker
-;; rank : 'A, 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J, 'Q, 'K
-]
+Every playing card has a rank and a suit.  The rank of a card is one of the numbers from 2 to
+10, or one of the symbols A (Ace), J (Jack), Q (Queen) and K (King).  The suit of a card is
+one of the the symbols ♠ (Spade), ♥ (Heart), ♦ (Diamond), and ♣ (Club).
 
-Let us first define a function that echoes the name of the suit on a card.
+We can represent a playing card as a @racket[struct].
 
-@racketblock[
-(define (suit-name s)
-  (cond [(symbol=? s '♠) 'Spade]
-        [(symbol=? s '♥) 'Heart]
-        [(symbol=? s '♦) 'Diamond]
-        [(symbol=? s '♣) 'Club]      
-        ) )
-]
+@#reader scribble/comment-reader
+(racketblock
+(define-struct card (rank suit))
+;; rank : "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"
+;; suit : "♠", "♥", "♦", "♣"
+)
 
-For rank, let us define a function that tells us the type of the rank, either
-@racket[number?] or @racket[symbol?].
+For simplicity, we use string uniformly for a rank, insted of a mixture of numbers and strings.
+A suit is also represented as a string.
 
-@racketblock[
-(define (rank-type r)
-  (case r
-    [(2 3 4 5 6 7 8 9 10) r]
-    [(A) 'Ace]
-    [(J) 'Jack]
-    [(Q) 'Queen]
-    [(K) 'King] ) )
-]
+Let us first define a function that echoes the name of a rank.
 
-@racketblock[
-(define (AND b1 b2)
-  (match b1
-    [0 0]
-    [1 (match b2
-         [0 0]
-         [1 1] ) ] ) )
-]
+@#reader scribble/comment-reader
+(racketblock
+;; rank-name : string -> string
+;; returns the name of a rank
+(define (rank-name r)
+  (match r
+    ["A" "Ace"]
+    ["J" "Jack"]
+    ["Q" "Queen"]
+    ["K" "King"]
+    ["W" "White"]
+    [_   r] ) )
+)
 
-@racketblock[
-(define (AND b1 b2)
-  (match (cons b1 b2)
-    [(cons 0 0) 0]
-    [(cons 0 1) 0]
-    [(cons 1 0) 0]
-    [(cons 1 1) 1] ) )
-]
+This time, we define the function directly by pattern matching on the input string.  Imagine
+what you would have to do without pattern matching.  Note that how the underscore @racket[_]
+is effectively used to match all other ranks, that is numbers.  Since these numbers are in
+string forms, we return them immediately.
 
-@racketblock[
-(define (OR b1 b2)
-  (match (cons b1 b2)
-    [(cons 0 0) 0]
-    [(cons 0 1) 1]
-    [(cons 1 0) 1]
-    [(cons 1 1) 1] ) )
-]
+@bold{Exercise.}  Define a function @racket[suit-name] that echoes the name of a suit.
 
+A playing card is usually called by first saying its rank name, followed by the word "of" and
+then the plural form of its suit name.  For example, the card 🂡 will be called "Ace of Spades",
+the card 🃊 will be called "10 of Diamonds", and so on.  Fortunately the plural form for all
+the four suit names are simply formed by appending an "s".  We want to write a function that
+echoes the name of a card.  With the aid of @racket[rank-name] and @racket[suit-name] we can
+easily define it.  We will first do it in the old way, that is, by invoking the accessor
+functions to access the rank and suit of a card.  Here is the definition.
 
-@racketblock[
-;; listof number -> listof boolean
-;; debitalize a bit stream, via pattern matching
-(define (debits bs)
-  (match bs
-    [(list) bs]
-    [(list b bs ...) (cons (debit b) (debits bs))] ) )
-]
+@#reader scribble/comment-reader
+(racketblock
+;; card-name : card -> string
+;; returns the name of a card
+(define (card-name c)
+  (string-append (rank-name (card-rank r))
+                 " of "
+                 (suit-name (card-suit s))
+                 "s" ) )
+)
 
-@racketblock[
-(define (NOTs bs)
-  (match bs
-    [(list) bs]
-    [(list b bs ...) (cons (NOT b) (NOTs bs))] ) )
-]
+Or we can first use @racket[let] to name the extracted components and rewrite it like this.
 
-@racketblock[
-(define (ANDs bs1 bs2)
-  (match bs1
-    [(list) bs1]
-    [(list b1 bs1 ...)
-     (match bs2
-       [(list) bs2]
-       [(list b2 bs2 ...) (cons (AND b1 b2) (ANDs bs1 bs2))] ) ] ) )
-]
+@#reader scribble/comment-reader
+(racketblock
+;; card-name : card -> string
+;; returns the name of a card
+(define (card-name c)
+  (let [(r (card-rank c))
+        (s (card-suit c)) ]
+    (string-append (rank-name r)
+                   " of "
+                   (suit-name s)
+                   "s" ) ) )
+)
 
-A less verbose way to do it.
+Having tasted the benefits of pattern matching, we are eager to see how it will be done using
+pattern matching.  Here it is.
 
-@racketblock[
-(define (ANDs bs1 bs2)
-  (match (cons bs1 bs2)
-    [(cons (list) _) bs1]
-    [(cons _ (list)) bs2]
-    [(cons (list b1 bs1 ...) (list b2 bs2 ...))
-     (cons (AND b1 b2) (ANDs bs1 bs2)) ] ) )
-]
+@#reader scribble/comment-reader
+(racketblock
+(define (card-name c)
+  (match c
+    [(struct card (r s))
+     (string-append (rank-name r)
+                    " of "
+                    (suit-name s)
+                    "s" ) ] ) )
+)
 
+We see again how the pattern @racket[(struct card (r s))] tries to mimic the form of the
+@racket[card] data structure.  In this pattern, @racket[struct] is a keyword as usual,
+indicating that the pattern is a user-defined data structure pattern; @racket[card] is similar
+to the role of @racket[list] in a list pattern, indicating that the actual data structure
+expected is a @racket[card], not something else, say a @racket[posn].  Two variables @racket[r]
+and @racket[s] hold the place for the rank and suit of a card respectively.  As before, when
+a card matches, they will be bound to the rank and suit of the card respectively for later use.
+This example shows the way to construct a pattern for a user-defined data structure.
 
+@bold{Exercise.}  Construct a pattern for the @racket[posn] data structure or some others you
+have seen or made.
+
+As a last example, we define a functino that determines if two cards are the same.  But this
+time we first pair the two cards and then do pattern matching on them both in one place.
+
+@#reader scribble/comment-reader
+(racketblock
+;; same-cards? : card card -> boolean
+;; determines if two cards are the same
+(define (same-cards? c1 c2)
+  (match (cons c1 c2)
+    [(cons (struct card (r1 s1))
+           (struct card (r2 s2)) )
+     (and (string=? r1 r2)
+          (string=? s1 s2) ) ] ) )
+)
+
+Note that the expression to @racket[match] is now a @racket[cons]-ed pair of the two input
+cards @racket[c1] and @racket[c2].  Since the expression is a pair of two @racket[card]s,
+our pattern also need to a pair pattern, with two sub-patterns for @racket[card].  This is
+exactly what @racket[(cons (struct card (r1 s1)) (struct card (r2 s2)))] specifies.  Mind
+that in the pattern @racket[cons] acts as a keyword, indicating a pair pattern.
+
+It seems we are trying to make things more complicated than necessary.  Also this pairing
+and then de-pairing also introduces some extra overheads.  So why are we bothering this
+way intead of using nested @racket[match]-expressions.  The reason is that sometimes, the
+nesting could be extreemely deep, which makes the code less readable.  For
+@racket[same-cards?], it is still not that obvious since it only accepts two arguments.  We
+only need to nest one @racket[match]-expression inside another.
+
+@#reader scribble/comment-reader
+(racketblock
+;; same-cards? : card card -> boolean
+;; determines if two cards are the same
+(define (same-cards? c1 c2)
+  (match c1
+    [(struct card (r1 s1))
+     (match c2
+       [(struct card (r2 s2)) (and (string=? r1 r2)
+                                   (string=? s1 s2) ) ] ) ] ) )
+)
+
+But imagine that we now want to define a function that take three cards and determine if
+all of them are the same, then we have to nest three @racket[match]-expressions.  If you
+still think it managable, imagine four, five or even more.  In these cases the advantage
+manifests, even though it means we have to sacriface some efficiency.  For example, we
+can define the function that determines the sameness among three cards as follows.
+
+@#reader scribble/comment-reader
+(racketblock
+;; same-3-cards? : card card card -> boolean
+;; determines if three cards are the same
+(define (same-3-cards? c1 c2 c3)
+  (match (list c1 c2 c3)
+    [(list (struct card (r1 s1))
+           (struct card (r2 s2))
+           (struct card (r3 s3)) )
+     (and (string=? r1 r2) (string=? r2 r3)
+          (string=? s1 s2) (string=? s2 s3) ) ] ) )
+)
+
+This time we construct a list from the three input cards and use the list pattern instead.
+The transitivity of @racket[string=?] guarantees that once two different pairs of strings
+are equal, all the three strings are equal.
+
+@bold{Exercise.}  Rewrite the pattern-matching version of @racket[AND], @racket[OR],
+@racket[ANDs] and @racket[ORs] do not use nested @racket[match]-expressions.
+
+@section{Matching Argument List}
+
+The last examples in the previous section shows that sometimes we want the arguments to a
+function collected in some data structure so that we can handle them, for example, do pattern
+matching on them, in one place.  Of course, we can do this by ourselves, as we did in those
+examples.  But it would be better if it is supported out of the box.  Racket does support it.
+In Racket, when a function is passed in its arguments, it implicitly receives the arguments as
+a list.  This is how a function sees its arguments under the hood.  Racket provides ways that
+allow us to open the hood and get the arguments as a list.  Then we can handle the arguments
+collectively rather than individually.
 
