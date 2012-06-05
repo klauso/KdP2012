@@ -1,0 +1,477 @@
+\documentclass[12pt]{beamer}
+
+\usefonttheme[onlymath]{serif}
+% \usetheme{Hannover}
+% \usetheme{default}
+
+\setbeamertemplate{frametitle}{
+ \begin{centering}
+  \smallskip
+  \insertframetitle\par
+  \smallskip
+ \end{centering}
+}
+\setbeamertemplate{itemize item}{$\bullet$}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[text line]{
+ \hfill
+ \strut{
+  \scriptsize\sf\color{black!60}
+  \insertframenumber
+ }
+ \hfill
+}
+
+% Define some colors:
+\definecolor{DarkFern}{HTML}{407428}
+\definecolor{DarkCharcoal}{HTML}{4D4944}
+\colorlet{Fern}{DarkFern!85!white}
+\colorlet{Charcoal}{DarkCharcoal!85!white}
+\colorlet{LightCharcoal}{Charcoal!50!white}
+\colorlet{AlertColor}{orange!80!black}
+\colorlet{DarkRed}{red!70!black}
+\colorlet{DarkBlue}{blue!70!black}
+\colorlet{DarkGreen}{green!70!black}
+
+% Use the colors:
+\setbeamercolor{title}{fg=Fern}
+\setbeamercolor{frametitle}{fg=Fern}
+\setbeamercolor{normal text}{fg=Charcoal}
+\setbeamercolor{block title}{fg=black,bg=Fern!25!white}
+\setbeamercolor{block body}{fg=black,bg=Fern!25!white}
+\setbeamercolor{alerted text}{fg=AlertColor}
+\setbeamercolor{itemize item}{fg=Charcoal}
+
+\usepackage[utf8]{inputenc}
+\usepackage{kerkis}
+\usepackage{minted}
+\usepackage{verbments}
+\usepackage{parskip}
+% \parskip=0.25\baselineskip
+\usepackage{multirow}
+
+\newcommand{\hl}[1]{\textcolor{black}{#1}}
+
+\title{\bf Pattern Matching}
+\author{Yi Dai}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}[plain]
+ \maketitle
+\end{frame}
+
+\begin{frame}[fragile]{{\bf Example 1 --- Debitalization} (1/2)}
+ \large
+ \begin{table}
+  \centering
+  \begin{tabular}{ccc}
+   bit & $\overset{debitalize}{\longrightarrow}$ & truth \\
+   \hline
+   0   &                                         & false \\
+   1   &                                         & true  \\
+  \end{tabular}
+ \end{table}
+\end{frame}
+
+\section{Matching Literals}
+
+\begin{frame}[fragile]{{\bf Debitalization} (1a/2)}
+ Racketize it
+
+ \pause
+
+ Data
+ \begin{itemize}
+  \item number: \verb|0|, \verb|1|
+  \item boolean: \verb|false|, \verb|true|
+ \end{itemize}
+
+ \pause
+
+ Code
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; debit : number -> boolean
+   ;; debitalizes a bit, via equality test
+   (define (debit b)
+     (cond ((= b 0) false)
+           ((= b 1) true ) ) )
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}[fragile]{{\bf Debitalization} (1b/2)}
+ Bit operators
+ \begin{table}
+  \centering
+  \begin{tabular}{|c|c|}
+   \hline
+   bit operator & boolean operator \\
+   \hline
+   NOT & $\neg$ \\
+   \hline
+   AND & $\wedge$ \\
+   \hline
+   OR  & $\vee$  \\
+   \hline
+  \end{tabular}
+ \end{table}
+
+ \pause
+ 
+ Racket code
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; NOT : number -> number
+   ;; negates a bit, via equality test
+   ;; ...
+  \end{minted}
+ }
+
+ \pause
+
+ \verb|AND| and \verb|OR| ...
+\end{frame}
+
+\begin{frame}[fragile]{{\bf Debitalization} (1c/2)}
+ ...
+
+ \pause
+
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; AND : number number -> number
+   ;; conjoins two bits, via equality test
+   (define (AND b1 b2)
+     (cond ((and (= b1 0) (= b2 0)) 0)
+           ((and (= b1 0) (= b2 1)) 0)
+           ((and (= b1 1) (= b2 0)) 0)
+           ((and (= b1 1) (= b2 1)) 1) ) )
+
+   ;; OR : number number -> number
+   ;; disjoins two bits, via equality test
+   ;; ...
+
+   (debit (NOT (OR (AND 0 1) (AND 1 0))))
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}[fragile]{\bf A First Taste of Pattern Matching}
+ Refactor it
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; debit : number -> boolean
+   ;; debitalizes a bit, via pattern matching
+   (define (debit b)
+     (match b
+       (0 false)
+       (1 true ) ) )
+  \end{minted}
+ }
+
+ \pause
+
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; NOT : number -> number
+   ;; negates a bit, via pattern matching
+   ;; ...
+  \end{minted}
+ }
+
+ \pause
+
+ \verb|AND| and \verb|OR| ...
+\end{frame}
+
+\begin{frame}[fragile]{\bf Nested Pattern Matching}
+ ...
+
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; AND : number number -> number
+   ;; conjoins two bits, via pattern matching
+   (define (AND b1 b2)
+     (match b1
+       (0 0)
+       (1 (match b2
+            (0 0)
+            (1 1) ) ) ) )
+
+   ;; OR : number number -> number
+   ;; disjoins two bits, via pattern matching
+   ;; ...
+
+   (debit (NOT (OR (AND 0 1) (AND 1 0))))
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}{\bf Matching Literals}
+ Racket literals
+ \begin{itemize}
+  \item booleans
+  \item numbers
+  \pause
+  \item characters
+  \pause
+  \item strings
+  \item ...
+ \end{itemize}
+
+ \pause
+
+ \hl{matching literals $=$ equality test}
+\end{frame}
+
+\begin{frame}[plain]
+ \begin{center}
+  {\LARGE
+   Tastes good?
+ 
+   \pause
+
+   \em
+   Clean code
+  }
+ \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{{\bf Example 1 --- Debitalization} (2/2)}
+ \large
+ \begin{table}
+  \centering
+  \begin{tabular}{ccc}
+   bit & $\overset{debitalize}{\longrightarrow}$ & truth \\
+   \hline
+   0   &                                         & false \\
+   1   &                                         & true  \\
+  \end{tabular}
+ \end{table}
+
+ \pause
+
+ \begin{table}
+  \centering
+  \begin{tabular}{ccc}
+   bit stream & $\overset{debitalize}{\longrightarrow}$ & truth stream   \\
+   \hline
+   0 1 ...    &                                         & false true ...
+  \end{tabular}
+ \end{table}
+\end{frame}
+
+\section{Matching Data Structures}
+
+\subsection{Matching Built-in DSs}
+
+\begin{frame}[fragile]{{\bf Debitalization} (2a/2)}
+ Racketize it
+
+ \pause
+
+ Data
+ \begin{itemize}
+  \item list of numbers: \verb|(list 0 1 ...)|
+  \item list of booleans: \verb|(list false true ...)|
+ \end{itemize}
+
+ \pause
+
+ Code
+ {\scriptsize
+  \begin{minted}{scheme}
+   ;; debits : (listof number) -> (listof boolean)
+   ;; debitalizes a bit stream, via isomorphism test
+   (define (debits bs)
+     (cond ((empty? bs) bs)
+           (else (let ((b (first bs))
+                       (bs (rest bs)) )
+                   (cons (debit b)
+                         (debits bs) ) ) ) ) )
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}[fragile]{{\bf Debitalization} (2b/2)}
+ Bit-wise operators: NOTs, ANDs, ORs
+
+ \pause
+ 
+ Racket code
+ {\scriptsize
+  \begin{minted}{scheme}
+   ;; NOTs : (listof number) -> (listof number)
+   ;; bit-wise negates a bit stream, via isomorphism test
+   ;; ...
+  \end{minted}
+ }
+
+ \pause
+
+ \verb|ANDs| and \verb|ORs| ...
+\end{frame}
+
+\begin{frame}[fragile]{{\bf Debitalization} (2c/2)}
+ ...
+
+ \pause
+
+ {\scriptsize
+  \begin{minted}{scheme}
+   ;; ANDs : (listof number) (listof number) -> (listof number)
+   ;; bit-wise conjoins two bit streams, via isomorphism test
+   (define (ANDs bs1 bs2)
+     (cond ((or (empty? bs1) (empty? bs2)) empty)
+           (else (let ((b1 (first bs1))
+                       (bs1 (rest bs1))
+                       (b2 (first bs2))
+                       (bs2 (rest bs2)) )
+                   (cons (AND b1 b2)
+                         (ANDs bs1 bs2) ) ) ) ) )
+
+   ;; ORs : (listof number) (listof number) -> (listof number)
+   ;; bit-wise disjoins two bit streams, via isomorphism test
+   ;; ...
+
+   (debits (NOTs (ORs (ANDs (list 0 1 0))
+                      (ANDs (list 1 0 1 0)) ) ) )
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}[fragile]{\bf A Second Taste of Pattern Matching}
+ Refactor it
+ {\scriptsize
+  \begin{minted}{scheme}
+   ;; debits : (listof number) -> (listof boolean)
+   ;; debitalizes a bit stream, via pattern matching
+   (define (debits bs)
+     (match bs
+       ((list) bs)
+       ((list b bs ...) (cons (debit b)
+                              (debits bs) ) ) ) )
+  \end{minted}
+ }
+
+ \pause
+
+ {\scriptsize
+  \begin{minted}{scheme}
+   ;; NOTs : number -> number
+   ;; bit-wise negates a bit stream, via pattern matching
+   ;; ...
+  \end{minted}
+ }
+
+ \pause
+
+ \verb|AND| and \verb|OR| ...
+\end{frame}
+
+\begin{frame}[fragile]{\bf Nested Pattern Matching}
+ ...
+
+ {\scriptsize
+  \begin{minted}{scheme}
+   ;; ANDs : (listof number) (listof mumber) -> (listof number)
+   ;; bit-wise conjoins two bit streams, via pattern matching
+   (define (ANDs bs1 bs2)
+     (match bs1
+       ((list) bs1)
+       ((list b1 bs1 ...)
+        (match bs2
+          ((list) bs2)
+          ((list b2 bs2 ...) (cons (AND b1 b2)
+                                   (ANDs bs1 bs2) ) ) ) ) ) )
+
+   ;; OR : (listof number) (listof number) -> (listof number)
+   ;; bit-wise disjoins two bit streams, via pattern matching
+   ;; ...
+
+   (debits (NOTs (ORs (ANDs (list 0 1 0))
+                      (ANDs (list 1 0 1 0)) ) ) )
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}{\bf Matching Built-in Data Structures}
+ Racket built-in data structures
+ \begin{itemize}
+  \item lists
+  \pause
+  \item pairs
+  \pause
+  \item vectors
+  \item ...
+ \end{itemize}
+
+ \pause
+
+ \hl{matching (built-in) data structures $=$ isomorphism test}
+\end{frame}
+
+\begin{frame}[plain]
+ \begin{center}
+  {\LARGE
+   Tastes good?
+   
+   \pause
+
+   \em
+   Clear code
+  }
+ \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{\bf Example 2 --- Poker}
+ \large
+ \begin{table}
+  \centering
+  \begin{tabular}{c|c}
+   \hline
+   \multicolumn{2}{c}{card} \\
+   \hline
+   rank & A, 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K \\
+   \hline
+   suit & $\spadesuit$, $\heartsuit$, $\diamondsuit$, $\clubsuit$, $\bigstar$ \\
+   \hline
+  \end{tabular}
+ \end{table}
+\end{frame}
+
+\subsection{Matching User-defined DSs}
+
+\begin{frame}[fragile]{{\bf Poker} (1a)}
+ Racketize it
+
+ \pause
+
+ Data
+ \begin{itemize}
+  \item structure: \verb|struct|
+  \pause
+  \item string: \verb|"A"|, \verb|"2"|, \verb|"|$\spadesuit$\verb|"|, ...
+ \end{itemize}
+
+ \pause
+
+ Code
+ {\footnotesize
+  \begin{minted}[mathescape]{scheme}
+   (define-struct card (rank suit))
+  \end{minted}
+ }
+\end{frame}
+
+% \begin{frame}[fragile]{{\bf Poker} (1b)}
+ 
+% \end{frame}
+
+\section{Matching Argument List}
+
+\end{document}
+
