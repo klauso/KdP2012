@@ -86,7 +86,7 @@ operations, we can easily define three Racket functions that act the same.
 ;; ...
 )
 
-@bold{Exercise.}  Supply the definitions for @racket[NOT] and @racket[OR].
+@ex[]  Supply the definitions for @racket[NOT] and @racket[OR].
 
 With these three functions, we can simulate any arbitrary complicated operations in the bital
 world.  After we get the final result of the simulation, we can readily see the truth by
@@ -115,7 +115,7 @@ Indeed, we can rewrite @racket[AND] as follows:
 ;; ...
 )
 
-@bold{Exercise.}  Rewrite your @racket[OR] definition if you also use too many equality tests.
+@ex[]  Rewrite your @racket[OR] definition if you also use too many equality tests.
 
 In this version, we have decreased the number of equality tests by half.  Though, can we do
 better?  In other words, can we write even less but still maintain the behavior of the
@@ -134,8 +134,8 @@ provided by Racket.
 )
 
 You see instead of a @racket[cond]-expression, we now have a @racket[match]-expression.  A
-@racket[match]-expression is similar to a @racket[cond]-expression in structure except
-@itemlist[
+@racket[match]-expression is similar to a @racket[cond]-expression in structure except that:
+@itemlist[#:style 'ordered
 @item{It also takes another expression.  In the two examples both are the variable @racket[b].
       But in general any expression is allowed. }
 @item{The left of a clause (enclosed in brackets) is now a pattern instead of a boolean
@@ -163,7 +163,7 @@ In general, when you construct a @racket[match]-expression, you should make sure
 take all possible cases into account and provide at least one pattern that covers each case,
 just as you did before with a @racket[cond]-expression.
 
-@bold{Exercise.}  Write the pattern-matching version of @racket[NOT] using the
+@ex[]  Write the pattern-matching version of @racket[NOT] using the
 @racket[match] form.
 
 A @racket[match]-expression is like any other expression.  That is, it can appear anywhere a
@@ -188,7 +188,7 @@ can be rewritten using nested @racket[match]-expressions.
 ;; ...
 )
 
-@bold{Exercise.}  Write the pattern-matching version of @racket[OR].
+@ex[]  Write the pattern-matching version of @racket[OR].
 
 @section{Matching Data Structures}
 
@@ -234,7 +234,7 @@ defined on top of those functions that simulate single-bit operations.
 ;; ...
 )
 
-@bold{Exercise.}  Supply the definitinos for @racket[NOTs] and @racket[ORs].
+@ex[]  Supply the definitinos for @racket[NOTs] and @racket[ORs].
 
 These definitions are all defined by recursion on the built-in list data structure by the
 so-called isomorphism tests.  Two data structures are said to be isomorphic if they have
@@ -257,7 +257,7 @@ to avoid this clutter is by moving the decompositions into the binding part of a
                       (ANDs bs1 bs2) ) ) ] ) )
 )
 
-@bold{Exercise.}  Rewrite @racket[debits] and @racket[ORs] in the same way.
+@ex[]  Rewrite @racket[debits] and @racket[ORs] in the same way.
 
 This version is clearer but feels heavy.  Here comes is the same question that whether we
 can do it by saying less.  Yes, pattern matching helps again.  Racket supports pattern
@@ -314,9 +314,9 @@ patterns.  For example, in the following function,
 you will never reply "Yes, Sir!" because @racket[whatever] the @racket[order] is, you reply
 immediately "No, Sir!".  It is dangerous!  So make sure that is what you intended to do.
 Sometimes, this kind of behavior is required.  For this purpose, Racket provides a special
-identifier, the underscore @racket[_].  It acts as a pattern variable, that is, it can match
-anything, but it does no binding.  Anything that matches are ignored.  For example, we can
-use it to define the function that returns the length of a list as follows:
+identifier, the underscore @litchar|{_}|.  It acts as a pattern variable, that is, it can
+match anything, but it does no binding.  Anything that matches is ignored.  For example, we
+can use it to define the function that returns the length of a list as follows:
 
 @racketblock[
 (define (len l)
@@ -334,7 +334,7 @@ patterns are never evaluated.  A good way to understand their roles is by thinki
 as keywords.  It is important to distinghuish them from variables in a pattern.  They are
 used for identifying a particular type of data, thus @racket[list] for a list.
 
-@bold{Exercise.}  Rewrite @racket[NOTs] using pattern matching.
+@ex[]  Rewrite @racket[NOTs] using pattern matching.
 
 As before, @racket[match]-expressions can be nested.  Back to our debitalization example,
 we can rewrite @racket[ANDs] using nested @racket[match]-expressions.
@@ -353,7 +353,7 @@ we can rewrite @racket[ANDs] using nested @racket[match]-expressions.
                                 (ANDs bs1 bs2) ) ] ) ] ) )
 )
 
-@bold{Exercise.}  Rewrite @racket[ORs] in the same way.
+@ex[]  Rewrite @racket[ORs] in the same way.
 
 Since list is such an important data structure.  Racket supports rich patterns around it.
 Here are more examples.
@@ -388,9 +388,10 @@ Here are more examples.
   [_ "not equal"] )
 ]
 
-The last example shows that Racket even supports the so-called non-linear patterns.  But
-be aware that using the same names for two different things is usually the origin of
-confusion.  You would better avoid it.
+The last example shows that Racket even supports the so-called non-linear patterns.  That is,
+variables that appear multiple times instead of just once in a pattern.  In these two examples,
+the pattern variable @racket[x] appears twice.  But be aware that using the same names for two
+different things is usually the origin of confusion.  You would better avoid it.
 
 The ellipsis @racket[...] in Racket is a powerful utility to build very general patterns.
 Here are two examples.
@@ -452,11 +453,11 @@ Let us first define a function that echoes the name of a rank.
 )
 
 This time, we define the function directly by pattern matching on the input string.  Imagine
-what you would have to do without pattern matching.  Note that how the underscore @racket[_]
+what you would have to do without pattern matching.  Note that how the underscore @litchar|{_}|
 is effectively used to match all other ranks, that is numbers.  Since these numbers are in
 string forms, we return them immediately.
 
-@bold{Exercise.}  Define a function @racket[suit-name] that echoes the name of a suit.
+@ex[]  Define a function @racket[suit-name] that echoes the name of a suit.
 
 A playing card is usually called by first saying its rank name, followed by the word "of" and
 then the plural form of its suit name.  For example, the card 🂡 will be called "Ace of Spades",
@@ -515,7 +516,7 @@ and @racket[s] hold the place for the rank and suit of a card respectively.  As 
 a card matches, they will be bound to the rank and suit of the card respectively for later use.
 This example shows the way to construct a pattern for a user-defined data structure.
 
-@bold{Exercise.}  Construct a pattern for the @racket[posn] data structure or some others you
+@ex[]  Construct a pattern for the @racket[posn] data structure or some others you
 have seen or made.
 
 As a last example, we define a functino that determines if two cards are the same.  But this
@@ -581,10 +582,10 @@ This time we construct a list from the three input cards and use the list patter
 The transitivity of @racket[string=?] guarantees that once two different pairs of strings
 are equal, all the three strings are equal.
 
-@bold{Exercise.}  Rewrite the pattern-matching version of @racket[AND], @racket[OR],
-@racket[ANDs] and @racket[ORs] do not use nested @racket[match]-expressions.
+@ex[]  Rewrite the pattern-matching version of @racket[AND], @racket[OR], @racket[ANDs] and
+@racket[ORs], do not use nested @racket[match]-expressions.
 
-@section{Matching Argument List}
+@section{Matching Argument Lists}
 
 The last examples in the previous section shows that sometimes we want the arguments to a
 function collected in some data structure so that we can handle them, for example, do pattern
@@ -592,6 +593,213 @@ matching on them, in one place.  Of course, we can do this by ourselves, as we d
 examples.  But it would be better if it is supported out of the box.  Racket does support it.
 In Racket, when a function is passed in its arguments, it implicitly receives the arguments as
 a list.  This is how a function sees its arguments under the hood.  Racket provides ways that
-allow us to open the hood and get the arguments as a list.  Then we can handle the arguments
-collectively rather than individually.
+allow us to open the hood: getting the argument list.  Through this explicit approach, we can
+handle the arguments collectively rather than individually.
+
+@subsection{Another Way of Applying a Function}
+
+So far, we apply a function by simply enclosing the function and its arguments in a pair of
+parentheses.  For example, we write @racket[(+ 1 2 3)], @racket[(length (list 1 2 3))], and so
+on.  As an alternative, Racket also provides a function @racket[apply] that can do the same job.
+It accepts a function you want to apply and a list of arguments you want to apply the function
+to, and, as its name suggests, apply the function to the arguments collected in the list.  For
+example, instead of @racket[(+ 1 2 3)], we can write @racket[(apply + (list 1 2 3))].  As you
+can see, since we want to apply @racket[+] to the arguments @racket[1], @racket[2] and
+@racket[3], we first collect them in a list @racket[(list 1 2 3)] and then feed the list
+together with the function @racket[+] to the function @racket[apply].  The two expressions,
+@racket[(+ 1 2 3)] and @racket[(apply + (list 1 2 3))] have the same effect.  That is, they both
+evaluates to @racket[6].
+
+Rewriting @racket[(length (list 1 2 3))] using @racket[apply] is a little tricky.  One careless
+mind will put it like @racket[(apply length (list 1 2 3))].  But this is wrong.  Recall that
+@racket[length] accepts a @italic{single} argument which must be some list and returns the length
+of that input list.  Since the second argument to the function @racket[apply] is supposed to be a
+list that contains all the arguments we want to feed to the function to apply, we should first put
+the single argument to @racket[length] in a list.  That is, if we want to apply @racket[length] to
+the list @racket[(list 1 2 3)], we should first put this list in a list,
+@racket[(list (list 1 2 3))], then supply it with @racket[length] to @racket[apply].  Thus the
+correct answer is @racket[(apply length (list (list 1 2 3)))].  Again, evaluating both expressions
+should give the same result, @racket[3].
+
+This alternative approach to apply a function seems redundant.  Indeed for most senarios, you do
+not need it and you are even encouraged not to use it.  If you want to apply a function, do it in
+the usual, more direct way.  So, write @racket[(+ 1 2 3)] instead of
+@racket[(apply + (list 1 2 3))], @racket[(length (list 1 2 3))] instead of
+@racket[(apply length (list 1 2 3))], for the sake of readability.  Though, this indirect
+way of applying a function by invoking @racket[apply] on the function and the argument list,
+fancy or clumsy, has its use.  It is one essential part of the magic behind variadic functions,
+those that can accept an arbitrary number of arguments.
+
+@subsection{The Magic behind Variadic Functions}
+
+You have been curious about how @racket[+] can accept an arbitrary number of arguments for long.
+These kind of functions are called variadic functions.  Their existence contributes a lot to
+the brevity of Racket expressions.  Suppose that @racket[+] can only accept two arguments, to
+add three numbers, say @racket[1], @racket[2] and @racket[3], we have to write it in one
+possible way as @racket[(+ 1 (+ 2 3))].  If this still looks not bad, imagine how many pluses
+and parentheses you have to write to add ten numbers.  But with @racket[+] being variadic, to
+add ten numbers, say from @racket[1] to @racket[10], we can simply put it as
+@racket[(+ 1 2 3 4 5 6 7 8 9 10)].  The question is how it works.  And more importantly, can
+we define a function like this too?  The answer is of course "yes".
+
+The idea is to identifythe sequence of arguments fed to a function as a list.  Since a list
+could be arbitrarily long, it means the arguments could be arbitrarily many.  With this
+identification, the eseential turns out to be when defining a function, we need a mechanism,
+one that would allow us to get hold of the list of arguments fed to the function when the
+function is applied (in the usual direct way).  The simplest way in programming to get hold of
+something is by naming the thing. That said, we need only a varible.  The problem is the
+ordinary syntax for function definition is no longer sufficient for this task.  To see the
+point, let us see the header of an example function definition (what it does actually does not
+matter here).
+
+@#reader scribble/comment-reader
+(racketblock
+(define (f x y)
+  ; body
+  )
+)
+
+Apparently the function @racket[f] can accept three arguments since following its name are
+three variables @racket[x], @racket[y] and @racket[z].  Without loss of generality, let us
+further assume that the function @racket[f] expectes two numbers as arguments.  Suppose
+@racket[f] is applied to numbers @racket[1] and@racket[2] and @racket[3], again in the usual
+direct manner, that is, @racket[(f 1 2)].  According to our knowledge, each variable will be
+bound to one argument in order, so @racket[x] to @racket[1] and @racket[y] to @racket[2].  Now
+it is clear that there is no way in this old syntax that allows us to express that bind one
+varible instead to the whole list of arguments.  In particular, adding an extra variable to
+any valid position to the header does not work since the resulting definition
+
+@#reader scribble/comment-reader
+(racketblock
+(define (f x y z)
+  ; body
+  )
+)
+
+defines a function that can accepts three arguments.  When it is applied, one variable still
+gets bound to one argument correspondingly.  What we need is a special syntax that allows us
+specify a variable intended to be bound to the whole argument list when the function is applied.
+The Racket syntax to do so is by prefixing this particular variable a dot @litchar|{.}|.  So we
+write it like this:
+
+@#reader scribble/comment-reader
+(racketblock
+(define (f . x)
+  ; body
+  )
+)
+
+The function @racket[f] defined thus can accept an arbitrary number of arguments.  In particular,
+we know that when it is applied, all the arguments fed to it will be collected in a list and the
+variable @racket[x] will be bound to this argument list.  With this knowledge, in the body of
+the function definition we can do case analysis on @racket[x] and do things accordingly.
+
+Now we have all the tools in hand to define a variadic function.  Let us define a function that
+sums an arbitrary number of numbers.  This is indeed what @racket[+] does.  But in order to show
+you how you can do the same thing, let us again suppose that @racket[+] can only accept two
+arguments.  The definition of @racket[sum] goes as follows.
+
+@#reader scribble/comment-reader
+(racketblock
+;; sum : number ... -> number
+;; sums an arbitrary number of numbers
+(define (sum . ns)
+  (cond [(empty? ns) 0]
+        [else (+ (first ns)
+                 (apply sum (rest ns)) ) ] ) )
+)
+
+You see we do case analysis on the argument list.  If it is empty, we return @racket[0].  If it
+is not, we first take out the first argument of the list, then apply @racket[sum] recursively to
+the rest of the argument list, and finally @racket[+] the first number to the result of the
+result returned from the recursive application.  The surprise is that the recursive application
+is done by invoking @racket[apply], instead of applying @racket[sum] to the rest of the argument
+list directly.  A moment's thought reveals that @racket[(sum (rest ns))] indeed would not work.
+Because what it actually does is supplying the rest of the argument list, which is list of
+numbers, as a single argument to @racket[sum].  This is not what @racket[sum] expects.  Every
+argument @racket[sum] expects must be a number, instead of a list of numbers.  To see more
+clearly why using @racket[apply] works, let us see a simple example, say @racket[(sum 1 2 3)].
+First, @racket[ns] will be bound to the the whole argument list @racket[(list 1 2 3)]; then
+the list is checked to see if it is empty, since apparently not, we reach the @racket[else]
+branch; substituting in the result of @racket[(rest ns)] gives @racket[(apply sum (list 2 3))].
+According to our description of @racket[apply], this expression has the same effect as
+@racket[(sum 2 3)], which is what we want.
+
+If you have appreciated the benefits of pattern matching, you should be tempted to rewrite
+@racket[sum] using @racket[match].
+
+@ex[]  Write a function @racket[product] that calculates the product of an arbitrary number of
+numbers using @racket[match].  Assume the function @racket[*] can only accept two arguments.
+
+At the end of the previous section, we hinted that sometimes we want to avoid nested pattern
+matching for the sake of readability when manipulating several data.  In particular, we showed
+how we could do that by first collecting these data in in a pair or a list, and then accordingly
+provide a pair or list pattern containing sub-patterns corresponding these data.  In that way,
+we can do pattern matching in one place.  Our examples there particularly concerned collecting
+arguments.  Now we see that we do not have to do this collection ourselves.  We can rewrite,
+for example, @racket[same-cards?] like this:
+
+@#reader scribble/comment-reader
+(racketblock
+;; same-cards? : card card -> boolean
+;; determines if two cards are the same
+(define (same-cards? . cs)
+  (match cs
+    [(list (struct card (r1 s1))
+           (struct card (r2 s2)) )
+     (and (string=? r1 r2)
+          (string=? s1 s2) ) ] ) )
+)
+
+@ex[]  Rewrite @racket[AND], @racket[OR] and @racket[same-3-cards?] in a similar way.
+
+You can also put as many variables before the dot @litchar|{.}| in a function header.  (But only
+one variable is allowed after it.)  For example,
+
+@#reader scribble/comment-reader
+(racketblock
+(define (f x y . z)
+  ; body
+  )
+)
+
+This will define a function that accepts at least two arguments.  Two arguments are mandatory,
+they will be bound to @racket[x] and @racket[y] respectively.  In addition, you can supply zero
+or more arguments, which will be collected in a list and bound to @racket[z].  Below is a simple
+exmaple showing its usage.
+
+@#reader scribble/comment-reader
+(racketblock
+(define (greet-person g . ps)
+  (match ps
+    [(list) (display (string-append g "!"))]
+    [(list p) (display (string-append g ", " p "!"))]
+    [(list p ps ...)
+     (display (string-append g ", " p "!"))
+     (newline)
+     (apply greet-person (cons g ps)) ] ) )
+)
+
+We can use this function to greet an arbitrary number of persons we meet.  For example,
+@racket[(greet-person "Hi" "Kos" "Tim" "Day")].  Notice that in the recursive application,
+@racket[(apply greet-person (cons g ps))], we need to @racket[cons] @racket[g] into @racket[ps],
+otherwise in the recursive calls, @racket[greet-person] will no longer receive the first argument
+it expects.  Try to see what will happen with the example if we accidentally write just
+@racket[(apply greet-person ps)].
+
+Though allowing variables before the dot dot @litchar|{.}| does offer some convenience.  We can
+achieve the same effect without inserting any variable before the dot @litchar|{.}|, as shown
+below.
+
+@#reader scribble/comment-reader
+(racketblock
+(define (f . xs)
+  (match xs
+    [(list x y z ...) ; body
+    ] ) )
+)
+
+The point is that we can see this feature as a limited form of pattern matching.
+
+
 
