@@ -652,6 +652,13 @@ two different pairs of strings are equal, all the three strings are equal.
 @ex[]  Rewrite the pattern-matching version of @racket[AND], @racket[OR],
 @racket[ANDs] and @racket[ORs], do not use nested @racket[match]-expressions.
 
+@ex[]  Read the Wikipedia article
+@hyperlink["http://en.wikipedia.org/wiki/List_of_poker_hands"]{List of poker
+hands}.  Suppose we represent a hand as a list of 5 cards, write a function
+that tests a hand of cards for each poker hand category.  You can find those
+functions that you may use to accomplish the task in the file
+@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/SubstituteLectures/PatternMatching/card.rkt"]{card.rkt}.
+
 @section{Matching Argument Lists}
 
 The last examples in the previous section shows that sometimes we want the
