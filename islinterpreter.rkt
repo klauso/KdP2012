@@ -18,7 +18,6 @@
 (define-struct struct-def (name fields))
 ; a Struct-Def is: (make-struct-def Symbol (list-of Symbol))
 
-; 
 ; a Def is either:
 ; - a Var-Def
 ; - a Struct-Def
@@ -32,8 +31,6 @@
 (define-struct cnd (clauses))
 (define-struct cnd-clause (c e))
 (define-struct primval (v))
-
-
 
 ; a PrimVal is either:
 ; - a Number
@@ -80,17 +77,37 @@
 
 ; Exp -> s-exp
 ; prints an abstract syntax tree to an s-expression
-; for all expressions exp, the following property should hold:
+; for all expressions  exp, the following property should hold:
 ;    (parse (print exp)) == exp
+; This property does not hold if exp contains structv or closures
+; because they cannot be parsed and are only introduced during reduction
 (define (print exp)
-  (cond [(lam? exp) `(lambda ,(lam-args exp) ,(print (lam-body exp))) ]
-        [(struct-def? exp) `(define-struct ,(struct-def-name exp) ,(struct-def-fields exp))]
-        [(var-def? exp) `(define ,(var-def-name exp) ,(print (var-def-e exp)))]
-        [(locl? exp)  (list 'local (map print (locl-defs exp)) (print (locl-e exp)))]
-        [(cnd? exp) (cons 'cond (map (lambda (cc) (list (print (cnd-clause-c cc)) (print (cnd-clause-e cc)))) (cnd-clauses exp)))]
-        [(app? exp) (cons (print (app-fun exp)) (map print (app-args exp)))]
+  (cond [(lam? exp) 
+         (list 'lambda (lam-args exp) (print (lam-body exp)))]
+        [(struct-def? exp) 
+         (list 'define-struct (struct-def-name exp) (struct-def-fields exp))]
+        [(var-def? exp) 
+         (list 'define (var-def-name exp) (print (var-def-e exp)))]
+        [(locl? exp)  
+         (list 'local (map print (locl-defs exp)) (print (locl-e exp)))]
+        [(cnd? exp) 
+         (cons 'cond (map (lambda (cc) (list (print (cnd-clause-c cc)) 
+                                             (print (cnd-clause-e cc)))) 
+                          (cnd-clauses exp)))]
+        [(app? exp) 
+         (cons (print (app-fun exp)) (map print (app-args exp)))]
         [(var? exp) (var-x exp)]
-        [(closure? exp) (list 'closure (closure-args exp) (print (closure-body exp)) (map print (closure-env exp)))]
+        [(closure? exp) 
+         (list 'closure 
+               (closure-args exp) 
+               (print (closure-body exp)) 
+               (map print (closure-env exp)))]
+        [(structv? exp)
+         (cons (string->symbol 
+                (string-append "make-" 
+                               (symbol->string 
+                                (struct-def-name (structv-def exp)))))
+               (map print (structv-fieldvalues exp)))]
         [(primval? exp) (if (procedure? (primval-v exp))
                             '<primfun>
                             (primval-v exp))]
@@ -164,7 +181,8 @@
     ; expression has the form (local [(define x-1 v1)...] e)?  
     [(and (locl? e) (env? (locl-defs e))) 
      ; then reduce e 
-     (make-locl (locl-defs e) (reduce (locl-e e) (append (locl-defs e) env)))] 
+     (make-locl (locl-defs e) (reduce (locl-e e) 
+                                      (append (locl-defs e) env)))] 
     
     ; expression has the form (local [(define x-1 v1)...(define x-i e-i) ...] e) ?
     [(locl? e) 
@@ -197,9 +215,12 @@
           (make-struct-funcs (first defs))
           (rest defs))]
         [(value? (var-def-e (first defs)))
-         (cons (first defs) (reduce-first-def (rest defs) (cons (first defs) env)))]
-        [else (cons (make-var-def (var-def-name (first defs))
-                                  (reduce (var-def-e (first defs)) env))
+         (cons (first defs) 
+               (reduce-first-def (rest defs) 
+                                 (cons (first defs) env)))]
+        [else (cons (make-var-def 
+                     (var-def-name (first defs))
+                     (reduce (var-def-e (first defs)) env))
                     (rest defs))]))
 
 
@@ -208,7 +229,8 @@
   (local 
     [(define (lookup-env-helper env x)
        (cond [(empty? env) 
-              (error (string-append "Unbound variable: " (symbol->string x)))]
+              (error (string-append "Unbound variable: " 
+                                    (symbol->string x)))]
              [(and (var-def? (first env))
                    (eq? (var-def-name (first env)) x))
               (var-def-e (first env))]
@@ -227,10 +249,11 @@
   (cond [(closure? fun) 
          (make-locl (closure-env fun) 
                     (make-locl
-                     (map (lambda (x v) (make-var-def x v)) (closure-args fun) args)
+                     (map (lambda (x v) (make-var-def x v)) 
+                          (closure-args fun) args)
                      (closure-body fun)))]
         [(primval? fun) 
-         (make-primval (apply (primval-v fun) (map primval-v args)))]))
+         (apply (primval-v fun) args)]))
 
 
 ; Struct-Def -> Env
@@ -240,62 +263,81 @@
   ; assume as example that sd is (define-struct a (b c))
   (local 
     [(define name (symbol->string (struct-def-name sd))) ; then name = "a"
-     (define (gen-selector fn)  ; generates selector function for each field name fn
+     
+     (define (check-structure-identity v)
+       (and (structv? v)
+            ; eq? is reference equality: Structures are compatible if they 
+            ; stem from the same place in the program
+            (eq? (structv-def v) sd))) 
+     
+     ; Symbol -> Var-Def
+     ; generates selector function for each field name fn
+     (define (selector-func fn)  
        (make-var-def 
         (string->symbol (string-append name "-" (symbol->string fn))) ; such as "a-b" and "a-c"
         (make-primval 
          (lambda (sv)
-           (if (and (structv? sv) 
-                    ; eq? is reference equality: Structures are compatible if they 
-                    ; stem from the same place in the program
-                    (eq? (structv-def sv) sd)) 
+           (if (check-structure-identity sv)
                (second (assq fn                     ; extract corresponding field value
                              (map 
                               list 
                               (struct-def-fields sd) 
                               (structv-fieldvalues sv))))
-               (error "Argument of selector function for " fn " must be structure value of structure " name))))))]
-    (cons
-     (make-var-def  ; constructor function
-      (string->symbol (string-append "make-" name)) ; name of constructor function, such as 'make-a
-      (make-primval 
-       (compose ; compose with "list" function to turn it into an n-ary function 
-        ; where n = (length (struct-def-fields sd))
-        (lambda (fv)
-          (if (= (length fv) ; check that number of args matches number of fields
-                 (length (struct-def-fields sd)))
-              (make-structv sd fv) ; everything OK -> create structure value
-              (error "Wrong number of args in constructor call for struct: " 
-                     (struct-def-name sd))))
-        list)))
-     (cons (make-var-def ; predicate function
-            (string->symbol (string-append name "?")) ; such as 'a?
-            (make-primval (lambda (v)
-                            (and (structv? v)
-                                 (eq? (structv-def v) sd)))))
-           (map gen-selector (struct-def-fields sd)) ; create selector function for each field
-           ))))
+               (error "Argument of selector function for " fn 
+                      " must be structure value of structure " name))))))
+     
+     (define constructor-func 
+       (make-var-def  
+        (string->symbol (string-append "make-" name)) ; name of constructor function, such as 'make-a
+        (make-primval 
+         (compose ; compose with "list" function to turn it into an n-ary function 
+          ; where n = (length (struct-def-fields sd))
+          (lambda (fv)
+            (if (= (length fv) ; check that number of args matches number of fields
+                   (length (struct-def-fields sd)))
+                (make-structv sd fv) ; everything OK -> create structure value
+                (error "Wrong number of args in constructor call for struct: " 
+                       (struct-def-name sd))))
+          list))))
+     
+     (define predicate-func 
+       (make-var-def
+        (string->symbol (string-append name "?")) ; such as 'a?
+        (make-primval (compose make-primval check-structure-identity))))]
+    
+    ; put all functions together in one environment
+    (cons constructor-func (cons predicate-func (map selector-func (struct-def-fields sd))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Infrastructure for executing programs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; we use the initial environment to encode the primitive values and functions
-; can be extended as needed
+; We use the initial environment to encode the primitive values and functions.
+; We also provide some predefined non-primitive values/functions/structs for lists
+; Can be extended as needed
+
+
+
 (define initial-env 
-  (map (lambda (x)
-         (make-var-def (first x) (make-primval (second x))))
-       (list
-        (list '+ +)
-        (list '- -)
-        (list '* *)
-        (list 'zero? zero?)
-        (list 'cons cons)
-        (list 'empty empty)
-        (list 'first first)
-        (list 'rest rest)
-        (list 'true true)
-        (list 'false false))))
+  (local ; [X Y Z] (X Y -> Z) -> ( (make-primval X) (make-primval Y) -> (make-primval Z))
+    [(define (lift2 op) (lambda (x y) (make-primval (op (primval-v x) (primval-v y)))))]
+    (append
+     (map (lambda (x)
+            (make-var-def (first x) (make-primval (second x))))
+          (list
+           (list '+ (lift2 +))
+           (list '- (lift2 -))
+           (list '* (lift2 *))
+           (list '= (lift2 =))
+           (list 'true true)     ; workaround for bug in HTDP reader:
+           (list 'false false))) ;   'true evaluates to 'true and not true
+     (make-struct-funcs  (parse '(define-struct empty ())))
+     (make-struct-funcs (parse '(define-struct cons (first rest))))
+     (list
+      (parse '(define empty (make-empty)))
+      (parse '(define map (lambda (f xs)
+                            (cond [(empty? xs) empty]
+                                  [(cons? xs) (make-cons (f (cons-first xs)) (map f (cons-rest xs)))]))))))))
 
 ; Exp -> Value
 ; reduces expression until it becomes a value (or loops)
@@ -308,6 +350,9 @@
 ; like eval, but parses input first
 (define (parse-and-eval sexp)
   (eval (parse sexp)))
+
+(define (parse-eval-print sexp)
+  (print (parse-and-eval sexp)))
 
 ; Exp -> (list-of Exp)
 ; generates sequence of reduction steps until e becomes a value
@@ -341,10 +386,10 @@
                 (make-cnd-clause (make-primval 55) (make-primval 19)))))
 
 ; printer tests
-(check-expect (print (parse '(local [(define fact (lambda (n) (cond [(zero? n) 1]
+(check-expect (print (parse '(local [(define fact (lambda (n) (cond [(= n 0) 1]
                                                                     [true (* n (fact (- n 1)))])))]
                                (fact 5))))
-              `(local ((define fact (lambda (n) (cond ((zero? n) 1) (true (* n (fact (- n 1)))))))) (fact 5)))
+              `(local ((define fact (lambda (n) (cond ((= n 0) 1) (true (* n (fact (- n 1)))))))) (fact 5)))
 (check-expect (print (parse '(local [(define-struct a (b c))] (a-b 55))))
               '(local ((define-struct a (b c))) (a-b 55)))
 
@@ -356,15 +401,19 @@
 
 
 ; evaluator test
-(check-expect (parse-and-eval '(+ 1 2)) (make-primval 3))
-(check-expect (parse-and-eval '(+ (+ 1 2) (+ 3 4))) (make-primval 10))
-(check-expect (parse-and-eval '((lambda (x) (+ x (+ 1 2))) (+ 2 3))) (make-primval 8))
-(check-expect (parse-and-eval '(local [(define x (+ 1 2))] x)) (make-primval 3))
-(check-expect (parse-and-eval '(cond [(zero? (+ 1 2)) (+ 3 4)] [(zero? 0) (+ 5 6)])) (make-primval 11))
-(check-expect (parse-and-eval '(local [(define fact (lambda (n) (cond [(zero? n) 1]
-                                                                      [true (* n (fact (- n 1)))])))]
-                                 (fact 5))) (make-primval 120))
-
+(check-expect (parse-eval-print '(+ 1 2)) 3)
+(check-expect (parse-eval-print '(+ (+ 1 2) (+ 3 4))) 10)
+(check-expect (parse-eval-print '((lambda (x) (+ x (+ 1 2))) (+ 2 3))) 8)
+(check-expect (parse-eval-print '(local [(define x (+ 1 2))] x)) 3)
+(check-expect (parse-eval-print '(cond [(= 0 (+ 1 2)) (+ 3 4)] [(= 0 0) (+ 5 6)])) 11)
+(check-expect (parse-eval-print '(local [(define fact (lambda (n) (cond [(= n 0) 1]
+                                                                        [true (* n (fact (- n 1)))])))]
+                                   (fact 5))) 
+              120)
+(check-expect (parse-eval-print '(local [(define-struct a (b c))] (make-a (+ 1 2) 3)))
+              '(make-a 3 3))
+(check-expect (parse-eval-print '(map (lambda (x) (* x 2)) (make-cons 1 (make-cons 5 (make-cons 3 empty)))))
+              '(make-cons 2 (make-cons 10 (make-cons 6 (make-empty))))) 
 
 (check-expect (parse-and-eval '(local [(define x 5) (define y (+ x 6))] (+ x y))) 
               (make-primval 16))
@@ -384,6 +433,15 @@
                                       (define v (make-a 1 2))]
                                 (local [(define-struct a (b c))]
                                   (a-b v)))))
+
+; check arity check for structures
+(check-error (parse-and-eval '(local [(define-struct a (b c))] (make-a 1 2 3))))
+
+; check unbound variable error
+(check-error (parse-and-eval 'x))
+
+; check function arity error
+(check-error (parse-and-eval '((lambda (x y) (+ x y)) 5)))
 
 (check-expect (parse-and-reduce-sequence '(local [(define x 5) (define y (+ x 6))] (+ x y)))
               '((local ((define x 5) (define y (+ x 6))) (+ x y))
