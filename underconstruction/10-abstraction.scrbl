@@ -842,5 +842,93 @@ lokale Umgebung bei Anwendung des Closure verwendet wird, um Namen im Funktionsb
 
 @section{Lambda, die ultimative Abstraktion}
 
+Nehmen sie an, sie möchten mit Hilfe der @racket[map] Funktion alle Elemente in einer Liste von
+Zahlen @racket[lon] verdoppeln. Dies könnten Sie wie folgt anstellen:
+
+@racketblock[
+(local [(define (double x) (* 2 x))]
+  (map double lon))]
+
+Dieser Ausdruck ist komplizierter als es ein müsste. Für eine so einfache Funktion wie @racket[double],
+die nur lokal verwendet wird, ist es Verschwendung, einen Namen zu vergeben und eine komplette
+Extra Zeile Code zu verwenden.
+
+In ISL+ (dem Sprachlevel von HTDP welches wir zurzeit verwenden) gibt es aus diesem Grund die Möglichkeit,
+@italic{anonyme} Funktionen, also Funktionen ohne Namen, zu definieren. Anonyme Funktionen werden
+mit dem Schlüsselwort @racket[lambda] gekennzeichnet. Daher nennt man solche Funktionen auch @racket[lambda]-Ausdrücke.
+
+Hier ist das Beispiel von oben, aber so umgeschrieben, dass statt @racket[double] eine anonyme Funktion definiert wird.
+
+@racketblock[(map (lambda (x) (* 2 x)) lon)]
+
+Ein @racket[lambda] Ausdruck hat im Allgemeinen die Form @racket[(lambda (x-1 ... x-n) exp)] für Namen @racket[x-1],...,@racket[x-n]
+und einen Ausdruck @racket[exp]. Ihre Bedeutung entspricht in etwa einer lokalen Funktionsdefinition der Form
+@racket[(local [(define (f x-1 ... x-n) exp)] f)]. Beispielsweise hätten wir den Ausdruck von oben auch so schreiben können:
+
+@racketblock[(map (local [(define (double x) (* 2 x))] double) lon)]
+
+@margin-note{Man kann allerdings mit Hilfe sogenannter @italic{Fixpunktkombinatoren} Rekursion mit @racket[lambda]-Ausdrücken
+                                                       simulieren.}
+Dies ist kein exaktes "Desugaring". Lokale Funktionen können rekursiv sein; @racket[lambda]-Ausdrücke nicht.
+Allerdings trägt @racket[lambda] sehr wohl zur Vereinfachung der Sprache bei, denn wir können nun
+Funktionsdefinitionen "desugaren" zu Variablendefinitionen:
+
+@racketblock[(define (f x-1 ... x-n) exp)]
+
+entspricht
+
+@racketblock[(define f (lambda (x-1 ... x-n) exp))]
+
+Die @racket[lambda]-Ausdrücke machen also sehr deutlich, dass Funktionen "ganz normale" Werte sind, an die wir Variablen binden
+können.  Wenn wir also bei obiger Definition von @racket[f] einen Funktionsaufruf @racket[(f e-1 ... e-n)] haben, so ist
+das @racket[f] an der ersten Position kein Funktionsname, sondern ein Variablenname, der zu einem λ-Ausdruck ausgewertet wird.
+Im Allgemeinen hat ein Funktionsaufruf also die Syntax @racket[(exp-0 exp-1 ... exp-n)], wobei alle @racket[exp-i] beliebige
+Ausdrücke sind aber @racket[exp-0] bei der Auswertung eine Funktion (genauer: ein Closure) ergeben muss.
+
+Das Wort @racket[lambda]-Ausdruck stammt aus dem λ-Kalkül, welches in den 1930er Jahren von Alonzo Church entwickelt wurde.
+Das λ-Kalkül ist eine Untersprache von ISL+: Im λ-Kalkül gibt es nur λ-Ausdrücke und Funktionsapplikationen --- keine Zahlen, 
+keine Wahrheitswerte, keine Variablendefinitionen, keine Listen oder Strukturen, und so weiter. Dennoch sind λ-Ausdrücke so mächtig, dass man sich
+all diese Programmiersprachenfeatures innerhalb des λ-Kalkül nachbauen kann, beispielsweise mit Hilfe sogenannter 
+@italic{Church-Kodierungen}.
+
+@margin-note{Schauen Sie in DrRacket unter "Einfügen", mit welcher Tastenkombination sie den Buchstaben λ in ihr Programm
+             einfügen können.}
+Übrigens können Sie statt des ausgeschriebenen Wortes @racket[lambda] auch direkt den griechischen Buchstaben λ im Programmtext 
+verwenden. Sie können also auch schreiben:
+
+@racketblock[(map (λ (x) (* 2 x)) lon)]
 
 
+
+
+@section{Wieso abstrahieren?}
+
+Programme sind wie Bücher: Sie werden für Menschen (Programmierer) geschrieben und können halt nebenbei
+auch noch auf einem Computer ausgeführt werden. Auf jeden Fall sollten Programme, genau wie Bücher,
+keine unnötigen Wiederholungen enthalten, denn niemand möchte solche Programme lesen.
+
+Die Einhaltung des DRY Prinzips durch die Erschaffung guter Abstraktionen hat viele Vorteile.
+Bei Programmen mit wiederkehrenden Mustern besteht stehts die Gefahr der Inkonsistenz, da man
+an jeder Stelle, an der das Muster wieder auftritt, dieses Muster wieder korrekt nachbilden muss.
+Wir haben auch gesehen, dass es zu nicht unerheblicher Vergrößerung des Codes führen kann, wenn man
+keine guten Abstraktionen hat und sich oft wiederholt.
+
+Der wichtigste Vorteil guter Abstraktionen ist jedoch folgende: Es gibt für jede kohärente Funktionalität
+des Programms genau eine Stelle, an der diese implementiert ist. Diese Eigenschaft macht es viel einfacher,
+ein Programm zu schreiben und zu warten. Wenn man einen Fehler gemacht hat, ist der Fehler an einer
+Stelle lokalisiert und nicht vielfach dupliziert. Wenn man die Funktionalität ändern möchte, gibt es eine
+Stelle, an der man etwas ändern muss und man muss nicht alle Vorkommen eines Musters finden (was schwierig
+oder praktisch unmöglich sein kann). Wichtige Eigenschaften, wie Terminierung oder Korrektheit, können Sie 
+einmal für die Abstraktion nachweisen
+und sie gilt dann automatisch für alle Verwendungen davon.
+
+Diese Vorteile treffen auf @italic{alle} Arten der Abstraktion zu, die wir bisher kennengelernt haben:
+Globale und lokale Funktions- und Variablendefinitionen, Abstrakte Typsignaturen, Abstrakte Datendefinitionen.
+
+Aus diesem Grund formulieren wir folgende Richtlinie als Präzisierung des DRY-Prinzips:
+
+@italic{Definieren Sie eine Abstraktion statt einen Teil eines Programms zu kopieren und dann zu modifizieren.}
+
+Diese Richtlinie gilt nicht nur während der ersten Programmierung eines Programms. Auch in der Weiterentwicklung
+und Wartung von Programmen sollten Sie stets darauf achten, ob es in ihrem Programm Verstöße gegen
+dieses Prinzip gilt und diese Verstöße durch die Definition geeigneter Abstraktionen eliminieren.
