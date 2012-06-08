@@ -1,7 +1,17 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
 #reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname islinterpreter) (read-case-sensitive #t) (teachpacks ((lib "image.ss" "teachpack" "2htdp") (lib "universe.ss" "teachpack" "2htdp"))) (htdp-settings #(#t quasiquote repeating-decimal #f #t none #f ((lib "image.ss" "teachpack" "2htdp") (lib "universe.ss" "teachpack" "2htdp")))))
+; Course on "Konzepte der Programmiersprachen"
+; by Klaus Ostermann, University of Marburg
+
+; Interpreter for the core language of ISL+
+
 ; Setzen sie unter "Sprache auswählen" die Ausgabenotation "quasiquote"
+
+
+;;;;;;;;;;;;;;;;;;;;
+; Syntax of ISL+
+;;;;;;;;;;;;;;;;;;;;
 
 (define-struct var-def (name e))
 ; a Var-Def is: (make-var-def String Exp)
@@ -39,7 +49,13 @@
 ; - (make-cnd (list-of (make-cnd-clause Exp Exp))
 ; - (make-primval PrimVal)
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Parsing and printing of programs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; s-exp -> Exp
+; parses an s-expression to the abstract syntax tree
 (define (parse sexp)
   (if (cons? sexp)
       (cond
@@ -63,6 +79,9 @@
           (make-primval sexp))))
 
 ; Exp -> s-exp
+; prints an abstract syntax tree to an s-expression
+; for all expressions exp, the following property should hold:
+;    (parse (print exp)) == exp
 (define (print exp)
   (cond [(lam? exp) `(lambda ,(lam-args exp) ,(print (lam-body exp))) ]
         [(struct-def? exp) `(define-struct ,(struct-def-name exp) ,(struct-def-fields exp))]
@@ -78,6 +97,10 @@
         [else exp]))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Runtime entities: Values and Environments
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; a Value is the set of all values v for which (value? v) 
 
 ; Exp -> Boolean
@@ -85,6 +108,7 @@
   (or (closure? e) (primval? e) (structv? e)))
 
 ; (list-of Exp) -> Boolean
+; are all elements in the list values?
 (define (all-value? es)
   (foldr (lambda (v b) (and (value? v) b)) true es)) 
 
@@ -98,29 +122,72 @@
     (value? (var-def-e (first env)))
     (env? (rest env)))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Reduction semantics of ISL+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; Exp Env -> Exp
+; reduces an expression in an environment
 (define (reduce e env)
   (cond 
-    [(and (app? e) (value? (app-fun e)) (all-value? (app-args e)))
-     (cond [(closure? (app-fun e)) (reduce-app (app-fun e) (app-args e))]
-           [(primval? (app-fun e)) (make-primval (apply (primval-v (app-fun e)) (map primval-v (app-args e))))])]
-    [(lam? e) (make-closure (lam-args e) (lam-body e) env)]
-    [(var? e) (lookup-env env (var-x e))]
-    [(and (app? e) (value? (app-fun e))) (make-app (app-fun e) (reduce-first (app-args e) env))]
-    [(app? e) (make-app (reduce (app-fun e) env) (app-args e) )]
-    [(and (locl? e) (env? (locl-defs e)) (value? (locl-e e))) (locl-e e)]
-    [(and (locl? e) (env? (locl-defs e))) (make-locl (locl-defs e) (reduce (locl-e e) (append (locl-defs e) env)))]
-    [(locl? e) (make-locl (reduce-first-def (locl-defs e) env) (locl-e e))]
+    ; expression has the form (v-1 v-2 ... v-n)?
+    [(and (app? e) (value? (app-fun e)) (all-value? (app-args e))) 
+     ; then call auxiliary function to deal with this case
+     (reduce-app (app-fun e) (app-args e))]
+    
+    ; expression has the form (lambda (x-1 ... x-n) exp)?
+    [(lam? e) 
+     ; then create closure and store current environment
+     (make-closure (lam-args e) (lam-body e) env)] 
+    
+    ; expression has the form x?
+    [(var? e) 
+     ; Then look it up in the environment
+     (lookup-env env (var-x e))] 
+    
+    ; expression has the form (v-0 v-1 ... e-i ... e-n)? 
+    [(and (app? e) (value? (app-fun e))) 
+     ; reduce leftmost non-value
+     (make-app (app-fun e) (reduce-first (app-args e) env))] 
+    
+    ; expression has the form (e-0 ... e-n)?
+    [(app? e) 
+     ; then reduce function argument  
+     (make-app (reduce (app-fun e) env) (app-args e) )] 
+    
+    ; expression has the form (local [(define x-1 v1)...] v)?
+    [(and (locl? e) (env? (locl-defs e)) (value? (locl-e e))) 
+     ; then reduce to v 
+     (locl-e e)] 
+    
+    ; expression has the form (local [(define x-1 v1)...] e)?  
+    [(and (locl? e) (env? (locl-defs e))) 
+     ; then reduce e 
+     (make-locl (locl-defs e) (reduce (locl-e e) (append (locl-defs e) env)))] 
+    
+    ; expression has the form (local [(define x-1 v1)...(define x-i e-i) ...] e) ?
+    [(locl? e) 
+     ; then reduce left-most e-i which is not a value 
+     (make-locl (reduce-first-def (locl-defs e) env) (locl-e e))] 
+    
+    ; expression has the form (cond [(v e) rest])?
     [(and (cnd? e) (value? (cnd-clause-c (first (cnd-clauses e)))))
+     ; check if v is true or v is false
      (if (primval-v (cnd-clause-c (first (cnd-clauses e)))) 
-         (cnd-clause-e (first (cnd-clauses e))) 
-         (make-cnd (rest (cnd-clauses e))))]
-    [(cnd? e) (make-cnd
-               (cons
-                (make-cnd-clause
-                 (reduce (cnd-clause-c (first (cnd-clauses e))) env)
-                 (cnd-clause-e (first (cnd-clauses e))))
-                (rest (cnd-clauses e))))]
+         (cnd-clause-e (first (cnd-clauses e))) ; if true reduce to e 
+         (make-cnd (rest (cnd-clauses e))))] ; if false reduce to (cond [rest])
+    
+    ; expression has the form (cond [(e-1 e-2) rest]) and e-1 is not a value?
+    [(cnd? e) 
+     ; then reduce e-1
+     (make-cnd
+      (cons
+       (make-cnd-clause
+        (reduce (cnd-clause-c (first (cnd-clauses e))) env)
+        (cnd-clause-e (first (cnd-clauses e))))
+       (rest (cnd-clauses e))))]
+    
     [else (error "Cannot reduce: " e)]))
 
 ; (list-of Def) Env -> (list-of Def)
@@ -138,12 +205,14 @@
 
 ; Env Symbol -> Value
 (define (lookup-env env x)
-  (local [(define (lookup-env-helper env x)
-            (cond [(empty? env) (error (string-append "Unbound variable: " (symbol->string x))) ]
-                  [(and (var-def? (first env))
-                        (eq? (var-def-name (first env)) x))
-                   (var-def-e (first env))]
-                  [else (lookup-env-helper (rest env) x)]))]
+  (local 
+    [(define (lookup-env-helper env x)
+       (cond [(empty? env) 
+              (error (string-append "Unbound variable: " (symbol->string x)))]
+             [(and (var-def? (first env))
+                   (eq? (var-def-name (first env)) x))
+              (var-def-e (first env))]
+             [else (lookup-env-helper (rest env) x)]))]
     (lookup-env-helper (append env initial-env) x)))
 
 ; (list-of Exp) -> (list-of Exp)
@@ -153,48 +222,66 @@
       (cons (first es) (reduce-first (rest es) env))
       (cons (reduce (first es) env) (rest es))))
 
-; Closure (list-of Value) -> Exp
-(define (reduce-app cl args)
-  (make-locl (closure-env cl) 
-             (make-locl
-              (map (lambda (x v) (make-var-def x v)) (closure-args cl) args)
-              (closure-body cl))))
+; Value (list-of Value) -> Exp
+(define (reduce-app fun args)
+  (cond [(closure? fun) 
+         (make-locl (closure-env fun) 
+                    (make-locl
+                     (map (lambda (x v) (make-var-def x v)) (closure-args fun) args)
+                     (closure-body fun)))]
+        [(primval? fun) 
+         (make-primval (apply (primval-v fun) (map primval-v args)))]))
+
 
 ; Struct-Def -> Env
+; creates the constructor, selector, and predicate functions for a structure definition sd
+; and represents them as an environment
 (define (make-struct-funcs sd)
+  ; assume as example that sd is (define-struct a (b c))
   (local 
-    [(define name (symbol->string (struct-def-name sd)))
-     (define (gen-selector fn) 
+    [(define name (symbol->string (struct-def-name sd))) ; then name = "a"
+     (define (gen-selector fn)  ; generates selector function for each field name fn
        (make-var-def 
-        (string->symbol (string-append name "-" (symbol->string fn)))
+        (string->symbol (string-append name "-" (symbol->string fn))) ; such as "a-b" and "a-c"
         (make-primval 
          (lambda (sv)
-           (if (and (structv? sv) (eq? (structv-def sv) sd))
-               (second (assq fn 
+           (if (and (structv? sv) 
+                    ; eq? is reference equality: Structures are compatible if they 
+                    ; stem from the same place in the program
+                    (eq? (structv-def sv) sd)) 
+               (second (assq fn                     ; extract corresponding field value
                              (map 
                               list 
                               (struct-def-fields sd) 
                               (structv-fieldvalues sv))))
                (error "Argument of selector function for " fn " must be structure value of structure " name))))))]
     (cons
-     (make-var-def 
-      (string->symbol (string-append "make-" name))
+     (make-var-def  ; constructor function
+      (string->symbol (string-append "make-" name)) ; name of constructor function, such as 'make-a
       (make-primval 
-       (compose
+       (compose ; compose with "list" function to turn it into an n-ary function 
+        ; where n = (length (struct-def-fields sd))
         (lambda (fv)
-          (if (= (length fv)
+          (if (= (length fv) ; check that number of args matches number of fields
                  (length (struct-def-fields sd)))
-              (make-structv sd fv)
+              (make-structv sd fv) ; everything OK -> create structure value
               (error "Wrong number of args in constructor call for struct: " 
                      (struct-def-name sd))))
         list)))
-     (cons (make-var-def 
-            (string->symbol (string-append name "?"))
+     (cons (make-var-def ; predicate function
+            (string->symbol (string-append name "?")) ; such as 'a?
             (make-primval (lambda (v)
                             (and (structv? v)
                                  (eq? (structv-def v) sd)))))
-           (map gen-selector (struct-def-fields sd))))))
+           (map gen-selector (struct-def-fields sd)) ; create selector function for each field
+           ))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Infrastructure for executing programs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; we use the initial environment to encode the primitive values and functions
+; can be extended as needed
 (define initial-env 
   (map (lambda (x)
          (make-var-def (first x) (make-primval (second x))))
@@ -210,23 +297,36 @@
         (list 'true true)
         (list 'false false))))
 
+; Exp -> Value
+; reduces expression until it becomes a value (or loops)
 (define (eval e)
   (if (value? e) 
       e
       (eval (reduce e empty))))
 
 ; S-Exp -> Value
+; like eval, but parses input first
 (define (parse-and-eval sexp)
   (eval (parse sexp)))
 
+; Exp -> (list-of Exp)
+; generates sequence of reduction steps until e becomes a value
 (define (reduction-sequence e)
   (if (value? e)
       (list (print e))
       (cons (print e) (reduction-sequence (reduce e empty)))))
 
+; s-exp -> (list-of-Exp)
+; like reduction-sequence, but parses input first
 (define parse-and-reduce-sequence (compose reduction-sequence parse))
 
+
+;;;;;;;;;;
+; Tests  ;
+;;;;;;;;;;
+
 ; parser tests
+
 (check-expect (parse '(local [(define x (+ 1 2)) (define y (lambda (z) z)) (define-struct a (b c))] (+ x (f 7))))
               (make-locl
                (list
