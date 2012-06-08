@@ -72,10 +72,9 @@ bital world, these are the @bold{NOT}, @bold{AND} and @bold{OR} operators.
 if and only if both inputs are @bold{1}.  @bold{OR} disjoins two input bits,
 returning @bold{0} if and only if both inputs are @bold{0}.  If you substitute
 @bold{false} for @bold{0} and @bold{true} for @bold{1} in the preceeding
-description, you can see it specifies exactly the logical @bold{¬}, @bold{∧}
-and @bold{∨} operators on truth values.  According to the specification for
-the three bit operators, we can easily define three Racket functions that act
-the same.
+description, you can see it specifies exactly the logical ¬, ∧ and ∨ operators
+on truth values.  According to the specification for the three bit operators,
+we can easily define three Racket functions that act the same.
 
 @#reader scribble/comment-reader
 (racketblock
@@ -220,14 +219,14 @@ as the expression associated to a pattern inside another
 Debitalizing a single bit is just the first step.  Massive information flows
 in the bital world like streams.  When faced with a bit stream, we'd better
 have a function that can translate it into a truth stream.  We can represent a
-bit stream as a list of bits, for example, @racket['(0 1 1 0)].  Then on top
-of @racket[debit], we can easily define a new function that can debitalize a
-bit stream.
+bit stream as a list of bits, for example, @racket[(list 0 1 1 0)].  Then on
+top of @racket[debit], we can easily define a new function that can debitalize
+a bit stream.
 
 @#reader scribble/comment-reader
 (racketblock
 ;; debits : (listof number) -> (listof boolean)
-;; debitalize a bit stream, via isomorphism test
+;; debitalizes a bit stream, via isomorphism test
 (define (debits bs)
   (cond [(empty? bs) bs]
         [else (cons (debit (first b))
@@ -470,21 +469,23 @@ complex data structure.  Be constructive!  Be creative!
 In addition to built-in data structures, Racket also support pattern matching
 on user-defined data structures via using @racket[struct] or
 @racket[define-struct].  We will illustrate its usage through a second
-motivating example, playing cards.
+motivating example, poker cards.
 
-@subsubsection{Motivating Example 2 --- Playing Cards}
+@subsubsection{Motivating Example 2 --- Poker}
 
-Every playing card has a rank and a suit.  The rank of a card is one of the
-numbers from 2 to 10, or one of the symbols A (Ace), J (Jack), Q (Queen) and K
-(King).  The suit of a card is one of the the symbols ♠ (Spade), ♥ (Heart), ♦
-(Diamond), and ♣ (Club).
+Every poker card has a rank and a suit.  The rank of a card is one of the
+numbers from @bold{2} to @bold{10}, or one of the symbols @bold{A}
+(@bold{Ace}), @bold{J} (@bold{Jack}), @bold{Q} (@bold{Queen}) and @bold{K}
+(@bold{King}).  The suit of a card is one of the the symbols ♠ (@bold{Spade}),
+♥ (@bold{Heart}), ♦ (@bold{Diamond}), and ♣ (@bold{Club}).
 
-We can represent a playing card as a @racket[struct].
+We can represent a poker card as a @racket[struct].
 
 @#reader scribble/comment-reader
 (racketblock
 (define-struct card (rank suit))
-;; rank : "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"
+;; rank : "2", "3", "4", "5", "6", "7", "8",
+;;        "9", "10", "J", "Q", "K", "A"
 ;; suit : "♠", "♥", "♦", "♣"
 )
 
@@ -496,14 +497,13 @@ Let us first define a function that echoes the name of a rank.
 @#reader scribble/comment-reader
 (racketblock
 ;; rank-name : string -> string
-;; returns the name of a rank
+;; echoes the name of a rank
 (define (rank-name r)
   (match r
     ["A" "Ace"]
     ["J" "Jack"]
     ["Q" "Queen"]
     ["K" "King"]
-    ["W" "White"]
     [_   r] ) )
 )
 
@@ -515,20 +515,20 @@ them immediately.
 
 @ex[]  Define a function @racket[suit-name] that echoes the name of a suit.
 
-A playing card is usually called by first saying its rank name, followed by
-the word "of" and then the plural form of its suit name.  For example, the
-card 🂡 will be called "Ace of Spades", the card 🃊 will be called "10 of
-Diamonds", and so on.  Fortunately the plural form for all the four suit names
-are simply formed by appending an "s".  We want to write a function that
-echoes the name of a card.  With the aid of @racket[rank-name] and
-@racket[suit-name] we can easily define it.  We will first do it in the old
-way, that is, by invoking the accessor functions to access the rank and suit
-of a card.  Here is the definition.
+A poker card is usually called by first saying its rank name, followed by the
+word "@bold{of}" and then the plural form of its suit name.  For example, the
+card 🂡 will be called "@bold{Ace of Spades}", the card 🃊 will be called
+"@bold{10 of Diamonds}", and so on.  Fortunately the plural form for all the
+four suit names are simply formed by appending an "@bold{s}".  We want to
+write a function that echoes the name of a card.  With the aid of
+@racket[rank-name] and @racket[suit-name] we can easily define it.  We will
+first do it in the old way, that is, by invoking the accessor functions to
+access the rank and suit of a card.  Here is the definition.
 
 @#reader scribble/comment-reader
 (racketblock
 ;; card-name : card -> string
-;; returns the name of a card
+;; echoes the name of a card
 (define (card-name c)
   (string-append (rank-name (card-rank r))
                  " of "
@@ -542,7 +542,7 @@ it like this.
 @#reader scribble/comment-reader
 (racketblock
 ;; card-name : card -> string
-;; returns the name of a card
+;; echoes the name of a card
 (define (card-name c)
   (let [(r (card-rank c))
         (s (card-suit c)) ]
@@ -557,6 +557,8 @@ will be done using pattern matching.  Here it is.
 
 @#reader scribble/comment-reader
 (racketblock
+;; card-name : card -> string
+;; echoes the name of a card
 (define (card-name c)
   (match c
     [(struct card (r s))
@@ -578,8 +580,8 @@ will be bound to the rank and suit of the card respectively for later use.
 This example shows the way to construct a pattern for a user-defined data
 structure.
 
-@ex[]  Construct a pattern for the @racket[posn] data structure or some others
-you have seen or made.
+@ex[]  Revise functions that manipulate other data structures you have
+defined, for example, @racket[posn], using pattern matching.
 
 As a last example, we define a function that determines if two cards are the
 same.  But this time we first pair the two cards and then do pattern matching
@@ -651,6 +653,13 @@ two different pairs of strings are equal, all the three strings are equal.
 
 @ex[]  Rewrite the pattern-matching version of @racket[AND], @racket[OR],
 @racket[ANDs] and @racket[ORs], do not use nested @racket[match]-expressions.
+
+@ex[]  Read the Wikipedia article
+@hyperlink["http://en.wikipedia.org/wiki/List_of_poker_hands"]{List of poker
+hands}.  Suppose we represent a hand as a list of 5 cards, write a function
+that tests a hand of cards for each poker hand category.  You can find those
+functions that you may use to accomplish the task in the file
+@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/SubstituteLectures/PatternMatching/card.rkt"]{card.rkt}.
 
 @section{Matching Argument Lists}
 
@@ -853,31 +862,33 @@ header.  (But only one variable is allowed after it.)  For example,
   )
 )
 
-will define a function that accepts at least two arguments.  Two arguments are
-mandatory, they will be bound to @racket[x] and @racket[y] respectively.  In
-addition to these two mandatory arguments, you can supply zero or more
-arguments, which will be collected in a list and bound to @racket[z].  Below
-is a simple exmaple showing its usage.
+will define a function that accepts at least two arguments.  The first two
+arguments are mandatory and will be bound to @racket[x] and @racket[y]
+respectively.  Then zero or more arguments can follow.  They will be collected
+in a list and bound to @racket[z].  Since the list can be empty, these
+arguments can be seen as optional.  Below is a simple exmaple showing its
+usage.
 
 @#reader scribble/comment-reader
 (racketblock
+;; greet-person : string string ... -> string
+;; greets persons
 (define (greet-person g . ps)
   (match ps
-    [(list) (display (string-append g "!"))]
-    [(list p) (display (string-append g ", " p "!"))]
+    [(list) (string-append g "!")]
+    [(list p) (string-append g ", " p "!")]
     [(list p ps ...)
-     (display (string-append g ", " p "!"))
-     (newline)
-     (apply greet-person (cons g ps)) ] ) )
+     (string-append g ", " p "! "
+                    (apply greet-person (cons g ps)) ) ] ) )
 )
 
-We can use this function to greet an arbitrary number of persons we meet, for
-example, @racket[(greet-person "Hi" "Kos" "Tir" "Day")].  Notice that in the
-recursive application, @racket[(apply greet-person (cons g ps))], we need to
-@racket[cons] @racket[g] into @racket[ps], otherwise in the recursive calls,
-@racket[greet-person] will no longer receive the first argument it expects.
-Try to see what will happen with the example if we accidentally write just
-@racket[(apply greet-person ps)].
+We can use this function to produce greetings for an arbitrary number of
+persons, for example, @racket[(greet-person "Hi" "Kos" "Tir" "Day")].  Notice
+that in the recursive application, @racket[(apply greet-person (cons g ps))],
+we need to @racket[cons] @racket[g] into @racket[ps], otherwise in the
+recursive calls, @racket[greet-person] will no longer receive the first
+argument it expects.  Try to see what will happen with the example if we
+accidentally write just @racket[(apply greet-person ps)].
 
 Though allowing variables before the dot @litchar|{.}| does offer some
 convenience.  We can achieve the same effect without inserting any variable

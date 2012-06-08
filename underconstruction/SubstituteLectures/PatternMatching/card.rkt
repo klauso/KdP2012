@@ -3,7 +3,7 @@
 ;; A library for playing cards
 
 (provide
- Spade Heart Diamond Club
+ Spade Heart Diamond Club Ranks Suits Deck
  card card? make-card card-rank card-suit rank-name suit-name card-name
  SA S2 S3 S4 S5 S6 S7 S8 S9 S10 SJ SQ SK
  🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪  🂫 🂭 🂮
@@ -19,15 +19,20 @@
  cards=? cards<a? cards>a? cards<l? cards>l?
  asort-cards dsort-cards
  flush? straight?
- deal deal-hand )
+ shuffle-cards deal-hand )
 
 (define Spade "♠")
 (define Heart "♥")
 (define Diamond "♦")
 (define Club "♣")
 
-(define ranks #("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K"))
-(define suits #("♠" "♥" "♦" "♣"))
+(define Ranks #("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K"))
+(define Suits #("♠" "♥" "♦" "♣"))
+(define Deck
+  (list 🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪 🂫 🂭 🂮
+        🂱 🂲 🂳 🂴 🂵 🂶 🂷 🂸 🂹 🂺 🂻 🂽 🂾
+        🃁 🃂 🃃 🃄 🃅 🃆 🃇 🃈 🃉 🃊 🃋 🃍 🃎
+        🃑 🃒 🃓 🃔 🃕 🃖 🃗 🃘 🃙 🃚 🃛 🃝 🃞 ) )
 
 (define-struct card (rank suit))
 
@@ -39,7 +44,6 @@
     ["J" "Jack"]
     ["Q" "Queen"]
     ["K" "King"]
-    ["W" "White"]
     [_   r] ) )
 
 ;; suit-name : string -> string
@@ -56,7 +60,7 @@
 (define (card-name c)
   (match c
     [(struct card (r s))
-     (string-append (rank-name r) " of " (suit-name s)) ] ) )
+     (string-append (rank-name r) " of " (suit-name s) "s") ] ) )
 
 (define-syntax make-cards
   (syntax-rules ()
@@ -440,13 +444,12 @@
                                    (rest css) ) ]
              [else (cons (list c1) css)] ) ) ] ) )
 
-;; deal : void -> card
-;; deals a card
-(define (deal)
-  (make-card (vector-ref ranks (random 13))
-             (vector-ref suits (random 4)) ) )
+;; shuffle-cards : (listof card) -> (listof card)
+;; shuffles cards
+(define shuffle-cards shuffle)
 
-;; deal-hand : void -> (listof card)
-;; deals a hand of cards
-(define (deal-hand)
-  (build-list 5 (lambda (x) (deal))) )
+;; deal-hand : (listof card) -> (listof card)
+;; deals a hand of cards from a list of cards
+(define (deal-hand cs)
+  (cond [(< (length cs) 5) empty]
+        [else (take cs 5)] ) )
