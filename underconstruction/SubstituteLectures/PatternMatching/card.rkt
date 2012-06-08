@@ -44,7 +44,6 @@
     ["J" "Jack"]
     ["Q" "Queen"]
     ["K" "King"]
-    ["W" "White"]
     [_   r] ) )
 
 ;; suit-name : string -> string
