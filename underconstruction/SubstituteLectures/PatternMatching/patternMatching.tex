@@ -44,11 +44,14 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage{kerkis}
-\usepackage{minted}
+\usepackage{mintln}
 \usepackage{verbments}
 \usepackage{parskip}
 % \parskip=0.25\baselineskip
 \usepackage{multirow}
+\usepackage{color}
+
+\definecolor{strcol}{HTML}{ba2121}
 
 \newcommand{\hl}[1]{\textcolor{black}{#1}}
 
@@ -62,7 +65,7 @@
  \maketitle
 \end{frame}
 
-\begin{frame}[fragile]{{\bf Example 1 --- Debitalization} (1/2)}
+\begin{frame}[fragile]{{\bf Motivating Example 1 --- Debitalization} (1/2)}
  \large
  \begin{table}
   \centering
@@ -84,8 +87,8 @@
 
  Data
  \begin{itemize}
-  \item number: \verb|0|, \verb|1|
-  \item boolean: \verb|false|, \verb|true|
+  \item number: \mint{scheme}|0|, \mint{scheme}|1|
+  \item boolean: \mint{scheme}|false|, \mint{scheme}|true|
  \end{itemize}
 
  \pause
@@ -132,7 +135,7 @@
 
  \pause
 
- \verb|AND| and \verb|OR| ...
+ \mint{scheme}|AND| and \mint{scheme}|OR| ...
 \end{frame}
 
 \begin{frame}[fragile]{{\bf Debitalization} (1c/2)}
@@ -184,7 +187,7 @@
 
  \pause
 
- \verb|AND| and \verb|OR| ...
+ \mint{scheme}|AND| and \mint{scheme}|OR| ...
 \end{frame}
 
 \begin{frame}[fragile]{\bf Nested Pattern Matching}
@@ -275,8 +278,8 @@
 
  Data
  \begin{itemize}
-  \item list of numbers: \verb|(list 0 1 ...)|
-  \item list of booleans: \verb|(list false true ...)|
+  \item list of numbers: \mint{scheme}|(list 0 1 ...)|
+  \item list of booleans: \mint{scheme}|(list false true ...)|
  \end{itemize}
 
  \pause
@@ -297,7 +300,7 @@
 \end{frame}
 
 \begin{frame}[fragile]{{\bf Debitalization} (2b/2)}
- Bit-wise operators: NOTs, ANDs, ORs
+ Bit-wise NOT, AND and OR
 
  \pause
  
@@ -312,7 +315,7 @@
 
  \pause
 
- \verb|ANDs| and \verb|ORs| ...
+ \mint{scheme}|ANDs| and \mint{scheme}|ORs| ...
 \end{frame}
 
 \begin{frame}[fragile]{{\bf Debitalization} (2c/2)}
@@ -369,7 +372,7 @@
 
  \pause
 
- \verb|AND| and \verb|OR| ...
+ \mint{scheme}|AND| and \mint{scheme}|OR| ...
 \end{frame}
 
 \begin{frame}[fragile]{\bf Nested Pattern Matching}
@@ -427,7 +430,7 @@
  \end{center}
 \end{frame}
 
-\begin{frame}[fragile]{\bf Example 2 --- Poker}
+\begin{frame}[fragile]{\bf Motivating Example 2 --- Poker}
  \large
  \begin{table}
   \centering
@@ -452,26 +455,151 @@
 
  Data
  \begin{itemize}
-  \item structure: \verb|struct|
+  \item structure: \mint{scheme}|struct|
   \pause
-  \item string: \verb|"A"|, \verb|"2"|, \verb|"|$\spadesuit$\verb|"|, ...
+  \item string: \mint{scheme}|"A"|, \mint{scheme}|"2"|, \color{strcol}{\verb|"|$\spadesuit$\verb|"|}, ...
  \end{itemize}
 
  \pause
 
  Code
  {\footnotesize
-  \begin{minted}[mathescape]{scheme}
+  \begin{minted}{scheme}
    (define-struct card (rank suit))
   \end{minted}
  }
 \end{frame}
 
-% \begin{frame}[fragile]{{\bf Poker} (1b)}
- 
-% \end{frame}
+\begin{frame}[fragile]{{\bf Poker} (1b)}\
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; rank-name : string -> string
+   ;; echoes the name of a rank
+   ;; ...
+
+   ;; suit-name : string -> string
+   ;; echoes the name of a suit
+   ;; ...
+
+   ;; card-name : card -> string
+   ;; echoes the name of a card
+   (define (card-name c)
+     (let ((r (card-rank c))
+           (s (card-suit c)) )
+       (string-append (rank-name r) " of "
+                      (suit-name s) "s" ) ) )
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}[fragile]{{\bf A Third Taste of Pattern Matching} (1c)}
+ Refactor it
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; card-name : card -> string
+   ;; echoes the name of a card
+   (define (card-name c)
+     (match c
+       ((struct card (r s))
+        (string-append (rank-name r) " of "
+                       (suit-name s) "s") ) ) )
+  \end{minted}
+ }
+\end{frame}
+
+\begin{frame}{\bf Matching User-defined Data Structures}
+ Racket user-defined data structures
+ \begin{itemize}
+  \item via \mint{scheme}|struct|
+ \end{itemize}
+
+ \pause
+
+ \hl{matching (user-defined) data structures $=$ isomorphism test}
+\end{frame}
+
+\begin{frame}[plain]
+ \begin{center}
+  {\LARGE
+   Tastes good?
+   
+   \pause
+
+   \em
+   Concise code
+  }
+ \end{center}
+\end{frame}
 
 \section{Matching Argument List}
+
+\begin{frame}[fragile]{\bf An Explicit Way to Apply a Function}
+ The usual way
+ \begin{itemize}
+  \item \mint{scheme}|(+ 1 2 3)|
+  \item \mint{scheme}|(length (list 1 2 3))|
+ \end{itemize}
+
+ \pause
+
+ Say \mint{scheme}|apply| explicitly
+ \begin{itemize}
+  \item \mint{scheme}|(apply + (list 1 2 3))|
+  \pause
+  \item \mint{scheme}|(apply length (list (list 1 2 3)))|
+ \end{itemize}
+
+ Use it only when necessary ...
+\end{frame}
+
+\begin{frame}[fragile]{\bf The Wonder of Variadic Functions}
+ \mint{scheme}|(+)| $=$ \mint{scheme}|(apply + (list))| \\
+ \pause
+ \mint{scheme}|(+ 1)| $=$ \mint{scheme}|(apply + (list 1))| \\
+ \pause
+ \mint{scheme}|(+ 1 2)| $=$ \mint{scheme}|(apply + (list 1 2))| \\
+ \pause
+ \mint{scheme}|(+ 1 2 3)| $=$ \mint{scheme}|(apply + (list 1 2 3))| \\
+ ... 
+
+ \pause
+ Argument list
+\end{frame}
+
+\begin{frame}[fragile]{\bf The Magic behind Variadic Functions}\
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; sum : number ... -> number
+   ;; sums an arbitrary number of numbers
+   (define (sum . ns)
+     (cond ((empty? ns) 0)
+           (else (+ (first ns)
+                    (apply sum (rest ns)) ) ) ) )
+  \end{minted}
+ } 
+
+ \pause
+ Refactor it?
+\end{frame}
+
+\begin{frame}[fragile]{\bf Functions with Optional Arguments}\
+ {\footnotesize
+  \begin{minted}{scheme}
+   ;; greet-person : string string ... -> string
+   (define (greet-person g . ps)
+     (match ps
+       ((list) (string-append g "!"))
+       ((list p) (string-append g ", " p "!"))
+       ((list p ps ...)
+        (string-append g ", " p "! "
+                       (apply greet-person (cons g ps)) ) ) ) )
+  \end{minted}
+ }
+
+ \pause
+
+ An \emph{optional} feature
+\end{frame}
 
 \end{document}
 
