@@ -32,19 +32,18 @@
 (define-struct cnd-clause (c e))
 (define-struct primval (v))
 
-; a PrimVal is either:
-; - a Number
-; - a String
-; - a Boolean
-
+; a Value is either
+; - (make-primval Any)
+; - (make-closure (list-of Symbol) Exp Env)
+; - (make-structv Struct-Def (list-of Value)
 
 ; an Exp is either:
+; - a Value
 ; - (make-app Exp (list-of Exp))
 ; - (make-lam (list-of Symbol) Exp)
 ; - (make-var Symbol)
 ; - (make-locl (list-of Def) Exp)
 ; - (make-cnd (list-of (make-cnd-clause Exp Exp))
-; - (make-primval PrimVal)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -118,8 +117,6 @@
 ; Runtime entities: Values and Environments
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; a Value is the set of all values v for which (value? v) 
-
 ; Exp -> Boolean
 (define (value? e)
   (or (closure? e) (primval? e) (structv? e)))
@@ -129,8 +126,10 @@
 (define (all-value? es)
   (foldr (lambda (v b) (and (value? v) b)) true es)) 
 
+; an Env is a (list-of (make-var-def Value))
 
-; an Env is the set of all values v for which (env? v) = true
+; (list-of Def) -> Boolean
+; determines whether env is an Env
 (define (env? env)
   (or
    (empty? env)
@@ -139,6 +138,19 @@
     (value? (var-def-e (first env)))
     (env? (rest env)))))
 
+; Env Symbol -> Value
+; looks up x in (append env intial-env)
+(define (lookup-env env x)
+  (local 
+    [(define (lookup-env-helper env x)
+       (cond [(empty? env) 
+              (error (string-append "Unbound variable: " 
+                                    (symbol->string x)))]
+             [(and (var-def? (first env))
+                   (eq? (var-def-name (first env)) x))
+              (var-def-e (first env))]
+             [else (lookup-env-helper (rest env) x)]))]
+    (lookup-env-helper (append env initial-env) x)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Reduction semantics of ISL+
@@ -148,65 +160,73 @@
 ; reduces an expression in an environment
 (define (reduce e env)
   (cond 
+    [(app? e) (reduce-app (app-fun e) (app-args e) env)]
+    [(lam? e) (make-closure (lam-args e) (lam-body e) env)] 
+    [(var? e) (lookup-env env (var-x e))]     
+    [(locl? e) (reduce-local (locl-defs e) (locl-e e) env)]
+    [(cnd? e) (reduce-cond (cnd-clause-c (first (cnd-clauses e)))
+                           (cnd-clause-e (first (cnd-clauses e)))
+                           (rest (cnd-clauses e))
+                           env)]
+    [else (error "Cannot reduce: " e)]))
+
+; Exp (list-of Exp) Env -> Exp
+(define (reduce-app fun args env)
+  (cond 
     ; expression has the form (v-1 v-2 ... v-n)?
-    [(and (app? e) (value? (app-fun e)) (all-value? (app-args e))) 
-     ; then call auxiliary function to deal with this case
-     (reduce-app (app-fun e) (app-args e))]
-    
-    ; expression has the form (lambda (x-1 ... x-n) exp)?
-    [(lam? e) 
-     ; then create closure and store current environment
-     (make-closure (lam-args e) (lam-body e) env)] 
-    
-    ; expression has the form x?
-    [(var? e) 
-     ; Then look it up in the environment
-     (lookup-env env (var-x e))] 
-    
+    [(and (value? fun) (all-value? args)) 
+     (cond [(closure? fun) 
+            (make-locl (closure-env fun) 
+                       (make-locl
+                        (map (lambda (x v) (make-var-def x v)) 
+                             (closure-args fun) args)
+                        (closure-body fun)))]
+           [(primval? fun) 
+            (apply (primval-v fun) args)])]
     ; expression has the form (v-0 v-1 ... e-i ... e-n)? 
-    [(and (app? e) (value? (app-fun e))) 
+    [(value? fun) 
      ; reduce leftmost non-value
-     (make-app (app-fun e) (reduce-first (app-args e) env))] 
-    
-    ; expression has the form (e-0 ... e-n)?
-    [(app? e) 
+     (make-app fun (reduce-first args env))]
+    [else ; expression has the form (e-0 ... e-n)?
      ; then reduce function argument  
-     (make-app (reduce (app-fun e) env) (app-args e) )] 
-    
+     (make-app (reduce fun env) args )]))
+
+; (list-of Def) Exp Env -> Exp
+(define (reduce-local defs e env)
+  (cond 
     ; expression has the form (local [(define x-1 v1)...] v)?
-    [(and (locl? e) (env? (locl-defs e)) (value? (locl-e e))) 
+    [(and (env? defs) (value? e)) 
      ; then reduce to v 
-     (locl-e e)] 
-    
+     e] 
     ; expression has the form (local [(define x-1 v1)...] e)?  
-    [(and (locl? e) (env? (locl-defs e))) 
+    [(env? defs) 
      ; then reduce e 
-     (make-locl (locl-defs e) (reduce (locl-e e) 
-                                      (append (locl-defs e) env)))] 
-    
-    ; expression has the form (local [(define x-1 v1)...(define x-i e-i) ...] e) ?
-    [(locl? e) 
+     (make-locl defs (reduce e (append defs env)))]
+    [else ; expression has the form 
+     ; (local [(define x-1 v1)...(define x-i e-i) ...] e) ?
      ; then reduce left-most e-i which is not a value 
-     (make-locl (reduce-first-def (locl-defs e) env) (locl-e e))] 
-    
+     (make-locl (reduce-first-def defs env) e)])) 
+
+
+; Exp Exp (list-of (make-cnd-clause Exp Exp) -> Exp
+(define (reduce-cond condition e clauses env)
+  (cond 
     ; expression has the form (cond [(v e) rest])?
-    [(and (cnd? e) (value? (cnd-clause-c (first (cnd-clauses e)))))
+    [(value? condition)
      ; check if v is true or v is false
-     (if (primval-v (cnd-clause-c (first (cnd-clauses e)))) 
-         (cnd-clause-e (first (cnd-clauses e))) ; if true reduce to e 
-         (make-cnd (rest (cnd-clauses e))))] ; if false reduce to (cond [rest])
-    
-    ; expression has the form (cond [(e-1 e-2) rest]) and e-1 is not a value?
-    [(cnd? e) 
+     (if (primval-v condition) 
+         e ; if true reduce to e 
+         (make-cnd clauses))] ; if false reduce to (cond [rest])
+    [else  ; expression has the form (cond [(e-1 e-2) rest]) 
+     ; and e-1 is not a value?
      ; then reduce e-1
      (make-cnd
       (cons
        (make-cnd-clause
-        (reduce (cnd-clause-c (first (cnd-clauses e))) env)
-        (cnd-clause-e (first (cnd-clauses e))))
-       (rest (cnd-clauses e))))]
-    
-    [else (error "Cannot reduce: " e)]))
+        (reduce condition env)
+        e)
+       clauses))]))
+
 
 ; (list-of Def) Env -> (list-of Def)
 (define (reduce-first-def defs env)
@@ -224,18 +244,6 @@
                     (rest defs))]))
 
 
-; Env Symbol -> Value
-(define (lookup-env env x)
-  (local 
-    [(define (lookup-env-helper env x)
-       (cond [(empty? env) 
-              (error (string-append "Unbound variable: " 
-                                    (symbol->string x)))]
-             [(and (var-def? (first env))
-                   (eq? (var-def-name (first env)) x))
-              (var-def-e (first env))]
-             [else (lookup-env-helper (rest env) x)]))]
-    (lookup-env-helper (append env initial-env) x)))
 
 ; (list-of Exp) -> (list-of Exp)
 ; reduces first non-value of es
@@ -244,21 +252,42 @@
       (cons (first es) (reduce-first (rest es) env))
       (cons (reduce (first es) env) (rest es))))
 
-; Value (list-of Value) -> Exp
-(define (reduce-app fun args)
-  (cond [(closure? fun) 
-         (make-locl (closure-env fun) 
-                    (make-locl
-                     (map (lambda (x v) (make-var-def x v)) 
-                          (closure-args fun) args)
-                     (closure-body fun)))]
-        [(primval? fun) 
-         (apply (primval-v fun) args)]))
-
 
 ; Struct-Def -> Env
 ; creates the constructor, selector, and predicate functions for a structure definition sd
 ; and represents them as an environment
+;
+; Example: (make-struct (parse '(define-struct a (b c))))
+; yields the following result (where sd = (parse '(define-struct a (b c)))):
+; 
+;(list
+; (make-var-def 'make-a 
+;               (make-primval 
+;                (compose 
+;                 (lambda (fv) 
+;                   (if (= (length fv) 2)
+;                       (make-structv sd fv)
+;                       (error "Wrong number of args ...")))
+;                 list)))
+; (make-var-def 'a? 
+;               (make-primval 
+;                (lambda (v) 
+;                  (make-primval 
+;                   (and (structv? v) (eq? (structv-def v) sd))))))
+; (make-var-def 'a-b 
+;               (make-primval 
+;                (lambda (sv) (if (and (structv? sv)
+;                                      (eq? (structv-def sv) sd))
+;                                 (first (structv-fieldvalues sv))
+;                                 (error "...")))))
+; (make-var-def 'a-c 
+;               (make-primval 
+;                (lambda (sv) 
+;                  (if (and (structv? sv)
+;                           (eq? (structv-def sv) sd))
+;                      (second (structv-fieldvalues sv))
+;                      (error "..."))))))
+
 (define (make-struct-funcs sd)
   ; assume as example that sd is (define-struct a (b c))
   (local 
@@ -288,10 +317,11 @@
      
      (define constructor-func 
        (make-var-def  
-        (string->symbol (string-append "make-" name)) ; name of constructor function, such as 'make-a
+        ; name of constructor function, such as 'make-a
+        (string->symbol (string-append "make-" name)) 
         (make-primval 
          (compose ; compose with "list" function to turn it into an n-ary function 
-          ; where n = (length (struct-def-fields sd))
+                  ; where n = (length (struct-def-fields sd))
           (lambda (fv)
             (if (= (length fv) ; check that number of args matches number of fields
                    (length (struct-def-fields sd)))
@@ -306,7 +336,9 @@
         (make-primval (compose make-primval check-structure-identity))))]
     
     ; put all functions together in one environment
-    (cons constructor-func (cons predicate-func (map selector-func (struct-def-fields sd))))))
+    (cons constructor-func 
+          (cons predicate-func 
+                (map selector-func (struct-def-fields sd))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Infrastructure for executing programs
@@ -320,7 +352,9 @@
 
 (define initial-env 
   (local ; [X Y Z] (X Y -> Z) -> ( (make-primval X) (make-primval Y) -> (make-primval Z))
-    [(define (lift2 op) (lambda (x y) (make-primval (op (primval-v x) (primval-v y)))))]
+    [(define (lift2 op) 
+       (lambda (x y) 
+         (make-primval (op (primval-v x) (primval-v y)))))]
     (append
      (map (lambda (x)
             (make-var-def (first x) (make-primval (second x))))
@@ -337,7 +371,8 @@
       (parse '(define empty (make-empty)))
       (parse '(define map (lambda (f xs)
                             (cond [(empty? xs) empty]
-                                  [(cons? xs) (make-cons (f (cons-first xs)) (map f (cons-rest xs)))]))))))))
+                                  [(cons? xs) (make-cons (f (cons-first xs)) 
+                                                         (map f (cons-rest xs)))]))))))))
 
 ; Exp -> Value
 ; reduces expression until it becomes a value (or loops)
@@ -354,7 +389,7 @@
 (define (parse-eval-print sexp)
   (print (parse-and-eval sexp)))
 
-; Exp -> (list-of Exp)
+; Exp -> (list-of s-Exp)
 ; generates sequence of reduction steps until e becomes a value
 (define (reduction-sequence e)
   (if (value? e)
