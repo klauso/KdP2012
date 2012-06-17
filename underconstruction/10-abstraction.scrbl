@@ -491,7 +491,7 @@ in diesem Fall nicht redundante Datendefinitionen wie folgt schreiben möchte:
 
 ; a List-of-Number is either
 ; - empty
-; - (cons String List-of-Number)
+; - (cons Number List-of-Number)
 )
 
 Ähnlich wie bei Funktionssignaturen abstrahieren wir über die Unterschiede mit Hilfe von Typvariablen:

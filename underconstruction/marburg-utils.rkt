@@ -50,7 +50,7 @@
 (define (todo text)
   '())
 
-(define stdeval (isl-eval '()))
+(define stdeval (isl-eval+ '()))
 
 (void (interaction-eval #:eval stdeval (require 2htdp/image)))
 (void (interaction-eval #:eval stdeval (define rocket (bitmap "rocket-s.jpg"))))

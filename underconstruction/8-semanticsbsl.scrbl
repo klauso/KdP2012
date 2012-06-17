@@ -340,7 +340,7 @@ Für alle @mv{e-1}∈@nonterm{e} und alle @mv{e-2}∈@nonterm{e} und alle @mv{E}
 
 Da dies die Regeln aber viel länger macht, verwenden wir die hier beschriebene Konvention.
 
-@section{Bedeutung von Programmen}
+@section[#:tag "semanticsbsl"]{Bedeutung von Programmen}
 
 Gemäß unserer Grammatik besteht ein Programm aus einer Sequenz von Definitionen und Ausdrücken.
 Die Auswertungsregel für Programme nennen wir @italic{(PROG)}:
