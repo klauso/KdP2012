@@ -317,20 +317,70 @@ with it, we can write code that manipulates code.  In particular, we can write
 a Racket program that executes a Racket program.  Below is a function that
 does simply arithmetic calculation.
 
+@racketblock[
+(define (ask inp)
+  (match inp
+    [(list '+ x y) (make-add x y)]
+    [(list '- x y) (make-sub x y)]
+    [(list '* x y) (make-mul x y)]
+    [(list '/ x y) (make-div x y)]
+    [_ (if (number? inp)
+           (make-lit inp)
+           (error "Not a number: " inp) ) ] ) )
+
+(define (ans exp)
+  (match exp
+    [(struct add (lhs rhs)) (+ (calc lhs) (calc rhs))]
+    [(struct sub (lhs rhs)) (- (calc lhs) (calc rhs))]
+    [(struct mul (lhs rhs)) (* (calc lhs) (calc rhs))]
+    [(struct div (lhs rhs)) (/ (calc lhs) (calc rhs))]
+    [(struct lit (num)) num] ) )
+]
+
+Now we can feed some quoted Racket arithmetic expressions to the function
+@racket[calc] to calculate.  For example, @racket[(calc '(* (+ 1 2) (- 6
+3)))], which should return @racket[9], exactly the same with what we will get
+by let Racket evaluate the expression directly.
+
+@eg[
+(* (+ 1 2) (- 6 3))
+]
+
+This still does not reach far enough.  The inital and ultimate goal of the
+existence of @racket[quote], and in turn this "code as data" magic is to allow
+one to write an interpreter in Racket for Racket.  Below is the @racket[parse]
+and @racket[reduce] function from
+@hyperlink["https://github.com/klauso/KdP2012/blob/master/islinterpreterwostructs.rkt"]{islinterpreterwostructs.rkt}
+in previous lectures, refactored to use pattern matching instead.
+
 @#reader scribble/comment-reader
 (racketblock
-(define (calc e)
-  (match e
-    [(list '+ x y) (+ (calc x) (calc y))]
-    [(list '- x y) (- (calc x) (calc y))]
-    [(list '* x y) (* (calc x) (calc y))]
-    [(list '/ x y) (/ (calc x) (calc y))]
-    [_ e] ) ) 
-)
+;; s-exp -> Exp
+;; parses an s-expression to an abstract syntax tree
+(define (parse sexp)
+  (match sexp
+    [(list 'lambda args body) (make-lam args (parse body))]
+    [(list 'define name e) (make-var-def name (parse e))]
+    [(list 'local defs e) (make-locl (map parse defs) (parse e))]
+    [(list 'cond (list test body) ...)
+     (make-cnd (map make-cnd-clause test body)) ]
+    [(list rator rand ...) (make-app (parse rator) (map parse rand))]
+    [_ (if (symbol? sexp)
+           (make-var sexp)
+           (make-primval sexp) ) ] ) )
 
-Now you can feed some quoted Racket expressions to the function @racket[calc]
-to calculate.  For example, @racket[(calc '(* (+ 1 2) (- 6 3)))], which should
-return @racket[9].
+; Exp Env -> Exp
+; reduces an expression in an environment
+(define (reduce e env)
+  (match e
+    [(struct app (fun args)) (reduce-app fun args env)]
+    [(struct lam (args body)) (make-closure args body env)]
+    [(struct var (x)) (lookup-env env x)]
+    [(struct locl (defs e)) (reduce-local defs e env)]
+    [(struct cnd (list (struct cnd-clause (c e)) clauses ...))
+     (reduce-cond c e clauses env) ]
+    [_ (error "Cannot reduce: " e)] ) )
+)
 
 @section{Pattern-based Macros}
 
