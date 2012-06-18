@@ -151,22 +151,19 @@ must first be @emph{internalized}.  @note{Internalization is usually done by a
 @emph{reader} or @emph{parser}.  The process is interesting on its own but out
 of the main topic of this lecture.}
 
-We mentioned earlier that in Lisp-family languages, code and data are written
-in the s-expression uniform.  One even special feature of these languages is
-that after internalization, code and data are still in uniform, no longer in
-s-expression syntax but with almost isomorphic structure.  More precisely,
-code resides in the language processor in the form of the internalization of
-one primitive data.  This primitive data are supported by all Lisp-family
+We mentioned earlier that in Lisp-family languages, code and data are in the
+s-expression uniform.  One even special feature of these languages is that
+after internalization, code and data are still in uniform, no longer of
+s-expression but with almost isomorphic structure.  More precisely, code
+resides in the language processor in the form of the internalization of one
+primitive data.  This primitive data are supported by all Lisp-family
 languages.  It represents a @emph{pair}.  A pair is internalized as two
 @racket[cons]-cells, with each cell holding one component of the pair.  The
 name comes from @racket[cons], the primitive operation to @emph{cons}truct a
 pair.  The other two primitive operations are @racket[car] and @racket[cdr].
 @note{@hyperlink["http://en.wikipedia.org/wiki/Car_and_cdr"]{@racket[car] and
 @racket[cdr]} are historical names.} They are accessor functions that extract
-respectively the first and second component of a pair.  So code are
-internalized as @racket[cons]-cells, in fact, @racket[cons]-cells ended by
-the internalization of the terminator @litchar{()}.  @racket[cons]-cells of
-this kind is actually the internalization of data that represents a list.
+respectively the first and second component of a pair.
 
 @eg[
 (cons 1 (cons 2 3))
@@ -180,8 +177,160 @@ this kind is actually the internalization of data that represents a list.
 (cdr (cons 1 (cons 2 3)))
 ]
 
+Thus code are internalized as @racket[cons]-cells, in fact, @racket[cons]-cells
+ended by the internalization of the terminator @litchar{()}.
+@racket[cons]-cells of this kind is actually the internalization of data that
+represents a list.  Nevertheless, code is code, it expresses some computation.
+When Racket sees code, it will always try to perform the computation the code
+describes, and deliver the result of the computation back to you.
 
-In previous section, we have noted that Racket accepts 
+@eg[
+(+ 1 2 3)
+]
+
+@eg[
+(list (+ 0 1) (+ 1 1) (+ 1 2))
+]
+
+You see when you write an expression like these, Racket see them as code.
+Note in the second example, what you get as result is indeed data
+(representing a list of @racket[1], @racket[2] and @racket[3]), but the
+expression you type in, @racket[(list (+ 0 1) (+ 1 1) (+ 1 2))], contains
+sub-expressions (@racket[(+ 0 1)], @racket[(+ 1 1)], @racket[(+ 1 2)]) that
+describe computation.  That means the whole expression is still code, not
+data, because pure data should not contain any sub-expression that describe
+any computation, such as @racket[1], @racket["hi"], etc.  Racket, more
+precisely, the reader, expects all compound s-expressions as code.  This is
+why you get error when you type in something like @litchar{(+ 1 2 .  3)}
+because the reader cannot internalize it.  It is not in valid code syntax,
+that is, it does not end with the terminator @litchar{()}.
+
+What if we just want to get @racket[(+ 1 2 3)] or @racket[(list (+ 0 1) (+ 1
+1) (+ 1 2))] as (resulting) data?  A first attempt is
+
+@eg[
+(list + 1 2 3)
+]
+
+@eg[
+(list (list + 0 1) (list + 1 1) (list + 1 2))
+]
+
+We are one step closer, but the results are still not what we want.  We want
+the symbol @racket[+] in place but it still gets evaluated,\footnote{Actually
+so do @racket[0], @racket[1], @racket[2].  Since they evaluate to themselves,
+they remain the same in the result.  But be aware something still happens
+behind the scene.} @litchar{#<procedure:+>} representing its value.  What we
+need is a mechanism to mention some code to Racket, so that it understands
+that it should not evaluate the internalization of this piece of code.  We
+meet this situation fairly often in our writing.  When writing an article, we
+often needs to mention a word, a phrase or a sentence, so that our reader know
+that we are talking about the word, phrase or sentence itself, instead of what
+it expresses.  What do we dd?  We quote it!  For example, the sentence--- "Get
+out of here!" is a rude expression---quotes the rude expression we are talking
+about.  When you read this sentence, you know that you are not asked to get
+out of here, but told that "get out of here!" is a rude expression.  Inspired
+by this mechanism we employ in writing, the inventor of Lisp introduced an
+operator called @racket[quote].  Using @racket[quote] we can tell Racket not
+to evaluate the quoted code.
+
+@eg[
+(quote (+ 1 2 3))
+]
+
+@eg[
+(quote (list (+ 0 1) (+ 1 1) (+ 1 2)))
+]
+
+Note that Racket provides a shorthand for @racket[quote], instead of
+@racket[(quote (+ 1 2 3))], you can write @racket['(+ 1 2 3)], that is, you
+just put a single quotation mark @litchar{'} before the code you want to
+quote.  Be aware that there is no more @litchar{'} after the code you quote.
+
+In addition to quoting code, you can quote also other data.
+
+@eg[
+'1
+]
+
+@eg[
+'"hi"
+]
+
+The outcome is that @racket[quote] has no effect on literals.  Racket simply
+return the quoted literal as is, and no prefixing @litchar{'}.
+
+Furthermore, you can also quote identifiers and dotted-pairs.  In otherwords,
+you can quote any s-expression.
+
+@eg[
+(quote x)
+]
+
+@eg[
+(quote lambda)
+]
+
+@eg[
+(quote ())
+]
+
+@eg[
+(quote (+ 1 2 . 3))
+]
+
+@eg[
+(quote (+ 1 2 3))
+]
+
+A quoted identifier represents a symbol.  A quoted dotted-pair represents a
+pair, that is, @racket[(quote (+ 1 2 . 3))] is equivalent to @racket[(cons
+(quote +) (cons (quote 1) (cons (quote 2) (quote 3))))], @racket[(quote (+ 1 2
+3))] equivalent to @racket[(list (quote +) (quote 1) (quote 2) (quote 3))] and
+also to @racket[(cons (quote +) (cons (quote 1) (cons (quote 2) (cons (quote
+3) (quote ())))))].  This reveals the relationship between @racket[list] and
+@racket[cons] and in turn, that between the lists and pairs.
+
+So @racket[quote] provides a fast way to construct instances of pairs and
+lists.  These instances can be used as usual.
+
+@eg[
+(car (quote (1 2 . 3)))
+]
+
+@eg[
+(cdr (quote (1 2 . 3)))
+]
+
+@eg[
+(first (quote (+ 1 2 3)))
+]
+
+@eg[
+(rest (quote (+ 1 2 3)))
+]
+
+If @racket[quote] is only used for this purpose, you are using a sledgehammer
+to crack a nut.  Recall that @racket[quote] is introduced because we want to
+have quoted code treated as data.  But what is this good for?  The answer is
+with it, we can write code that manipulates code.  In particular, we can write
+a Racket program that executes a Racket program.  Below is a function that
+does simply arithmetic calculation.
+
+@#reader scribble/comment-reader
+(racketblock
+(define (calc e)
+  (match e
+    [(list '+ x y) (+ (calc x) (calc y))]
+    [(list '- x y) (- (calc x) (calc y))]
+    [(list '* x y) (* (calc x) (calc y))]
+    [(list '/ x y) (/ (calc x) (calc y))]
+    [_ e] ) ) 
+)
+
+Now you can feed some quoted Racket expressions to the function @racket[calc]
+to calculate.  For example, @racket[(calc '(* (+ 1 2) (- 6 3)))], which should
+return @racket[9].
 
 @section{Pattern-based Macros}
 
