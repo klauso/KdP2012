@@ -148,8 +148,7 @@ expressions.  We, programmers do---we type in them, delete them, copy and
 paste them in our favorite text editors.  Instead, a language processor
 manipulates the @emph{internalization} of code and data.  Thus code and data
 must first be @emph{internalized}.  @note{Internalization is usually done by a
-@emph{reader} or @emph{parser}.  The process is interesting on its own but out
-of the main topic of this lecture.}
+@emph{reader} or @emph{parser}.}
 
 We mentioned earlier that in Lisp-family languages, code and data are in the
 s-expression uniform.  One even special feature of these languages is that
@@ -314,48 +313,83 @@ If @racket[quote] is only used for this purpose, you are using a sledgehammer
 to crack a nut.  Recall that @racket[quote] is introduced because we want to
 have quoted code treated as data.  But what is this good for?  The answer is
 with it, we can write code that manipulates code.  In particular, we can write
-a Racket program that executes a Racket program.  Below is a function that
-does simply arithmetic calculation.
+a Racket program that executes a Racket program.  Below is @racket[parse] and
+@racket[reduce] functions for arithmetic expressions.
 
-@racketblock[
-(define (ask inp)
-  (match inp
-    [(list '+ x y) (make-add x y)]
-    [(list '- x y) (make-sub x y)]
-    [(list '* x y) (make-mul x y)]
-    [(list '/ x y) (make-div x y)]
-    [_ (if (number? inp)
-           (make-lit inp)
-           (error "Not a number: " inp) ) ] ) )
+@#reader scribble/comment-reader
+(racketblock
+;; parse : sexp -> aexp
+;; parses an s-expression to an arithmetic expression
+(define (parse sexp)
+  (match sexp
+    [(list '+ x y) (add (parse x) (parse y))]
+    [(list '- x y) (sub (parse x) (parse y))]
+    [(list '* x y) (mul (parse x) (parse y))]
+    [(list '/ x y) (div (parse x) (parse y))]
+    [_ (if (number? sexp)
+           (lit sexp)
+           (error "Invalid syntax: " sexp) ) ] ) )
 
-(define (ans exp)
-  (match exp
-    [(struct add (lhs rhs)) (+ (calc lhs) (calc rhs))]
-    [(struct sub (lhs rhs)) (- (calc lhs) (calc rhs))]
-    [(struct mul (lhs rhs)) (* (calc lhs) (calc rhs))]
-    [(struct div (lhs rhs)) (/ (calc lhs) (calc rhs))]
-    [(struct lit (num)) num] ) )
-]
+;; reduce : aexp -> aexp
+;; reduces an arithmetic expression in one step
+(define (reduce aexp)
+  (match aexp
+    [(struct add ((struct lit (n1)) (struct lit (n2)))) (lit (+ n1 n2))]
+    [(struct sub ((struct lit (n1)) (struct lit (n2)))) (lit (- n1 n2))]
+    [(struct mul ((struct lit (n1)) (struct lit (n2)))) (lit (* n1 n2))]
+    [(struct div ((struct lit (n1)) (struct lit (n2)))) (lit (/ n1 n2))]
+    [(struct add ((struct lit (n1)) rhs)) (add (lit n1) (reduce rhs))]
+    [(struct sub ((struct lit (n1)) rhs)) (sub (lit n1) (reduce rhs))]
+    [(struct mul ((struct lit (n1)) rhs)) (mul (lit n1) (reduce rhs))]
+    [(struct div ((struct lit (n1)) rhs)) (div (lit n1) (reduce rhs))]
+    [(struct add (lhs rhs)) (add (reduce lhs) rhs)]
+    [(struct sub (lhs rhs)) (sub (reduce lhs) rhs)]
+    [(struct mul (lhs rhs)) (mul (reduce lhs) rhs)]
+    [(struct div (lhs rhs)) (div (reduce lhs) rhs)] ) )
 
-Now we can feed some quoted Racket arithmetic expressions to the function
-@racket[calc] to calculate.  For example, @racket[(calc '(* (+ 1 2) (- 6
-3)))], which should return @racket[9], exactly the same with what we will get
-by let Racket evaluate the expression directly.
+;; evaluate : aexp -> number
+;; evaluates an arithmetic expression to a number
+(define (evaluate aexp)
+  (match aexp
+    [(struct lit (n)) n]
+    [_ (evaluate (reduce aexp))] ) )
+)
 
-@eg[
-(* (+ 1 2) (- 6 3))
-]
+The @racket[reduce] function makes heavy use of pattern matching on
+user-defined data structures.  The only thing new is the direct use of a
+constructor name to construct an instance of the data structure, intead of the
+name prefixed by "@racket[make-]", for example, in @racket[(add (lit n1)
+(reduce rhs))], @racket[add] rather than @racket[make-add] is used.
+@racket[make-] prefixed constructor functions are still available.  Racket
+provides the shorter names to save you some typing.
 
-This still does not reach far enough.  The inital and ultimate goal of the
-existence of @racket[quote], and in turn this "code as data" magic is to allow
-one to write an interpreter in Racket for Racket.  Below is the @racket[parse]
-and @racket[reduce] function from
+If we have only the function @racket[reduce] and @racket[evaluate], whenever
+we want to evaluate an arithmetic expression, we have to type something like
+@racket[(evaluate (mul (add (lit 1) (lit 2)) (mul (lit 5) (lit 3))))].  That
+is too much even though we have used the shorter constructor names.  Life
+becomes simpler with the @racket[parse] function.  Essentially, it makes an
+arithmetic expression from an s-expression.  So that we can first feed a
+quoted s-expression to @racket[parse], and let @racket[parse] build the
+corresponding arithmetic expression, then feed this arithmetic expression to
+@racket[evaluate].  In other words, we compose @racket[evaluate] and
+@racket[parse].  For example, we can now write @racket[(evaluate (parse '(* (+
+1 2) (- 5 3))))] instead, which is way much simpler.  Note the quoted
+s-expression @racket[(* (+ 1 2) (- 5 3))] is itself valid Racket code.  If we
+do not quote it, Racket will evaluate it to 6.  Quoting it turns it to data.
+We say (Racket) functions like @racket[parse] manipulate (Racket) code as
+(Racket) data.
+
+Yet this still does not reach far enough.  The inital and ultimate purpose of
+the existence of @racket[quote], and in turn this "code as data" magic is to
+allow one to write an interpreter in Racket for Racket, so called
+self-interpreter.  Below is the @racket[parse] and @racket[reduce] function
+from
 @hyperlink["https://github.com/klauso/KdP2012/blob/master/islinterpreterwostructs.rkt"]{islinterpreterwostructs.rkt}
 in previous lectures, refactored to use pattern matching instead.
 
 @#reader scribble/comment-reader
 (racketblock
-;; s-exp -> Exp
+;; parse : sexp -> Exp
 ;; parses an s-expression to an abstract syntax tree
 (define (parse sexp)
   (match sexp
@@ -369,7 +403,7 @@ in previous lectures, refactored to use pattern matching instead.
            (make-var sexp)
            (make-primval sexp) ) ] ) )
 
-; Exp Env -> Exp
+; reduce : Exp Env -> Exp
 ; reduces an expression in an environment
 (define (reduce e env)
   (match e
@@ -381,6 +415,12 @@ in previous lectures, refactored to use pattern matching instead.
      (reduce-cond c e clauses env) ]
     [_ (error "Cannot reduce: " e)] ) )
 )
+
+Although the interpreted language is just a subset of Racket, it illustrates
+how @racket[quote] and "code as data" has rendered the language
+self-contained.  Not many languages have this feature.  It is one part that
+makes Lisp-family languages unique.  The other part is their powerful macro
+systems.
 
 @section{Pattern-based Macros}
 
