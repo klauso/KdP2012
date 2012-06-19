@@ -31,12 +31,12 @@ some computations.  This new abstraction mechanism allows us to avoid code
 repetition, to abbreviate common coding patterns @note{@(linebreak) Be aware
 that "pattern" here has little to with @emph{data structures}.  If it does
 with any structure, then say, @emph{code structure}.}, and to extend the
-language syntax.  All these possibilities make the language and eventually
-ourselves more expressive, since we can write @emph{less} but say @emph{more}.
-Unfortunately, those people who failed to sense the simplicity of the uniform
-syntax usually cannot also appreciate the power of macros.  In a large degree,
-the extremely regular syntax facilitates the work of macros, that is,
-manipulating @emph{code}, though @emph{as data}.
+language with customized (but compatible) syntax.  All these possibilities
+make the language and eventually ourselves more expressive, since we can write
+@emph{less} but say @emph{more}.  Unfortunately, those people who failed to
+sense the simplicity of the uniform syntax usually cannot also appreciate the
+power of macros.  In a large degree, the extremely regular syntax facilitates
+the work of macros, that is, manipulating @emph{code}, though @emph{as data}.
 
 @section{Code and Data}
 
@@ -312,9 +312,8 @@ lists.  These instances can be used as usual.
 If @racket[quote] is only used for this purpose, you are using a sledgehammer
 to crack a nut.  Recall that @racket[quote] is introduced because we want to
 have quoted code treated as data.  But what is this good for?  The answer is
-with it, we can write code that manipulates code.  In particular, we can write
-a Racket program that executes a Racket program.  Below is @racket[parse] and
-@racket[reduce] functions for arithmetic expressions.
+with it, we can write code that manipulates code.  Its meaning is well
+illustrated by the following example.
 
 @#reader scribble/comment-reader
 (racketblock
@@ -322,10 +321,10 @@ a Racket program that executes a Racket program.  Below is @racket[parse] and
 ;; parses an s-expression to an arithmetic expression
 (define (parse sexp)
   (match sexp
-    [(list '+ x y) (add (parse x) (parse y))]
-    [(list '- x y) (sub (parse x) (parse y))]
-    [(list '* x y) (mul (parse x) (parse y))]
-    [(list '/ x y) (div (parse x) (parse y))]
+    [(list '+ x y) (make-add (parse x) (parse y))]
+    [(list '- x y) (make-sub (parse x) (parse y))]
+    [(list '* x y) (make-mul (parse x) (parse y))]
+    [(list '/ x y) (make-div (parse x) (parse y))]
     [_ (if (number? sexp)
            (lit sexp)
            (error "Invalid syntax: " sexp) ) ] ) )
@@ -334,18 +333,10 @@ a Racket program that executes a Racket program.  Below is @racket[parse] and
 ;; reduces an arithmetic expression in one step
 (define (reduce aexp)
   (match aexp
-    [(struct add ((struct lit (n1)) (struct lit (n2)))) (lit (+ n1 n2))]
-    [(struct sub ((struct lit (n1)) (struct lit (n2)))) (lit (- n1 n2))]
-    [(struct mul ((struct lit (n1)) (struct lit (n2)))) (lit (* n1 n2))]
-    [(struct div ((struct lit (n1)) (struct lit (n2)))) (lit (/ n1 n2))]
-    [(struct add ((struct lit (n1)) rhs)) (add (lit n1) (reduce rhs))]
-    [(struct sub ((struct lit (n1)) rhs)) (sub (lit n1) (reduce rhs))]
-    [(struct mul ((struct lit (n1)) rhs)) (mul (lit n1) (reduce rhs))]
-    [(struct div ((struct lit (n1)) rhs)) (div (lit n1) (reduce rhs))]
-    [(struct add (lhs rhs)) (add (reduce lhs) rhs)]
-    [(struct sub (lhs rhs)) (sub (reduce lhs) rhs)]
-    [(struct mul (lhs rhs)) (mul (reduce lhs) rhs)]
-    [(struct div (lhs rhs)) (div (reduce lhs) rhs)] ) )
+    [(struct add (lhs rhs)) (reduce-op make-add + lhs rhs)]
+    [(struct sub (lhs rhs)) (reduce-op make-sub - lhs rhs)]
+    [(struct mul (lhs rhs)) (reduce-op make-mul * lhs rhs)]
+    [(struct div (lhs rhs)) (reduce-op make-div / lhs rhs)] ) )
 
 ;; evaluate : aexp -> number
 ;; evaluates an arithmetic expression to a number
@@ -355,29 +346,22 @@ a Racket program that executes a Racket program.  Below is @racket[parse] and
     [_ (evaluate (reduce aexp))] ) )
 )
 
-The @racket[reduce] function makes heavy use of pattern matching on
-user-defined data structures.  The only thing new is the direct use of a
-constructor name to construct an instance of the data structure, intead of the
-name prefixed by "@racket[make-]", for example, in @racket[(add (lit n1)
-(reduce rhs))], @racket[add] rather than @racket[make-add] is used.
-@racket[make-] prefixed constructor functions are still available.  Racket
-provides the shorter names to save you some typing.
-
-If we have only the function @racket[reduce] and @racket[evaluate], whenever
-we want to evaluate an arithmetic expression, we have to type something like
-@racket[(evaluate (mul (add (lit 1) (lit 2)) (mul (lit 5) (lit 3))))].  That
-is too much even though we have used the shorter constructor names.  Life
-becomes simpler with the @racket[parse] function.  Essentially, it makes an
-arithmetic expression from an s-expression.  So that we can first feed a
-quoted s-expression to @racket[parse], and let @racket[parse] build the
-corresponding arithmetic expression, then feed this arithmetic expression to
+Both @racket[reduce] and @racket[evaluate] together are responsible for
+arithmetic expression evaluations.  But with them only, whenever we want to
+evaluate an arithmetic expression, we have to type something like
+@racket[(evaluate (make-mul (make-add (make-lit 1) (make-lit 2)) (make-mul
+(make-lit 5) (make-lit 3))))].  This is just too much.  Life becomes simpler
+with the @racket[parse] function.  Essentially, it makes an arithmetic
+expression from an s-expression.  So that we can first feed a quoted
+s-expression to @racket[parse], and let @racket[parse] build the corresponding
+arithmetic expression, then feed this arithmetic expression to
 @racket[evaluate].  In other words, we compose @racket[evaluate] and
 @racket[parse].  For example, we can now write @racket[(evaluate (parse '(* (+
-1 2) (- 5 3))))] instead, which is way much simpler.  Note the quoted
-s-expression @racket[(* (+ 1 2) (- 5 3))] is itself valid Racket code.  If we
-do not quote it, Racket will evaluate it to 6.  Quoting it turns it to data.
-We say (Racket) functions like @racket[parse] manipulate (Racket) code as
-(Racket) data.
+1 2) (- 5 3))))] which is way much simpler.  Note the quoted s-expression
+@racket[(* (+ 1 2) (- 5 3))] is itself valid Racket code.  If we do not quote
+it, Racket will evaluate it to 6.  Quoting it turns it to data.  We say
+(Racket) functions like @racket[parse] manipulate (Racket) code as (Racket)
+data.
 
 Yet this still does not reach far enough.  The inital and ultimate purpose of
 the existence of @racket[quote], and in turn this "code as data" magic is to
@@ -423,6 +407,32 @@ makes Lisp-family languages unique.  The other part is their powerful macro
 systems.
 
 @section{Pattern-based Macros}
+
+Lisp-family languages are well known for their powerful macro systems.
+Similar to functions, macros are also abstractions.  While functions abstract
+over run-time computations, macros abstract over compile-time code.  This new
+dimention of abstraction provides us a new perspective to view what we code
+and how we code it.  Do we repeat some piece of code too many times?  Do we
+keep applying some coding patterns?  Do we sometimes find that some taskts the
+present language syntax can do but could be done better, say, more
+straightforwardly, if a piece of customized syntax is allowed.  Refecting for
+a while, we will answer "yes" to almost all these questions.  Then the natural
+question is this: can we do something to improve the situation?  The answer is
+again "yes".  This is exactly where macros come into play.  With macros, many
+code repetitions can be avoided; typical coding patterns can be abbreviated;
+some tasks can be accomplished more directly in customized (but compatible
+@note{It will become clear soon what "compatible" means.}) syntax.
+
+A traditional Lisp macro takes as inputs s-expressions and produce as ouput an
+s-expression which should be valid code.  Note that the input s-expressions do
+not have to be quoted, even if they are code.  A macro does not distinguish
+code and data at all.  From its point of view, they are both s-expressions.
+That is all it cares.  On the other hand, since macros are most useful if they
+are defined to accept code as input and produce code as output, macros are
+also called code transformers.  Due to this transformation property, writing
+macros is also considered as a form of programming, called macro programming,
+or simply macroing.  This is why some Lisp programmers describe macro
+programming as "writing programs that write programs".
 
 @subsection{Avoiding Code Repetition}
 
