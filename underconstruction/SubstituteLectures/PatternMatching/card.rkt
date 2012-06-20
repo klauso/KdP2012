@@ -1,25 +1,24 @@
 #lang racket
 
-;; A library for playing cards
+;; A library for poker cards
 
-(provide
- Spade Heart Diamond Club Ranks Suits Deck
- card card? make-card card-rank card-suit rank-name suit-name card-name
- SA S2 S3 S4 S5 S6 S7 S8 S9 S10 SJ SQ SK
- 🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪  🂫 🂭 🂮
- HA H2 H3 H4 H5 H6 H7 H8 H9 H10 HJ HQ HK
- 🂱 🂲 🂳 🂴 🂵 🂶 🂷 🂸 🂹 🂺  🂻 🂽 🂾
- DA D2 D3 D4 D5 D6 D7 D8 D9 D10 DJ DQ DK
- 🃁 🃂 🃃 🃄 🃅 🃆 🃇 🃈 🃉 🃊  🃋 🃍 🃎
- CA C2 C3 C4 C5 C6 C7 C8 C9 C10 CJ CQ CK
- 🃑 🃒 🃓 🃔 🃕 🃖 🃗 🃘 🃙 🃚  🃛 🃝 🃞
- show-card show-cards
- rank=? rank<? rank>?
- card=? card<? card>?
- cards=? cards<a? cards>a? cards<l? cards>l?
- asort-cards dsort-cards
- flush? straight?
- shuffle-cards deal-hand )
+(provide Spade Heart Diamond Club Ranks Suits Deck
+         card card? make-card card-rank card-suit rank-name suit-name card-name
+         SA S2 S3 S4 S5 S6 S7 S8 S9 S10 SJ SQ SK
+         🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪  🂫 🂭 🂮
+         HA H2 H3 H4 H5 H6 H7 H8 H9 H10 HJ HQ HK
+         🂱 🂲 🂳 🂴 🂵 🂶 🂷 🂸 🂹 🂺  🂻 🂽 🂾
+         DA D2 D3 D4 D5 D6 D7 D8 D9 D10 DJ DQ DK
+         🃁 🃂 🃃 🃄 🃅 🃆 🃇 🃈 🃉 🃊  🃋 🃍 🃎
+         CA C2 C3 C4 C5 C6 C7 C8 C9 C10 CJ CQ CK
+         🃑 🃒 🃓 🃔 🃕 🃖 🃗 🃘 🃙 🃚  🃛 🃝 🃞
+         show-card show-cards
+         rank=? rank<? rank>?
+         card=? card<? card>?
+         cards=? cards<a? cards>a? cards<l? cards>l?
+         asort-cards dsort-cards
+         flush? straight?
+         shuffle-cards deal-hand )
 
 (define Spade "♠")
 (define Heart "♥")
@@ -28,11 +27,6 @@
 
 (define Ranks #("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K"))
 (define Suits #("♠" "♥" "♦" "♣"))
-(define Deck
-  (list 🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪 🂫 🂭 🂮
-        🂱 🂲 🂳 🂴 🂵 🂶 🂷 🂸 🂹 🂺 🂻 🂽 🂾
-        🃁 🃂 🃃 🃄 🃅 🃆 🃇 🃈 🃉 🃊 🃋 🃍 🃎
-        🃑 🃒 🃓 🃔 🃕 🃖 🃗 🃘 🃙 🃚 🃛 🃝 🃞 ) )
 
 (define-struct card (rank suit))
 
@@ -62,150 +56,168 @@
     [(struct card (r s))
      (string-append (rank-name r) " of " (suit-name s) "s") ] ) )
 
-(define-syntax make-cards
-  (syntax-rules ()
-    [(_ (r ...)
-        ((ns ...) (cs ...))
-        ((nh ...) (ch ...))
-        ((nd ...) (cd ...))
-        ((nc ...) (cc ...)) )
-     (begin (define cs (make-card r "♠")) ...
-            (define ns cs) ...
-            (define ch (make-card r "♥")) ...
-            (define nh ch) ...
-            (define cd (make-card r "♦")) ...
-            (define nd cd) ...
-            (define cc (make-card r "♣")) ...
-            (define nc cc) ... ) ] ) )
+(define-syntax-rule (make-cards (r ...)
+                                (cs ...)
+                                (ch ...)
+                                (cd ...)
+                                (cc ...) )
+  (begin (define cs (make-card r "♠")) ...
+         (define ch (make-card r "♥")) ...
+         (define cd (make-card r "♦")) ...
+         (define cc (make-card r "♣")) ... ) )
 
-(make-cards ( "A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K" )
-            ((SA  S2  S3  S4  S5  S6  S7  S8  S9  S10  SJ  SQ  SK)
-             (🂡  🂢  🂣  🂤  🂥  🂦  🂧  🂨  🂩  🂪   🂫  🂭  🂮) )
-            ((HA  H2  H3  H4  H5  H6  H7  H8  H9  H10  HJ  HQ  HK)
-             (🂱  🂲  🂳  🂴  🂵  🂶  🂷  🂸  🂹  🂺   🂻  🂽  🂾) )
-            ((DA  D2  D3  D4  D5  D6  D7  D8  D9  D10  DJ  DQ  DK)
-             (🃁  🃂  🃃  🃄  🃅  🃆  🃇  🃈  🃉  🃊   🃋  🃍  🃎) )
-            ((CA  C2  C3  C4  C5  C6  C7  C8  C9  C10  CJ  CQ  CK)
-             (🃑  🃒  🃓  🃔  🃕  🃖  🃗  🃘  🃙  🃚   🃛  🃝  🃞) ) )
+(make-cards ("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K")
+            ( 🂡  🂢  🂣  🂤  🂥  🂦  🂧  🂨  🂩  🂪   🂫  🂭  🂮)
+            ( 🂱  🂲  🂳  🂴  🂵  🂶  🂷  🂸  🂹  🂺   🂻  🂽  🂾)
+            ( 🃁  🃂  🃃  🃄  🃅  🃆  🃇  🃈  🃉  🃊   🃋  🃍  🃎)
+            ( 🃑  🃒  🃓  🃔  🃕  🃖  🃗  🃘  🃙  🃚   🃛  🃝  🃞) )
 
-#|
-(define 🂡 (make-card "A" "♠"))
-(define 🂢 (make-card "2" "♠"))
-(define 🂣 (make-card "3" "♠"))
-(define 🂤 (make-card "4" "♠"))
-(define 🂥 (make-card "5" "♠"))
-(define 🂦 (make-card "6" "♠"))
-(define 🂧 (make-card "7" "♠"))
-(define 🂨 (make-card "8" "♠"))
-(define 🂩 (make-card "9" "♠"))
-(define 🂪 (make-card "10" "♠"))
-(define 🂫 (make-card "J" "♠"))
-(define 🂭 (make-card "Q" "♠"))
-(define 🂮 (make-card "K" "♠"))
-(define SA 🂡)
-(define S2 🂢)
-(define S3 🂣)
-(define S4 🂤)
-(define S5 🂥)
-(define S6 🂦)
-(define S7 🂧)
-(define S8 🂨)
-(define S9 🂩)
-(define S10 🂪)
-(define SJ 🂫)
-(define SQ 🂭)
-(define SK 🂮)
+#| expanded code
 
-(define 🂱 (make-card "A" "♥"))
-(define 🂲 (make-card "2" "♥"))
-(define 🂳 (make-card "3" "♥"))
-(define 🂴 (make-card "4" "♥"))
-(define 🂵 (make-card "5" "♥"))
-(define 🂶 (make-card "6" "♥"))
-(define 🂷 (make-card "7" "♥"))
-(define 🂸 (make-card "8" "♥"))
-(define 🂹 (make-card "9" "♥"))
-(define 🂺 (make-card "10" "♥"))
-(define 🂻 (make-card "J" "♥"))
-(define 🂽 (make-card "Q" "♥"))
-(define 🂾 (make-card "K" "♥"))
-(define HA 🂱)
-(define H2 🂲)
-(define H3 🂳)
-(define H4 🂴)
-(define H5 🂵)
-(define H6 🂶)
-(define H7 🂷)
-(define H8 🂸)
-(define H9 🂹)
-(define H10 🂺)
-(define HJ 🂻)
-(define HQ 🂽)
-(define HK 🂾)
-
-(define 🃁 (make-card "A" "♦"))
-(define 🃂 (make-card "2" "♦"))
-(define 🃃 (make-card "3" "♦"))
-(define 🃄 (make-card "4" "♦"))
-(define 🃅 (make-card "5" "♦"))
-(define 🃆 (make-card "6" "♦"))
-(define 🃇 (make-card "7" "♦"))
-(define 🃈 (make-card "8" "♦"))
-(define 🃉 (make-card "9" "♦"))
-(define 🃊 (make-card "10" "♦"))
-(define 🃋 (make-card "J" "♦"))
-(define 🃍 (make-card "Q" "♦"))
-(define 🃎 (make-card "K" "♦"))
-(define DA 🃁)
-(define D2 🃂)
-(define D3 🃃)
-(define D4 🃄)
-(define D5 🃅)
-(define D6 🃆)
-(define D7 🃇)
-(define D8 🃈)
-(define D9 🃉)
-(define D10 🃊)
-(define DJ 🃋)
-(define DQ 🃍)
-(define DK 🃎)
-
-(define 🃑 (make-card "A" "♣"))
-(define 🃒 (make-card "2" "♣"))
-(define 🃓 (make-card "3" "♣"))
-(define 🃔 (make-card "4" "♣"))
-(define 🃕 (make-card "5" "♣"))
-(define 🃖 (make-card "6" "♣"))
-(define 🃗 (make-card "7" "♣"))
-(define 🃘 (make-card "8" "♣"))
-(define 🃙 (make-card "9" "♣"))
-(define 🃚 (make-card "10" "♣"))
-(define 🃛 (make-card "J" "♣"))
-(define 🃝 (make-card "Q" "♣"))
-(define 🃞 (make-card "K" "♣"))
-(define CA 🃑)
-(define C2 🃒)
-(define C3 🃓)
-(define C4 🃔)
-(define C5 🃕)
-(define C6 🃖)
-(define C7 🃗)
-(define C8 🃘)
-(define C9 🃙)
-(define C10 🃚)
-(define CJ 🃛)
-(define CQ 🃝)
-(define CK 🃞)
+(begin
+  (define 🂡 (make-card "A" "♠"))
+  (define 🂢 (make-card "2" "♠"))
+  (define 🂣 (make-card "3" "♠"))
+  (define 🂤 (make-card "4" "♠"))
+  (define 🂥 (make-card "5" "♠"))
+  (define 🂦 (make-card "6" "♠"))
+  (define 🂧 (make-card "7" "♠"))
+  (define 🂨 (make-card "8" "♠"))
+  (define 🂩 (make-card "9" "♠"))
+  (define 🂪 (make-card "10" "♠"))
+  (define 🂫 (make-card "J" "♠"))
+  (define 🂭 (make-card "Q" "♠"))
+  (define 🂮 (make-card "K" "♠"))
+  (define 🂱 (make-card "A" "♥"))
+  (define 🂲 (make-card "2" "♥"))
+  (define 🂳 (make-card "3" "♥"))
+  (define 🂴 (make-card "4" "♥"))
+  (define 🂵 (make-card "5" "♥"))
+  (define 🂶 (make-card "6" "♥"))
+  (define 🂷 (make-card "7" "♥"))
+  (define 🂸 (make-card "8" "♥"))
+  (define 🂹 (make-card "9" "♥"))
+  (define 🂺 (make-card "10" "♥"))
+  (define 🂻 (make-card "J" "♥"))
+  (define 🂽 (make-card "Q" "♥"))
+  (define 🂾 (make-card "K" "♥"))
+  (define 🃁 (make-card "A" "♦"))
+  (define 🃂 (make-card "2" "♦"))
+  (define 🃃 (make-card "3" "♦"))
+  (define 🃄 (make-card "4" "♦"))
+  (define 🃅 (make-card "5" "♦"))
+  (define 🃆 (make-card "6" "♦"))
+  (define 🃇 (make-card "7" "♦"))
+  (define 🃈 (make-card "8" "♦"))
+  (define 🃉 (make-card "9" "♦"))
+  (define 🃊 (make-card "10" "♦"))
+  (define 🃋 (make-card "J" "♦"))
+  (define 🃍 (make-card "Q" "♦"))
+  (define 🃎 (make-card "K" "♦"))
+  (define 🃑 (make-card "A" "♣"))
+  (define 🃒 (make-card "2" "♣"))
+  (define 🃓 (make-card "3" "♣"))
+  (define 🃔 (make-card "4" "♣"))
+  (define 🃕 (make-card "5" "♣"))
+  (define 🃖 (make-card "6" "♣"))
+  (define 🃗 (make-card "7" "♣"))
+  (define 🃘 (make-card "8" "♣"))
+  (define 🃙 (make-card "9" "♣"))
+  (define 🃚 (make-card "10" "♣"))
+  (define 🃛 (make-card "J" "♣"))
+  (define 🃝 (make-card "Q" "♣"))
+  (define 🃞 (make-card "K" "♣")) )
 |#
 
-(define-syntax match-cards
-  (syntax-rules ()
-    [(_ x (r ...) (cs ...) (ch ...) (cd ...) (cc ...))
-     (match x
-       [(struct card (r "♠")) cs] ...
-       [(struct card (r "♥")) ch] ...
-       [(struct card (r "♦")) cd] ...
-       [(struct card (r "♣")) cc] ... ) ] ) )
+(define Deck
+  (list 🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪 🂫 🂭 🂮
+        🂱 🂲 🂳 🂴 🂵 🂶 🂷 🂸 🂹 🂺 🂻 🂽 🂾
+        🃁 🃂 🃃 🃄 🃅 🃆 🃇 🃈 🃉 🃊 🃋 🃍 🃎
+        🃑 🃒 🃓 🃔 🃕 🃖 🃗 🃘 🃙 🃚 🃛 🃝 🃞 ) )
+
+(define-syntax-rule (bind-ids (id1 ...) (id2 ...))
+  (begin (define-syntax id1
+           (syntax-id-rules ()
+             [id1 id2] ) )
+         ...) )
+
+(bind-ids (SA  S2  S3  S4  S5  S6  S7  S8  S9  S10  SJ  SQ  SK
+           HA  H2  H3  H4  H5  H6  H7  H8  H9  H10  HJ  HQ  HK
+           DA  D2  D3  D4  D5  D6  D7  D8  D9  D10  DJ  DQ  DK
+           CA  C2  C3  C4  C5  C6  C7  C8  C9  C10  CJ  CQ  CK )
+          (🂡  🂢  🂣  🂤  🂥  🂦  🂧  🂨  🂩   🂪  🂫  🂭  🂮
+           🂱  🂲  🂳  🂴  🂵  🂶  🂷  🂸  🂹   🂺  🂻  🂽  🂾
+           🃁  🃂  🃃  🃄  🃅  🃆  🃇  🃈  🃉   🃊  🃋  🃍  🃎
+           🃑  🃒  🃓  🃔  🃕  🃖  🃗  🃘  🃙   🃚  🃛  🃝  🃞 ) )
+
+#| expanded code
+
+(begin
+  (define-syntax SA (syntax-id-rules () [SA 🂡]))
+  (define-syntax S2 (syntax-id-rules () [S2 🂢]))
+  (define-syntax S3 (syntax-id-rules () [S3 🂣]))
+  (define-syntax S4 (syntax-id-rules () [S4 🂤]))
+  (define-syntax S5 (syntax-id-rules () [S5 🂥]))
+  (define-syntax S6 (syntax-id-rules () [S6 🂦]))
+  (define-syntax S7 (syntax-id-rules () [S7 🂧]))
+  (define-syntax S8 (syntax-id-rules () [S8 🂨]))
+  (define-syntax S9 (syntax-id-rules () [S9 🂩]))
+  (define-syntax S10 (syntax-id-rules () [S10 🂪]))
+  (define-syntax SJ (syntax-id-rules () [SJ 🂫]))
+  (define-syntax SQ (syntax-id-rules () [SQ 🂭]))
+  (define-syntax SK (syntax-id-rules () [SK 🂮]))
+  (define-syntax HA (syntax-id-rules () [HA 🂱]))
+  (define-syntax H2 (syntax-id-rules () [H2 🂲]))
+  (define-syntax H3 (syntax-id-rules () [H3 🂳]))
+  (define-syntax H4 (syntax-id-rules () [H4 🂴]))
+  (define-syntax H5 (syntax-id-rules () [H5 🂵]))
+  (define-syntax H6 (syntax-id-rules () [H6 🂶]))
+  (define-syntax H7 (syntax-id-rules () [H7 🂷]))
+  (define-syntax H8 (syntax-id-rules () [H8 🂸]))
+  (define-syntax H9 (syntax-id-rules () [H9 🂹]))
+  (define-syntax H10 (syntax-id-rules () [H10 🂺]))
+  (define-syntax HJ (syntax-id-rules () [HJ 🂻]))
+  (define-syntax HQ (syntax-id-rules () [HQ 🂽]))
+  (define-syntax HK (syntax-id-rules () [HK 🂾]))
+  (define-syntax DA (syntax-id-rules () [DA 🃁]))
+  (define-syntax D2 (syntax-id-rules () [D2 🃂]))
+  (define-syntax D3 (syntax-id-rules () [D3 🃃]))
+  (define-syntax D4 (syntax-id-rules () [D4 🃄]))
+  (define-syntax D5 (syntax-id-rules () [D5 🃅]))
+  (define-syntax D6 (syntax-id-rules () [D6 🃆]))
+  (define-syntax D7 (syntax-id-rules () [D7 🃇]))
+  (define-syntax D8 (syntax-id-rules () [D8 🃈]))
+  (define-syntax D9 (syntax-id-rules () [D9 🃉]))
+  (define-syntax D10 (syntax-id-rules () [D10 🃊]))
+  (define-syntax DJ (syntax-id-rules () [DJ 🃋]))
+  (define-syntax DQ (syntax-id-rules () [DQ 🃍]))
+  (define-syntax DK (syntax-id-rules () [DK 🃎]))
+  (define-syntax CA (syntax-id-rules () [CA 🃑]))
+  (define-syntax C2 (syntax-id-rules () [C2 🃒]))
+  (define-syntax C3 (syntax-id-rules () [C3 🃓]))
+  (define-syntax C4 (syntax-id-rules () [C4 🃔]))
+  (define-syntax C5 (syntax-id-rules () [C5 🃕]))
+  (define-syntax C6 (syntax-id-rules () [C6 🃖]))
+  (define-syntax C7 (syntax-id-rules () [C7 🃗]))
+  (define-syntax C8 (syntax-id-rules () [C8 🃘]))
+  (define-syntax C9 (syntax-id-rules () [C9 🃙]))
+  (define-syntax C10 (syntax-id-rules () [C10 🃚]))
+  (define-syntax CJ (syntax-id-rules () [CJ 🃛]))
+  (define-syntax CQ (syntax-id-rules () [CQ 🃝]))
+  (define-syntax CK (syntax-id-rules () [CK 🃞])) )
+|#
+
+(define-syntax-rule (match-cards x
+                                 (r ...)
+                                 (cs ...)
+                                 (ch ...)
+                                 (cd ...)
+                                 (cc ...) )
+  (match x
+    [(struct card (r "♠")) cs] ...
+    [(struct card (r "♥")) ch] ...
+    [(struct card (r "♦")) cd] ...
+    [(struct card (r "♣")) cc] ... ) )
 
 ;; show-card : card -> void
 ;; shows a card
@@ -219,7 +231,8 @@
                 ("🃁" "🃂" "🃃" "🃄" "🃅" "🃆" "🃇" "🃈" "🃉" "🃊" "🃋" "🃍" "🃎")
                 ("🃑" "🃒" "🃓" "🃔" "🃕" "🃖" "🃗" "🃘" "🃙" "🃚" "🃛" "🃝" "🃞") ) ) )
 
-#|
+#| expanded code
+
 (define (show-card c)
   (display
    (match c
