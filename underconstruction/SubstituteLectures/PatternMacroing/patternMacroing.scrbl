@@ -412,29 +412,56 @@ Lisp-family languages are well known for their powerful macro systems.
 Similar to functions, macros are also abstractions.  While functions abstract
 over run-time computations, macros abstract over compile-time code.  This new
 dimention of abstraction provides us a new perspective to view what we code
-and how we code it.  Do we repeat some piece of code too many times?  Do we
-keep applying some coding patterns?  Do we sometimes find that some taskts the
-present language syntax can do but could be done better, say, more
-straightforwardly, if a piece of customized syntax is allowed.  Refecting for
-a while, we will answer "yes" to almost all these questions.  Then the natural
-question is this: can we do something to improve the situation?  The answer is
-again "yes".  This is exactly where macros come into play.  With macros, many
-code repetitions can be avoided; typical coding patterns can be abbreviated;
-some tasks can be accomplished more directly in customized (but compatible
-@note{It will become clear soon what "compatible" means.}) syntax.
+and how we code.  Do we repeat some piece of code too many times?  Do we keep
+applying some coding patterns?  Do we sometimes find the need of one specific
+piece of syntax that is unfortunately unavailable but could express our ideas
+more naturally?  Refecting for a while, we will probably answer "yes" to
+almost all these questions.  Then the natural question is this: can we do
+something to improve the situation?  The answer is also "yes".  This is
+exactly where macros come into play.  With macros, typical code repetitions
+can be avoided; common coding patterns can be abbreviated; specific (but
+compatible @note{It will become clear soon what "compatible" means.}) can be
+invented.  In a word, macros can ease our work.
 
 A traditional Lisp macro takes as inputs s-expressions and produce as ouput an
-s-expression which should be valid code.  Note that the input s-expressions do
-not have to be quoted, even if they are code.  A macro does not distinguish
-code and data at all.  From its point of view, they are both s-expressions.
-That is all it cares.  On the other hand, since macros are most useful if they
-are defined to accept code as input and produce code as output, macros are
-also called code transformers.  Due to this transformation property, writing
-macros is also considered as a form of programming, called macro programming,
-or simply macroing.  This is why some Lisp programmers describe macro
-programming as "writing programs that write programs".
+s-expression which is supposed to be valid code.  Note that the input
+s-expressions do not have to be quoted, even if they are code.  A macro does
+not distinguish code and data at all.  From its point of view, they are both
+s-expressions and that is all it cares about.  On the other hand, since macros
+are most useful when they are defined to accept code as input and produce code
+as output, macros are also called code transformers.  Due to this
+transformation property, writing macros is also considered as a form of
+programming, called macro programming, or simply macroing.  This is why some
+Lisp programmers describe macro programming as "writing programs that write
+programs".  Nevertheless traditional Lisp macro systems lack both high-level
+abstractions to manipulate s-expressions and automatic mechanisms to resolve
+name capturing. @note{Name capturing occurs when some names in the prduced
+code by a macro no longer retain their inital binding.  The produced code is
+said to be @emph{unhygienic}.} This makes macro programming in these systems
+both tedious and error-prone.  These two dimentions of complexity make macro
+programming almost inaccessible to junior, even senior Lisp programmers.  To
+remove these barriers, @emph{high-level} @emph{hygienic} macro systems were
+developped.  These systems provide high-level abstractions, namely, patterns
+and templates, to access and construct s-expressions.  More importantly, they
+also resolve to their greatest extent the name capturing problem under the
+scene without programmers' concern, so that the produced code is hygienic.
+Scheme features this kind of pattern-based macro system.  Racket inherits and
+refines it.  In the following subsections, we will explore the three use cases
+of macros inside Racket's macro system.
 
 @subsection{Avoiding Code Repetition}
+In
+@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/SubstituteLectures/PatternMatching/card.rkt"]{card.rkt},
+we try to represent the 52 poker cards using our
+@racket[card]-@racket[struct].  In particular, we want to give intuitive names
+to these 52 @racket[card] instances.  For example, we would like to have the
+following definition for the card "Ace of Spades".
+
+@racketblock[
+(define 🂡 (make-card "A" "♠"))
+]
+
+
 
 @subsection{Abbreviating Coding Patterns}
 
