@@ -450,18 +450,120 @@ refines it.  In the following subsections, we will explore the three use cases
 of macros inside Racket's macro system.
 
 @subsection{Avoiding Code Repetition}
+
 In
 @hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/SubstituteLectures/PatternMatching/card.rkt"]{card.rkt},
 we try to represent the 52 poker cards using our
-@racket[card]-@racket[struct].  In particular, we want to give intuitive names
-to these 52 @racket[card] instances.  For example, we would like to have the
-following definition for the card "Ace of Spades".
+@racket[card]-@racket[struct].  For example, we would like to have the
+following definition for the card called "Ace of Spades".
 
 @racketblock[
 (define 🂡 (make-card "A" "♠"))
 ]
 
+We use the unicode identifier 🂡 to name the @racket[card] instance.  It is
+clear that we have to write 51 more such definitions.  Even we can copy and
+paste, it is actually still quite some work.  Moreover, all the work is just
+boring repetition.  Let us be explicit what pieces of code will be repeated:
+for each suit , we have to repeat @litchar{(define}, @litchar{(make-card}, the
+string represents the suit (one of @racket["♠"], @racket["♥"], @racket["♦"]
+and @racket["♣"]), and @litchar{))}, regardless of spaces; for all suits, we
+have to repeat strings that represent ranks (one of @racket["A"], @racket["2"]
+to @racket["10"], @racket["J"], @racket["Q"] and @racket["K"]).  Apparently we
+do not want to do this.  
 
+Racket's macro system can free us from this kindof boring task.  For it to
+work, we give Racket a template that specifies the form of code that should be
+produced.  Then Racket will automatically generate code following the
+template.  Such a template usually contains holes to be fill in.  We can label
+these holes using same or different names accordingly to whether they are
+supposed to be filled by same or different code pieces.  A moment's thinking
+suggests that these code pieces cannot be those repeated.  So other parts of
+a template than its holes must have those repeated code pieces.  Now a
+template for our example can be formed.
+
+@racketblock[
+(begin (define cs (make-card r "♠")) ...
+       (define ch (make-card r "♥")) ...
+       (define cd (make-card r "♦")) ...
+       (define cc (make-card r "♣")) ... )
+]
+
+Since we are going to generate a sequence of top-level definitions, we collect
+them in a @racket[begin] expression.  The main reason for this is that Racket
+expects a fully-filled template to be a valid single s-expression, not a
+sequence of s-expressions.  @racket[cs], @racket[ch], @racket[cd], @racket[cc]
+and @racket[r] are names that label the holes.  The ellipsis @litchar{...}
+indicates that the s-expression preceeding will be repeated.  Now that we have
+the template, but there still remains the question how should we tell Racket
+this is a template.  Obviously just giving this template to Racket to evaluate
+will not work.  What we are assured is only that after fully-filled, the
+template will be valide code.  Before it gets filled, it is of course not
+because those names labelling the holes are not bound to anything at all.
+Also, ellipses are not allowed in expressions that Racket can directly
+evaluate.  What should we do?
+
+Actually when we introduced functions we encountered a similar situation.  We
+have some expression containing some unknowns, for example, @racket[(+ x y
+1)], we wanted to tell Racket we would later fill in the holes in the
+expression labelled by @racket[x] and @racket[y].  What did we do?  We define
+a function with parameters @racket[x] and @racket[y.
+
+@racketblock[
+(define (f x y)
+  (+ x y 1) )
+]
+
+We can do similarly for templates.  But we cannot use @racket[define] since it
+is used to give names to an expression that represents some computation.
+Racket provides @racket[define-syntax-rule].  Using it, we can define a macro
+that abstracts over a template that represents some code.  For example, we can
+define a macro called @racket[make-cards] that abstract our example template
+as follows.
+
+@racketblock[
+(define-syntax-rule (make-cards (r ...)
+                                (cs ...)
+                                (ch ...)
+                                (cd ...)
+                                (cc ...) )
+  (begin (define cs (make-card r "♠")) ...
+         (define ch (make-card r "♥")) ...
+         (define cd (make-card r "♦")) ...
+         (define cc (make-card r "♣")) ... ) )
+]
+
+The only thing new is in the macro header @racket[(make-cards (r ...) (cs ...)
+(ch ...) (cd ...) (cc ...))]: those names labelling holes in the template are
+followed by ellipses.  They do not look like parameters in function headers.
+Because they are not.  If we say this whole header is a pattern, does it
+remind you of something?  Yes, pattern matching, though is no longer on data
+structures but on code structures.  Ellipses act the same.  But be aware that
+you must make sure that if a name in the pattern is followed (immediately or
+not) by some ellipses, exactly the same number of ellipses must follow the
+name in the template.  Otherwise, you will get an error.  Check yourself that
+our macro definition above has this property.  To see how it could fail,
+just delete one ellipsis in the pattern or the template to make them not
+match.
+
+Now we can call this macro in the same way we call a function.
+
+@racketblock[
+(make-cards ("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K")
+            ( 🂡  🂢  🂣  🂤  🂥  🂦  🂧  🂨  🂩  🂪   🂫  🂭  🂮)
+            ( 🂱  🂲  🂳  🂴  🂵  🂶  🂷  🂸  🂹  🂺   🂻  🂽  🂾)
+            ( 🃁  🃂  🃃  🃄  🃅  🃆  🃇  🃈  🃉  🃊   🃋  🃍  🃎)
+            ( 🃑  🃒  🃓  🃔  🃕  🃖  🃗  🃘  🃙  🃚   🃛  🃝  🃞) )
+]
+
+When Racket's macro processor sees this s-expression, it first decides that
+its head names a macro, then it tries to match the whole call with the pattern
+of the macro definition, if it matches successfully, a binding for the names 
+labelling the holes in the template will be generated and the holes are filled
+according to this binding information.  For our example, the match goes like
+this: first, the macro name @racket[make-cards] matches as if it a literal;
+then @rakect[(r ...)] matches @racket[("A" "2" "3" "4" "5" "6" "7" "8" "9"
+"10" "J" "Q" "K")]; similarly for the rest.  So the two match perfectly.
 
 @subsection{Abbreviating Coding Patterns}
 
