@@ -75,26 +75,31 @@ is defined @emph{inductively} (or @emph{recursively}) as
 ]
 
 The first three forms of s-expressions are said to be @emph{atomic}, the last
-form be @emph{compound}.  Note that in the definition, the dot @litchar{.} is
+form be @emph{compound}.  This compound form of s-expression is traditionally
+called a pair.  But to not confuse with the pair data structure, we will
+called it s-pair.  Note that in an s-pair, the dot @litchar{.} is
 non-assocciative.  Thus @litchar{(1 . (2 . 3))} and @litchar{((1 . 2) .  3)}
 are different s-expressions.  It turns out that if we stick to the dotted
 notation, we will soon be overwhelmed by the dots and parentheses.  To
 overcome this verbosity, a right-deviating abbreviation for the dotted
 notation is allowed, for example, @litchar{(1 . (2 . 3))} can be abbreviated
 as @litchar{(1 2 . 3)}, and similarly @litchar{(+ . (1 . (2 . 3)))} as
-@litchar{(+ 1 2 . 3)}, @racket[(* . ((+ .  (1 . (2 . ()))) .  ((- . (5 . (1 .
-()))) .  ())))] as @racket[(* (+ 1 2 . ()) (- 5 1 . ()) .  ())].  This last
+@litchar{(+ 1 2 . 3)}, @litchar{(* . ((+ .  (1 . (2 . ()))) .  ((- . (5 . (1 .
+()))) .  ())))} as @litchar{(* (+ 1 2 . ()) (- 5 1 . ()) .  ())}.  This last
 example shows that we can build very complex s-expressions by nesting.  In
 particular, if the rightmost element of such a nesting, in other words the
 most deeply nested element, is @litchar{()}, @litchar{()} and the dot
 @litchar{.} preceeding it can be completely ommited, so the last example can
-be further abbreviated as simply @racket[(* (+ 1 2) (- 5 1))].  This extremely
-abbreviated notation is indeed what we use most.  Actually, if you type
-directly in a Racket interactive session any of these s-expressions invovling
-dots and parentheses you have seen so far, except @racket[(* . ((+ .  (1 . (2
-. ()))) . ((- . (5 . (1 . ()))) . ())))], @racket[(* (+ 1 2 . ()) (- 5 1 .
-()) . ())] and @racket[(* (+ 1 2) (- 5 1))], then ask Racket to evaluate it,
-you will surprisingly get a syntax error.
+be further abbreviated as simply @racket[(* (+ 1 2) (- 5 1))].  This
+maximally abbreviated form of s-expression is traditionally called list.  But
+to not confuse with the list data structure, we will call it s-list.
+@litchar{()} is used as an end marker, terminating an s-list, thus its name.
+Traditionally it is called nil or NIL.  s-lists are what we write most.
+Actually, if you type directly in a Racket interactive session any of these
+s-expressions invovling dots and parentheses you have seen so far, except
+@litchar{(* . ((+ .  (1 . (2 . ()))) . ((- . (5 . (1 .  ()))) . ())))},
+@litchar{(* (+ 1 2 . ()) (- 5 1 .  ()) . ())} and @racket[(* (+ 1 2) (- 5
+1))], and ask Racket to evaluate it, you will surprisingly get a syntax error.
 
 @eg[
 (1 . (2 . 3))
@@ -259,8 +264,8 @@ In addition to quoting code, you can quote also other data.
 The outcome is that @racket[quote] has no effect on literals.  Racket simply
 return the quoted literal as is, and no prefixing @litchar{'}.
 
-Furthermore, you can also quote identifiers and dotted-pairs.  In otherwords,
-you can quote any s-expression.
+Furthermore, you can also quote identifiers and s-pairs.  In otherwords, you
+can quote any s-expression.
 
 @eg[
 (quote x)
@@ -282,13 +287,12 @@ you can quote any s-expression.
 (quote (+ 1 2 3))
 ]
 
-A quoted identifier represents a symbol.  A quoted dotted-pair represents a
-pair, that is, @racket[(quote (+ 1 2 . 3))] is equivalent to @racket[(cons
-(quote +) (cons (quote 1) (cons (quote 2) (quote 3))))], @racket[(quote (+ 1 2
-3))] equivalent to @racket[(list (quote +) (quote 1) (quote 2) (quote 3))] and
-also to @racket[(cons (quote +) (cons (quote 1) (cons (quote 2) (cons (quote
-3) (quote ())))))].  This reveals the relationship between @racket[list] and
-@racket[cons] and in turn, that between the lists and pairs.
+A quoted identifier represents a symbol.  A quoted s-pair represents a pair
+and a quoted s-list represents a list, so @racket[(quote (+ 1 2 . 3))] is
+equivalent to @racket[(cons (quote +) (cons (quote 1) (cons (quote 2) (quote
+3))))], @racket[(quote (+ 1 2 3))] equivalent to @racket[(list (quote +)
+(quote 1) (quote 2) (quote 3))] and also to @racket[(cons (quote +) (cons
+(quote 1) (cons (quote 2) (cons (quote 3) (quote ())))))].
 
 So @racket[quote] provides a fast way to construct instances of pairs and
 lists.  These instances can be used as usual.
@@ -428,26 +432,26 @@ s-expression which is supposed to be valid code.  Note that the input
 s-expressions do not have to be quoted, even if they are code.  A macro does
 not distinguish code and data at all.  From its point of view, they are both
 s-expressions and that is all it cares about.  On the other hand, since macros
-are most useful when they are defined to accept code as input and produce code
-as output, macros are also called code transformers.  Due to this
-transformation property, writing macros is also considered as a form of
-programming, called macro programming, or simply macroing.  This is why some
-Lisp programmers describe macro programming as "writing programs that write
-programs".  Nevertheless traditional Lisp macro systems lack both high-level
-abstractions to manipulate s-expressions and automatic mechanisms to resolve
-name capturing. @note{Name capturing occurs when some names in the prduced
-code by a macro no longer retain their inital binding.  The produced code is
-said to be @emph{unhygienic}.} This makes macro programming in these systems
-both tedious and error-prone.  These two dimentions of complexity make macro
-programming almost inaccessible to junior, even senior Lisp programmers.  To
-remove these barriers, @emph{high-level} @emph{hygienic} macro systems were
-developped.  These systems provide high-level abstractions, namely, patterns
-and templates, to access and construct s-expressions.  More importantly, they
-also resolve to their greatest extent the name capturing problem under the
-scene without programmers' concern, so that the produced code is hygienic.
-Scheme features this kind of pattern-based macro system.  Racket inherits and
-refines it.  In the following subsections, we will explore the three use cases
-of macros inside Racket's macro system.
+are often defined to accept code as input and produce code as output, macros
+are also called code transformers.  Due to this transformation property,
+writing macros is also considered as a form of programming, called macro
+programming, or simply macroing.  This is why some Lisp programmers describe
+macro programming as "writing programs that write programs".  Nevertheless
+traditional Lisp macro systems lack both high-level abstractions to manipulate
+s-expressions and automatic mechanisms to resolve name capturing. @note{Name
+capturing occurs when some names in the prduced code by a macro no longer
+retain their inital binding.  The produced code is said to be
+@emph{unhygienic}.} This makes macro programming in these systems both tedious
+and error-prone.  These two dimentions of complexity make macro programming
+almost inaccessible to junior, even senior Lisp programmers.  To remove these
+barriers, @emph{high-level} @emph{hygienic} macro systems were developped.
+These systems provide high-level abstractions, namely, patterns and templates,
+to access and construct s-expressions.  More importantly, they also resolve to
+their greatest extent the name capturing problem under the scene without
+programmers' concern, so that the produced code is hygienic.  Scheme features
+this kind of pattern-based macro system.  Racket inherits and refines it.  In
+the following subsections, we will explore the three use cases of macros
+inside Racket's macro system.
 
 @subsection{Avoiding Code Repetition}
 
@@ -494,11 +498,11 @@ them in a @racket[begin] expression.  The main reason for this is that Racket
 expects a fully-filled template to be a valid single s-expression, not a
 sequence of s-expressions.  @racket[cs], @racket[ch], @racket[cd], @racket[cc]
 and @racket[r] are names that label the holes.  The ellipsis @litchar{...}
-indicates that the s-expression preceeding will be repeated.  Now that we have
-the template, but there still remains the question how should we tell Racket
-this is a template.  Obviously just giving this template to Racket to evaluate
-will not work.  What we are assured is only that after fully-filled, the
-template will be valide code.  Before it gets filled, it is of course not
+indicates that the sub-template preceeding it will be repeated.  Now that we
+have the template, but there still remains the question how should we tell
+Racket this is a template.  Obviously just giving this template to Racket to
+evaluate will not work.  What we are assured is only that after fully-filled,
+the template will be valide code.  Before it gets filled, it is of course not
 because those names labelling the holes are not bound to anything at all.
 Also, ellipses are not allowed in expressions that Racket can directly
 evaluate.  What should we do?
@@ -507,19 +511,25 @@ Actually when we introduced functions we encountered a similar situation.  We
 have some expression containing some unknowns, for example, @racket[(+ x y
 1)], we wanted to tell Racket we would later fill in the holes in the
 expression labelled by @racket[x] and @racket[y].  What did we do?  We define
-a function with parameters @racket[x] and @racket[y.
+a function that paremeterizes the expression.
 
 @racketblock[
 (define (f x y)
   (+ x y 1) )
 ]
 
-We can do similarly for templates.  But we cannot use @racket[define] since it
-is used to give names to an expression that represents some computation.
-Racket provides @racket[define-syntax-rule].  Using it, we can define a macro
-that abstracts over a template that represents some code.  For example, we can
-define a macro called @racket[make-cards] that abstract our example template
-as follows.
+We can do similar things for templates.  But we cannot use @racket[define]
+since it is used to give names to an expression that represents some
+computation. @note{This is probably the most general description of
+@racket[define].  To see that it indeed covers all its uses we have seen so
+far, simply note that (1) if the named expression actually builds data, it can
+be considered to represent a trivial computation that simply returns the data
+as is; (2) a function definition using a function header can always be
+rewritten in a form that uses @racket[define] to name a @racket[lambda]
+abstraction.} Racket provides @racket[define-syntax-rule].  Using it, we can
+define a macro that parameterizes a template that represents some code.  For
+example, we can define a macro called @racket[make-cards] that abstract our
+example template as follows.
 
 @racketblock[
 (define-syntax-rule (make-cards (r ...)
@@ -538,13 +548,15 @@ The only thing new is in the macro header @racket[(make-cards (r ...) (cs ...)
 followed by ellipses.  They do not look like parameters in function headers.
 Because they are not.  If we say this whole header is a pattern, does it
 remind you of something?  Yes, pattern matching, though is no longer on data
-structures but on code structures.  Ellipses act the same.  But be aware that
-you must make sure that if a name in the pattern is followed (immediately or
-not) by some ellipses, exactly the same number of ellipses must follow the
-name in the template.  Otherwise, you will get an error.  Check yourself that
-our macro definition above has this property.  To see how it could fail,
-just delete one ellipsis in the pattern or the template to make them not
-match.
+structures but on code structures.  The names that labelling holes in the
+template are also called pattern variables.  Ellipses in the pattern act
+similarly.  But be aware that you must make sure that if a name in the pattern
+is followed (immediately or not) by some ellipses, exactly the same number of
+ellipses must follow the name (immediately or not) in the template.
+Otherwise, you will get an error complaining that ellipses are missing.  Check
+yourself that our macro definition above satisfies this requirement.  To see
+how it could fail, just delete one ellipsis in the pattern or the template to
+make them not match.
 
 Now we can call this macro in the same way we call a function.
 
@@ -558,12 +570,35 @@ Now we can call this macro in the same way we call a function.
 
 When Racket's macro processor sees this s-expression, it first decides that
 its head names a macro, then it tries to match the whole call with the pattern
-of the macro definition, if it matches successfully, a binding for the names 
-labelling the holes in the template will be generated and the holes are filled
-according to this binding information.  For our example, the match goes like
-this: first, the macro name @racket[make-cards] matches as if it a literal;
-then @rakect[(r ...)] matches @racket[("A" "2" "3" "4" "5" "6" "7" "8" "9"
-"10" "J" "Q" "K")]; similarly for the rest.  So the two match perfectly.
+of the macro definition, if it matches successfully, a binding for the pattern
+variabels will be generated and what they are bound to will be substituted
+into the template.  For our example, the match goes like this: first, the
+macro name @racket[make-cards] matches as if it a literal; then the @racket[(r
+...)] matches @racket[("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K")];
+similarly for other pattern variables.  So the two indeed match perfectly,
+resulting in a binding in which @racket[r] is bound to the s-expression
+@racket[("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J" "Q" "K")] and similarly
+for others.  Then the macro processor starts to substitute these s-expressions
+for these pattern variables.  But note that, @racket[r] in the template will
+not be substituted for @racket[("A" "2" "3" "4" "5" "6" "7" "8" "9" "10" "J"
+"Q" "K")], neither do others due to the ellipses coming after them.  We
+mentioned before an ellipsis in a template indicates repetition of the
+sub-template preceeding it.  But we did not make it explicit how many times
+the repetition should be.  Now we can be clear that the sub-template
+preceeding an ellipsis will be repeated as many times as the number of
+elements contained in the s-list bound to the pattern variable, and the
+pattern variable in the repeated sub-templates will be substituted for
+elements of the bound s-list in a one-to-one fashion.  Note that, if in the
+pattern there exist several pattern variables followed by ellipses, and two or
+more of them appear together inside a sub-template followed by ellipses, their
+bound s-lists must be of the same length.  Otherwise, we get an error
+complaining that their counts do not match.  All ellipsis-followed
+sub-templates in our example contain two ellipsis-followed pattern variables.
+It is easy to see that the s-lists bound to these pattern variables are indeed
+of the same length.  To see how it could cause an error, try to call
+@racket[make-cards] with s-lists of different lengths.  Now it should be clear
+that after all the substitutions are done, we will have a sequence of card
+definitions inside @racket[begin].
 
 @subsection{Abbreviating Coding Patterns}
 
