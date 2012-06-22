@@ -239,19 +239,19 @@ operator called @racket[quote].  Using @racket[quote] we can tell Racket not
 to evaluate the quoted code.
 
 @eg[
-(quote (+ 1 2 3))
+(code:quote (+ 1 2 3))
 ]
 
 @eg[
-(quote (list (+ 0 1) (+ 1 1) (+ 1 2)))
+(code:quote (list (+ 0 1) (+ 1 1) (+ 1 2)))
 ]
 
 Note that Racket provides a shorthand for @racket[quote], instead of
-@racket[(quote (+ 1 2 3))], you can write @racket['(+ 1 2 3)], that is, you
-just put a single quotation mark @litchar{'} before the code you want to
+@racket[(code:quote (+ 1 2 3))], you can write @racket['(+ 1 2 3)], that is,
+you just put a single quotation mark @litchar{'} before the code you want to
 quote.  Be aware that there is no more @litchar{'} after the code you quote.
 
-In addition to quoting code, you can quote also other data.
+In addition to quoting code, you can also quote other data.
 
 @eg[
 '1
@@ -261,56 +261,55 @@ In addition to quoting code, you can quote also other data.
 '"hi"
 ]
 
-The outcome is that @racket[quote] has no effect on literals.  Racket simply
-return the quoted literal as is, and no prefixing @litchar{'}.
+The outcome suggests that @racket[quote] has no effect on literals.  Racket
+simply return the quoted literal as is, and no prefixing @litchar{'}.
 
 Furthermore, you can also quote identifiers and s-pairs.  In otherwords, you
 can quote any s-expression.
 
 @eg[
-(quote x)
+'x
 ]
 
 @eg[
-(quote lambda)
+'lambda
 ]
 
 @eg[
-(quote ())
+'()
 ]
 
 @eg[
-(quote (+ 1 2 . 3))
+'(+ 1 2 . 3)
 ]
 
 @eg[
-(quote (+ 1 2 3))
+'(+ 1 2 3)
 ]
 
 A quoted identifier represents a symbol.  A quoted s-pair represents a pair
 and a quoted s-list represents a list, so @racket[(quote (+ 1 2 . 3))] is
-equivalent to @racket[(cons (quote +) (cons (quote 1) (cons (quote 2) (quote
-3))))], @racket[(quote (+ 1 2 3))] equivalent to @racket[(list (quote +)
-(quote 1) (quote 2) (quote 3))] and also to @racket[(cons (quote +) (cons
-(quote 1) (cons (quote 2) (cons (quote 3) (quote ())))))].
+equivalent to @racket[(cons '+ (cons '1 (cons '2 '3)))], @racket['(+ 1 2 3)]
+equivalent to @racket[(list '+ '1 '2 '3)] and also to @racket[(cons '+ (cons
+'1 (cons '2 (cons '3 '()))))].
 
 So @racket[quote] provides a fast way to construct instances of pairs and
 lists.  These instances can be used as usual.
 
 @eg[
-(car (quote (1 2 . 3)))
+(car '(1 2 . 3))
 ]
 
 @eg[
-(cdr (quote (1 2 . 3)))
+(cdr '(1 2 . 3))
 ]
 
 @eg[
-(first (quote (+ 1 2 3)))
+(first '(+ 1 2 3))
 ]
 
 @eg[
-(rest (quote (+ 1 2 3)))
+(rest '(+ 1 2 3))
 ]
 
 If @racket[quote] is only used for this purpose, you are using a sledgehammer
@@ -602,5 +601,74 @@ definitions inside @racket[begin].
 
 @subsection{Abbreviating Coding Patterns}
 
+Not all code repetitions are as plain as that is show in the previous
+subsection.  Sometimes we find that what we are repeating actually appears in
+a structural form.  One typical example is nested @tt{if}-@tt{else}
+statements found in C-family languages.  In programs written in these
+languages, you can easily find code of the following code structure.
+
+@verbatim|{
+if ( ... ) {
+  ...
+}
+else if ( ... ) {
+  ...
+}
+  ...
+else {
+  ...
+}
+}|
+
+Programmers notice these kinds of code structures.  They call them coding
+patterns or coding idioms.  They collect them into their coding dictionaries
+and practice using them whenever possible.  One day when they become seasoned,
+they teach these idioms or patterns to their disciples, and so on.  This is
+after all how knowledge is usually conveyed.  But it is clear that the
+recurence of these coding patterns is definitely a form of repetition.  Why
+should we be forced to repeat them?  Why does not the programming language
+provide some more convenient constructs to ease our coding task?  The answer
+is that language designers cannot predict these coding patterns beforehand.
+They emerge in our coding practice.  The crux of the problem is either the
+programming language does not provide any or any sophisticated enough way that
+allows the programmer to abbreviate or abstract over these coding patterns.
+Lisp-family languages do, via their powerful macro systems.  So does Racket.
+
+You have been using @racket[cond] for quite some programming tasks.  It proves
+convenient.  But so far you have been told that it is a primitive control
+construct. @note{@racket[cond] is indeed provided as a primitive control
+construct in original Lisp.  But it is not in Scheme, neither in Racket.}  It
+is actually not.  The primitive control construct to form a conditional
+expression in Racket is @racket[if].  Now suppose, Racket does not provide
+@racket[cond] but only @racket[if] out of the box, what would happen?  Does it
+mean that you have to, as programmers of other languages do, identify nested
+@racket[if] expressions as a coding pattern and fron now on write every
+multi-conditional expression that way?  Fortunately not.  Racket allows us to
+define our own @racket[cond] as a macro and use it as if it is provided out of
+box.  Actually @racket[cond] is a pre-defined macro in Racket.
+
+To see how @racket[cond] can be defined as a macro, let's start again with a
+template.  The template should cover the coding pattern. So it must consists
+of nested @racket[if] sub-templates.
+
+@specform[
+(if test-expr1
+    then-expr1
+    (if test-expr2
+        then-expr2
+        ... ) )
+]
+
+But the problem is that we cannot know in advance how deep the nesting could
+be.  In particular the ellipsis seems 
+ 
+@racket[cond], @racket[let]
+
 @subsection{Extending Language Syntax}
+
+@racket[when], @racket[do-while-else]
+
+@subsection{The Use and Abuse of Macros}
+
+@racket[and], @racket[or]
 
