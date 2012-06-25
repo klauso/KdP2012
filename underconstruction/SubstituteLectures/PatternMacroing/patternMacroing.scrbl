@@ -472,7 +472,7 @@ for each suit , we have to repeat @litchar{(define}, @litchar{(make-card}, the
 string represents the suit (one of @racket["♠"], @racket["♥"], @racket["♦"]
 and @racket["♣"]), and @litchar{))}, regardless of spaces; for all suits, we
 have to repeat strings that represent ranks (one of @racket["A"], @racket["2"]
-to @racket["10"], @racket["J"], @racket["Q"] and @racket["K"]).  Apparently we
+to @racket["10"], @racket["J"], @racket["Q"] and @racket["K"]).  Clearly we
 do not want to do this.  
 
 Racket's macro system can free us from this kindof boring task.  For it to
@@ -597,11 +597,13 @@ It is easy to see that the s-lists bound to these pattern variables are indeed
 of the same length.  To see how it could cause an error, try to call
 @racket[make-cards] with s-lists of different lengths.  Now it should be clear
 that after all the substitutions are done, we will have a sequence of card
-definitions inside @racket[begin].
+definitions inside @racket[begin].  The process of replacing a macro call with
+the fully substituted template from the macro definition is called @emph{macro
+expansion}. 
 
 @subsection{Abbreviating Coding Patterns}
 
-Not all code repetitions are as plain as that is show in the previous
+Not all code repetitions are as plain as that is shown in the previous
 subsection.  Sometimes we find that what we are repeating actually appears in
 a structural form.  One typical example is nested @tt{if}-@tt{else}
 statements found in C-family languages.  In programs written in these
@@ -648,10 +650,11 @@ define our own @racket[cond] as a macro and use it as if it is provided out of
 box.  Actually @racket[cond] is a pre-defined macro in Racket.
 
 To see how @racket[cond] can be defined as a macro, let's start again with a
-template.  The template should cover the coding pattern. So it must consists
-of nested @racket[if] sub-templates.
+template.  The template should cover the coding pattern. So it may contain
+nested @racket[if] sub-templates.  Following is a first attempt to build the
+template.
 
-@specform[
+@racketblock[
 (if test-expr1
     then-expr1
     (if test-expr2
@@ -659,9 +662,178 @@ of nested @racket[if] sub-templates.
         ... ) )
 ]
 
-But the problem is that we cannot know in advance how deep the nesting could
-be.  In particular the ellipsis seems 
- 
+Intuitively it reflects what we want, but if we use it directly as a tmeplate,
+parameterize the pattern variables, and define a macro like
+
+@eg[
+(define-syntax-rule (condition (test-expr1 then-expr1)
+                                 (test-expr2 then-expr2) ... )
+  (if test-expr1
+      then-expr1
+      (if test-expr2
+          then-expr2
+          ... ) ) )
+],
+
+it would not work.  Not only because an ellipsis is missing after
+@racket[test-expr2]; but also because during expansion, @racket[then-expr2]
+together with the ellipsis in the template will be substituted by all the
+then-expressions in a call of @racket[condition], yet lined in sequence,
+leaving out any nested @racket[if] and other test-expressions.  Convince
+yourself that a template like
+
+@racketblock[
+(if test-expr1
+    then-expr1
+    (if test-expr2
+        then-expr2 ) ... )
+]
+
+does not work either.  What we wish the ellipses could do is to say that
+repeating the sub-template @litchar{(if test-expr2 then-expr2} as many times
+as required and supplying as many closing parentheses as needed.
+Unfortunately, this is out of the reach of ellipses.  But notice that what we
+wish ellipsis to do is exactly what @racket[conditonal] is designed to do.
+This suggests that if we can call @racket[condition] recursively, we are done.
+Racket supports recursive macro calls in a macro definition.  The way to write
+a recursive macro call is similar to the way to write a recursive function
+call.  But you must make sure that the recursive macro call will actually
+match the macro header:
+
+@eg[
+(define-syntax-rule (condition (test-expr1 then-expr1)
+                                 (test-expr2 then-expr2) ... )
+  (if test-expr1
+      then-expr1
+      (condition (test-expr2 then-expr2) ...) ) )
+]
+                   
+This time it looks good.  The macro definiton is accepted.  Nevertheless, it
+fails when we use it:
+
+@racketblock[
+(define (absolute n)
+  (condition
+    [(< n 0) (- n)]
+    [(>= n 0) n] ) )
+]
+
+When Racket's macro processor tries to expand the macro call in the above
+definition, it will complain that the @racket[(condition)] of the macro does
+not match the pattern specified in the macro header.  The problem is that
+since both @racket[test-expr2] and @racket[then-expr2] are supposed to to
+bound to an sequence of s-expressions, in particular, these sequences may be
+empty; but if you look at the macro header carefully, you will notice that it
+expects at least one couple of test-exression and then-expression.  We can see
+the point more clearly from the fully expanded code for the definiton of
+@racket[absolute]:
+
+@racketblock[
+(define (absolute n)
+  (if (< n 0)
+      (- n)
+      (if (>= n 0)
+          n
+          (condition) ) ) )
+]
+
+Because of the recursive call of @racket[condition], the expansion continues
+until the bottom case is hit, that is, when both @racket[test-expr2] and
+@racket[then-expr2] become @litchar{()}.  At this point, there is no
+s-expression fed to @racket[condition], thus the recursive macro call becomes
+@racket[(condition)], which fails to match our macro header.  The solution is
+to provide a pattern that would cover this base case.  Thus we need a
+@racket[match]-like construct that allows us to supply multiple patterns to
+cover different cases.  Racket provides us @racket[syntax-rules] which allows
+us to define an anonymous macro, then we can use @racket[define-syntax] to
+give the macro a name.  They work tegother in a similar way that
+@racket[lambda] and @racket[define] do.  Using @racket[syntax-rules] and
+@racket[define-syntax], the macro @racket[condition] will be defined as
+follows:
+
+@racketblock[
+(define-syntax condition
+  (syntax-rules ()
+    [(condition) (void)]
+    [(condition (test-expr then-expr) clause ...)
+     (if test-expr
+         then-expr
+         (condition clause ...) ) ] ) )
+]
+
+The body of @racket[syntax-rules] looks similar to the body of @racket[match].
+For each clause, the left hand side is a pattern specifying the form that a
+macro call could take; the right hand side is the template corresponding to
+this pattern.  Matching also goes from top down, favoring the template
+corresponding to the first pattern that matches a macro call.  Note the
+macro name acts as if it is a literal.  In other words, in pattern matching,
+macro names must match exactly, equivalent to equality test.
+
+For the base case @racket[(condition)], we choose to return nothing, which is
+what @racket[(void)] does.  For the recursive case, we simplify the
+ellipsis-pattern @racket[(test-expr2 then-expr2) ...] to just @racket[clause
+...].  The reason is the corresponding template and this ellipsis-pattern
+appears exactly the same.  That means their structure actually does not
+matter.  We can simply use a pattern variable instead.
+
+The pair of parentheses folling immediately @racket[syntax-rules] are used to
+introduce some extra keywords.  We know that inside @racket[cond], we can use
+the keyword @racket[else] to take care of all othercases.  We can do similar
+thing for our @racket[condition], to introduce a keyword, say
+@racket[otherwise], we simply put it in the parentheses following
+@racket[syntax-rules].
+
+@racketblock[
+(define-syntax condition
+  (syntax-rules (otherwise)
+    [(condition) (void)]
+    [(condition (otherwise othw-expr)) othw-expr]
+    [(condition (test-expr then-expr) clause ...)
+     (if test-expr
+         then-expr
+         (condition clause ...) ) ] ) )
+]
+
+We can rewrite @racket[absolute] as
+
+@racketblock[
+(define (absolute n)
+  (condition
+    [(< n 0) (- n)]
+    [otherwise n] ) )
+]
+
+It get expanded to
+
+@racketblock[
+(define (absolute n)
+  (if (< n 0)
+      (- n)
+      n ) )
+],
+
+exactly what we want.
+
+Note the position of the clause @racket[[(condition (otherwise othw-expr))
+othw-expr]] matters.  If we put it after the clause that deals with the
+recursive case, pattern matching could never reach it.  Since the pattern
+variable @racket[test-expr] can match anything, the clause handling the
+recursive case will always be taken.  The call of @racket[conditon] in
+@racket[absolute] gets expanded by the macro processor to:
+
+@racketblock[
+(define (absolute n)
+  (if (< n 0)
+      (- n)
+      (if otherwise
+          n
+          (condition) ) ) )
+]
+
+The problem of this expanded code is that, the identifier @racket[otherwise]
+may not evaluate to a boolearn value and it may even be unbound at all.
+Always be careful about the order of clauses.
+
 @racket[cond], @racket[let]
 
 @subsection{Extending Language Syntax}
