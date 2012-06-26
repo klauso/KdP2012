@@ -605,9 +605,85 @@ expansion}.
 
 Not all code repetitions are as plain as that is shown in the previous
 subsection.  Sometimes we find that what we are repeating actually appears in
-a structural form.  One typical example is nested @tt{if}-@tt{else}
-statements found in C-family languages.  In programs written in these
-languages, you can easily find code of the following code structure.
+a structural form.  Programmers notice these kinds of code structures.  They
+call them coding patterns or coding idioms.  They collect them into their
+coding dictionaries and practice using them whenever possible.  One day when
+they become seasoned, they teach these idioms or patterns to their disciples,
+and so on.  This is after all how knowledge is usually conveyed.  But it is
+clear that the recurrence of these coding patterns is definitely a form of
+repetition.  Why should we be forced to repeat them?  Why does not the
+programming language provide some more convenient constructs to ease our
+coding task?  The answer is that language designers cannot predict these
+coding patterns beforehand.  These patterns emerge in our coding practice.
+The crux of the problem is that the programming language does not provide any
+or any sophisticated enough way that allows the programmer to abbreviate or
+abstract over these coding patterns.  Lisp-family languages do, via their
+powerful macro systems.  So does Racket.
+
+Let's first see a simple example, which is an immediate application of a
+@racket[lambda]-expression to some arguments, for instance,
+
+@racketblock[
+((lambda (x y z)
+   (* (+ x y) (- x z)) )
+ (/ 8 4) 6 3 )
+]
+
+This coding pattern is useful when we want to avoid repeated computations.  In
+the above example, the varaible @racket[x] will get bound to the value of
+@racket[(+ 1 2)].  In the body exrepssion, even though @racket[x] appears
+twice, the expression @racket[(+ 1 2)] will be evaluated only once before
+entering the body of the @racket[lambda]-expression.  When the expression
+@racket[(* (+ x y) (- x z))] is evaluated, @racket[x] is already bound to the
+value @racket[3], no computation is need at all.
+
+It seems this coding pattern is quite handy.  It indeed recurs whenver we want
+to introduce local variable bindings.  But it has a drawback.  For the simple
+example above, it is not that obvious.  We can still manage to the binding
+relations between the variables and the arguments.  But it will be difficult
+if the body of the @racket[lambda]-expression becomes more complex.  Then the
+variables and the arguments will be so far that, we can no longer easily see
+their binding relations.  Therefore, it is reasonable to abstract it away.
+Let's start again with the template.
+
+@racketblock[
+((lambda (var ...) body)
+ arg ... )
+]
+
+Now we need to design the macro header, which is its user-interface.  Since we
+want not to separate the variables and arguments far away, we should gather
+them to one place that is easy to find.  Two good choices may be either before
+or after the body expression.  Without loss of generality, we choose the
+former.  If we name the macro @racket[with], its header look likes this
+@racket[(with [(var arg) ...] body)].  Its definition is shown below:
+
+@racketblock[
+(define-syntax-rule (with [(var arg) ...] body)
+  ((lambda (var ...) body)
+   arg ... ) )
+]
+
+Now we can rewrite the simple example using @racket[with].
+
+@racketblock[
+(with [(x (/ 8 4))
+       (y 6)
+       (z 3) ]
+  (* (+ x y) (- x z)) )
+]
+
+This time, it is clear to the binding relations between the variables and
+arguments.  The benefit will of course be more obvious for larger examples.
+Racket provide a (more advanced) special form called @racket[let] that can
+do exactly what @racket[with] does.
+
+In the example above, the coding pattern is actually quite simple.  It just
+shows one basic usage of macros to abbreviate coding patterns.  Macros can
+also be used to abstract over more complicated coding patterns.  One typical
+example is nested @tt{if}-@tt{else} statements found in C-family languages.
+In programs written in these languages, you can easily find code of the
+following structure.
 
 @verbatim|{
 if ( ... ) {
@@ -622,19 +698,6 @@ else {
 }
 }|
 
-Programmers notice these kinds of code structures.  They call them coding
-patterns or coding idioms.  They collect them into their coding dictionaries
-and practice using them whenever possible.  One day when they become seasoned,
-they teach these idioms or patterns to their disciples, and so on.  This is
-after all how knowledge is usually conveyed.  But it is clear that the
-recurence of these coding patterns is definitely a form of repetition.  Why
-should we be forced to repeat them?  Why does not the programming language
-provide some more convenient constructs to ease our coding task?  The answer
-is that language designers cannot predict these coding patterns beforehand.
-They emerge in our coding practice.  The crux of the problem is either the
-programming language does not provide any or any sophisticated enough way that
-allows the programmer to abbreviate or abstract over these coding patterns.
-Lisp-family languages do, via their powerful macro systems.  So does Racket.
 
 You have been using @racket[cond] for quite some programming tasks.  It proves
 convenient.  But so far you have been told that it is a primitive control
@@ -650,32 +713,35 @@ define our own @racket[cond] as a macro and use it as if it is provided out of
 box.  Actually @racket[cond] is a pre-defined macro in Racket.
 
 To see how @racket[cond] can be defined as a macro, let's start again with a
-template.  The template should cover the coding pattern. So it may contain
-nested @racket[if] sub-templates.  Following is a first attempt to build the
-template.
+template.  The template should cover the coding pattern, that is, it may
+contain nested @racket[if] sub-templates. 
 
 @racketblock[
 (if test-expr1
     then-expr1
     (if test-expr2
         then-expr2
-        ... ) )
+        ??? ) )
 ]
 
-Intuitively it reflects what we want, but if we use it directly as a tmeplate,
-parameterize the pattern variables, and define a macro like
+Note the above piece is neither valid code nor valid template.  We use
+@litchar{???} to indicate that some repetition is needed to complete the
+template.  Since we know that ellipsis @litchar{...} is used for repetition in
+a template, a first attempt to build the template may be just replacing
+@litchar{???} with ellipsis @litchar{...}, parameterizing the pattern
+variables, and defining a macro like this:
 
 @eg[
 (define-syntax-rule (condition (test-expr1 then-expr1)
-                                 (test-expr2 then-expr2) ... )
+                               (test-expr2 then-expr2) ... )
   (if test-expr1
       then-expr1
       (if test-expr2
           then-expr2
           ... ) ) )
-],
+]
 
-it would not work.  Not only because an ellipsis is missing after
+Unfortunately it does not work.  Not only because an ellipsis is missing after
 @racket[test-expr2]; but also because during expansion, @racket[then-expr2]
 together with the ellipsis in the template will be substituted by all the
 then-expressions in a call of @racket[condition], yet lined in sequence,
@@ -689,20 +755,20 @@ yourself that a template like
         then-expr2 ) ... )
 ]
 
-does not work either.  What we wish the ellipses could do is to say that
+does not work either.  What we wish @litchar{???} could do is to say that
 repeating the sub-template @litchar{(if test-expr2 then-expr2} as many times
 as required and supplying as many closing parentheses as needed.
-Unfortunately, this is out of the reach of ellipses.  But notice that what we
-wish ellipsis to do is exactly what @racket[conditonal] is designed to do.
-This suggests that if we can call @racket[condition] recursively, we are done.
-Racket supports recursive macro calls in a macro definition.  The way to write
-a recursive macro call is similar to the way to write a recursive function
-call.  But you must make sure that the recursive macro call will actually
-match the macro header:
+Unfortunately, this is out of the reach of ellipses @litchar{...}.  But notice
+that what we wish ellipsis to do is exactly what @racket[conditonal] is
+designed to do.  This suggests that if we can call @racket[condition]
+recursively, we are done.  Racket supports recursive macro calls in a macro
+definition.  The way to write a recursive macro call is similar to the way to
+write a recursive function call.  But you must make sure that the recursive
+macro call will actually match the macro header:
 
 @eg[
 (define-syntax-rule (condition (test-expr1 then-expr1)
-                                 (test-expr2 then-expr2) ... )
+                               (test-expr2 then-expr2) ... )
   (if test-expr1
       then-expr1
       (condition (test-expr2 then-expr2) ...) ) )
@@ -810,8 +876,7 @@ It get expanded to
   (if (< n 0)
       (- n)
       n ) )
-],
-
+], 
 exactly what we want.
 
 Note the position of the clause @racket[[(condition (otherwise othw-expr))
@@ -832,9 +897,104 @@ recursive case will always be taken.  The call of @racket[conditon] in
 
 The problem of this expanded code is that, the identifier @racket[otherwise]
 may not evaluate to a boolearn value and it may even be unbound at all.
-Always be careful about the order of clauses.
+Therefore, always be careful about the order of the clauses.
 
-@racket[cond], @racket[let]
+@;{ The following block is commented out for future consideration.
+
+Another coding pattern commonly appears in functional programming languages
+is an immediate application of a lambda abstraction to bind some value to some
+variables, for example,
+
+@eg[
+(((lambda (x)
+    (lambda (y)
+      (* (+ x y)
+         (- x y) ) ) )
+  (* 3 4) )
+ (* 2 3) )
+]
+
+This coding pattern is useful when we try to avoid repeated computation.  In
+the above example, the varaibles @racket[x] and @racket[y] will get bound to
+the values of @racket[(* 3 4)] and @racket[(* 2 3)], that is, 12 and 6
+respectively.  Inside the the exrepssion @racket[(* (+ x y) (- x y))], even
+though both @racket[x] and @racket[y] appear twice, @racket[(* 3 4)] and
+@racket[(* 2 3)] will not be evaluated since @racket[x] and @racket[y] have
+already bound to the values of these two expressions respectively.
+
+This coding pattern recurs whenver we want to introduce local variable
+bindings.  But note that the more local variables we introduce, the deeper the
+nesting of @racket[lambda]-expressions goes; the more complicated the
+innermost expression is, the farther the local variables and their bound
+values are separated.  Both cause readability problems.  Therefore, it is
+reasonable to abbreviate it, and more importantly to abstract it away.  Let's
+start again with the template.  It must have the following shape.
+
+@racketblock[
+(??? (((lambda (var1)
+         (lambda (var2)
+           ???
+             body ) ??? )
+       exp1 )
+      exp2 )
+     ??? )
+]
+
+Lessons learned from the definition of @racket[condition] tells us to be
+careful about the @litchar{???}s, not to blindly replace them with
+@litchar{...}s.  Indeed the first and third of them just specify repeated
+openning and closing parentheses, which is not our concern.  If we watch the
+shape carefully, we will realize there is something similar to that of the
+template of @racket[condition], namely, nested repetetion.  This again
+suggests a recursive macro definition.  Let's name the macro @racket[with].
+Now comes the design of the macro header which is its user-interface.  One way
+to avoid the two problems of the coding pattern demonstrated above is to
+gather the local variables and their bound values together, and put them
+either before or after the main expression that references these local
+variables.  Without loss of generality, we choose the former.  The natural and
+default way to put s-expressions together is to use s-list.  Fruthermore, we
+would like also to allow the s-list to be empty in which case, no local
+variable is introduced.  All that said, our macro header can be either
+@racket[(with [] body)] or @racket[(with [(var1 exp1) binds ...] body)].  The
+former is obviously the base case.  It is easy to see a macro call like that
+should simply be replaced by @racket[body].  The latter is of course the
+recursive case.  We need to form a @racket[lambda]-expression with the local
+variable @racket[var1] as parameter, with a recursive call to @racket[with] as
+its body, and then apply it to the expression @racket[exp1].  Below is the
+defintion.
+
+@racketblock[
+(define-syntax with
+  (syntax-rules ()
+    [(with [] body) body]
+    [(with [(var1 exp1) binds ...] body)
+     ((lambda (var1)
+        (with [binds ...] body) )
+      exp1 ) ] ) )
+]
+
+Now we can use @racket[with] to rewrite the above example.
+
+@eg[
+(with [(x (* 3 3))
+       (y (* 4 4)) ]
+  (+ x y) )
+]
+
+It expands to
+
+@racketblock[
+((lambda (x)
+   (with [(y (* 4 4))]
+     (+ x y) ) )
+ (* 3 3) )
+]
+
+It seems the expansion does not reach the bottom since there is still an
+@racket[with]-call inside the @racket[lambda]-expression.
+
+}
+
 
 @subsection{Extending Language Syntax}
 
