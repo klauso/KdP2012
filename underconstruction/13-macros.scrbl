@@ -545,17 +545,18 @@ example template as follows.
 The only thing new is in the macro header @racket[(make-cards (r ...) (cs ...)
 (ch ...) (cd ...) (cc ...))]: those names labelling holes in the template are
 followed by ellipses.  They do not look like parameters in function headers.
-Because they are not.  If we say this whole header is a pattern, does it
-remind you of something?  Yes, pattern matching, though is no longer on data
-structures but on code structures.  The names that labelling holes in the
-template are also called pattern variables.  Ellipses in the pattern act
-similarly.  But be aware that you must make sure that if a name in the pattern
-is followed (immediately or not) by some ellipses, exactly the same number of
-ellipses must follow the name (immediately or not) in the template.
-Otherwise, you will get an error complaining that ellipses are missing.  Check
-yourself that our macro definition above satisfies this requirement.  To see
-how it could fail, just delete one ellipsis in the pattern or the template to
-make them not match.
+Because they are not.  If we say this whole header specifies a pattern, does
+it remind you of something?  Yes, pattern matching, though is no longer on
+data structures but on code structures.  Essentially a macro header specifies
+the macro's call pattern.  The names that labelling holes in the template are
+also called pattern variables.  Ellipses in the pattern act similarly.  But be
+aware that you must make sure that if a name in the pattern is followed
+(immediately or not) by some ellipses, exactly the same number of ellipses
+must follow the name (immediately or not) in the template.  Otherwise, you
+will get an error complaining that ellipses are missing.  Check yourself that
+our macro definition above satisfies this requirement.  To see how it could
+fail, just delete one ellipsis in the pattern or the template to make them not
+match.
 
 Now we can call this macro in the same way we call a function.
 
@@ -651,11 +652,11 @@ Let's start again with the template.
  arg ... )
 ]
 
-Now we need to design the macro header, which is its user-interface.  Since we
-want not to separate the variables and arguments far away, we should gather
-them to one place that is easy to find.  Two good choices may be either before
-or after the body expression.  Without loss of generality, we choose the
-former.  If we name the macro @racket[with], its header look likes this
+Now we need to design the macro call pattern, which is its user-interface.
+Since we want not to separate the variables and arguments far away, we should
+gather them to one place that is easy to find.  Two good choices may be either
+before or after the body expression.  Without loss of generality, we choose
+the former.  If we name the macro @racket[with], its header look likes this
 @racket[(with [(var arg) ...] body)].  Its definition is shown below:
 
 @racketblock[
@@ -762,7 +763,7 @@ designed to do.  This suggests that if we can call @racket[condition]
 recursively, we are done.  Racket supports recursive macro calls in a macro
 definition.  The way to write a recursive macro call is similar to the way to
 write a recursive function call.  But you must make sure that the recursive
-macro call will actually match the macro header:
+macro call will actually match the call pattern:
 
 @eg[
 (define-syntax-rule (condition (test-expr1 then-expr1)
@@ -783,13 +784,13 @@ fails when we use it:
 ]
 
 When Racket's macro processor tries to expand the macro call in the above
-definition, it will complain that the @racket[(condition)] of the macro does
-not match the pattern specified in the macro header.  The problem is that
-since both @racket[test-expr2] and @racket[then-expr2] are supposed to to
-bound to an sequence of s-expressions, in particular, these sequences may be
-empty; but if you look at the macro header carefully, you will notice that it
-expects at least one couple of test-exression and then-expression.  We can see
-the point more clearly from the fully expanded code for the definiton of
+definition, it will complain that the macro call @racket[(condition)] does
+not match the call pattern.  The problem is that since both
+@racket[test-expr2] and @racket[then-expr2] are supposed to to bound to an
+sequence of s-expressions, in particular, these sequences may be empty; but if
+you look at the macro header carefully, you will notice that it expects at
+least one couple of test-exression and then-expression.  We can see the point
+more clearly from the fully expanded code for the definiton of
 @racket[absolute]:
 
 @racketblock[
@@ -805,7 +806,7 @@ Because of the recursive call of @racket[condition], the expansion continues
 until the bottom case is hit, that is, when both @racket[test-expr2] and
 @racket[then-expr2] become @litchar{()}.  At this point, there is no
 s-expression fed to @racket[condition], thus the recursive macro call becomes
-@racket[(condition)], which fails to match our macro header.  The solution is
+@racket[(condition)], which fails to match the call pattern.  The solution is
 to provide a pattern that would cover this base case.  Thus we need a
 @racket[match]-like construct that allows us to supply multiple patterns to
 cover different cases.  Racket provides us @racket[syntax-rules] which allows
@@ -945,9 +946,9 @@ openning and closing parentheses, which is not our concern.  If we watch the
 shape carefully, we will realize there is something similar to that of the
 template of @racket[condition], namely, nested repetetion.  This again
 suggests a recursive macro definition.  Let's name the macro @racket[with].
-Now comes the design of the macro header which is its user-interface.  One way
-to avoid the two problems of the coding pattern demonstrated above is to
-gather the local variables and their bound values together, and put them
+Now comes the design of the macro call pattern which is its user-interface.
+One way to avoid the two problems of the coding pattern demonstrated above is
+to gather the local variables and their bound values together, and put them
 either before or after the main expression that references these local
 variables.  Without loss of generality, we choose the former.  The natural and
 default way to put s-expressions together is to use s-list.  Fruthermore, we
@@ -1054,49 +1055,114 @@ such constructs from the very beginning, it suggests a strong favor of
 recursion.} But for Lisp-family languages, this is no problem.  If programmers
 want, they can always build such constructs as macros.
 
-A proper loop construct has a set of iteration variables (or loop variabels),
-and a boolean expression to control the entering and exiting of the loop.
-After entering the loop, one iteration starts.  During the iteration, some
-iteration variables may be modified 
+A proper loop construct maintains a set of iteration variables (or loop
+variabels).  Some of them are tested in a boolean condition in order to
+control the entering and exiting of the loop.  All the iteration variables
+should have already been initialized before entering the loop.  When entering
+the loop, an iteration starts.  During the iteration, some iteration variables
+may be modified.  These modifications will affect the next boolean condition
+test, which in turn will determine whether to reenter the loop and start a new
+iteration or to terminate the current iteration and exit the loop.
 
-The boolean expression usually tests one or several iteration variable to
-decide to continue or terminate the iteration.
-
-Some of the iteration variables are used to control the iteration times, that
-is, how many times the body of the loop construct will be executed.  Others
-are used to accumulate results.  During each iteration
-
-Suppose now we want to define a do-when-else loop construct.  It will be in
-structure similar to the do-while loop in C, but 
-
-@verbatim|{
-do {
-  ...
-} while ( ... );
-}|
-
-except that we add another else-expression that will be evaluated when the
-loop condition is no longer satisfied.  The result of this else-expression is
-considered as the result of the whole do-while-else expression.  Let's call
-our macro @racket[do].  This time we start with the design of the macro
-header.
-
-A proper do-while-else loop should have a set of iteration variables.  Some of
-them are used to control the iteration times, some are used as accumulators.
-These iteration variables are (supposed to be) initialized before entering the
-body of the loop.  During each iteration, they may be modified.  At the end of
-an iteration, a conditional expression that may mention some of these
-iteration variables are evaluated: if the condition is true, a new iterations
-starts; otherwise, in our case, a default expression, i.e., the
-else-expression is evaluated and its result is returned as that of the whole
-loop expression.  Note that when a new iteration starts, the iteration
-variables have new values.
+In the imperative programming world, there are several variants of loop
+constructs.  C provides @tt{while}-loop and @tt{for}-loop.  The latter is
+actually a better organized version of the former, encouraging the programmer
+to put initializations and modifications of these iteration variables
+together along with the boolean condition, before the body of the loop.  Python
+provides slightly different @tt{for}-loop and @tt{while}-loop, each allowing
+an optional @tt{else} branch that does something default when the boolean
+condition is no longer met, that is, when control exits the loop.  We will try
+to design a macro that brings together all the goods of these loop constructs.
+Therefore, this time, we will start with the macro call pattern.  Let's call
+our macro @racket[loop].  Furthermore, we would like to introduce two more
+keywords for special purpose: one is @racket[when] which labels the boolean
+expression, the other is @racket[else] which labels the default expression.
+Eventually, we decide our macro call pattern to be:
 
 @racketblock[
-(do [(ivar 
+(loop [(ivar init step) ...]
+      [when test]
+      body ...
+      [else just] )
+]
 
+We collect an iteration variable @racket[ivar], its initialization
+@racket[init] and its modification @racket[step] into an s-list.  In
+particular, the ellipsis following the s-list indicates that our loop
+construct can have zero or more such collections.  The @racket[body] of the
+loop can also be an arbitrary number of expressions.  These expressions are
+usually evaluated in sequence but their values are ignored.  The boolean
+expression @racket[test] follows the extra keyword @racket[when].  The default
+expression @racket[just] follows the extra keyword @racket[else].  This
+default expression is evaluated when the loop is exitted, and its value
+becomes the value of the whole @racket[loop]-expression.
 
-@racket[when], @racket[do-while-else]
+The next step is to design the code template.  Recall that in Racket, the
+recommended way of expressing loops is via recursion.  Thus, since a call of
+@racket[loop] is supposed to be transformed away, in our template, we should
+use recursion.  Here is the template:
+
+@racketblock[
+(local [(define (iterate ivar ...)
+          (if test
+              (begin body ...
+                     (iterate step ...) )
+              just ) ) ]
+  (iterate init ...) )
+]
+
+Essentially we define a @racket[local] recursive function @racket[iterate]
+that takes all the iterative variables as parameters.  Inside its body,
+@racket[if] @racket[test] evaluates to @racket[true], we @racket[begin] to
+evaluate the expressions of the loop @racket[body] in sequence, ignoring their
+values, and then we recursively call @racket[iterate] with new arguments that
+are supposed to push the initial values of the iterative variables one step
+further, that is, get them bound to new values.  When @racket[test] evaluates
+to @racket[false], we know that the iteration is done, we should return the
+value of the default expression @racket[just].  Putting the macro call pattern
+and the template together, we get the following macro definition:
+
+@racketblock[
+(define-syntax loop
+  (syntax-rules (when else)
+    [(loop [(ivar init step) ...]
+           [when test]
+           body ...
+           [else just] )
+     (local [(define (iterate ivar ...)
+               (if test
+                   (begin body ...
+                          (iterate step ...) )
+                   just ) ) ]
+       (iterate init ...) ) ] ) )
+]
+
+Now we can use our @racket[loop] macro to define a fucntion that sums a list
+of numbers.
+
+@racketblock[
+(define (sum nums)
+  (loop [(ns nums (rest ns))
+         (s 0 (+ s (first ns))) ]
+    [when (not (empty? ns))]
+    [else s] ) )
+]
+
+In this example, the body of the loop is empty.  Another classic example of
+using loop is to print out the times table.
+
+@racketblock[
+(loop [(i 1 (+ i 1))]
+      [when (<= i 9)]
+      (loop [(j 1 (+ j 1))]
+            [when (<= j i)]
+            (printf "~a * ~a = ~a\t" i j (* i j))
+            [else (newline)] )
+      [else (void)] )
+]
+
+For more detail of the function @racket[printf], @racket[newline] and
+@racket[void], please refer to the Racket documentation.
 
 @subsection{The Use and Abuse of Macros}
 
