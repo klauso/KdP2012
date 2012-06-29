@@ -1,6 +1,6 @@
 #lang scribble/manual
 
-@(require "../scribbleUtilities.rkt")
+@(require "scribbleUtilities.rkt")
 
 @title[#:version ""]{Pattern Matching}
 
@@ -95,7 +95,7 @@ we can easily define three Racket functions that act the same.
 ;; ...
 )
 
-@ex[]  Supply the definitions for @racket[NOT] and @racket[OR].
+@exercise[]  Supply the definitions for @racket[NOT] and @racket[OR].
 
 With these three functions, we can simulate any arbitrary complicated
 operations in the bital world.  After we get the final result of the
@@ -126,7 +126,7 @@ rewrite @racket[AND] as follows:
 ;; ...
 )
 
-@ex[]  Rewrite your @racket[OR] definition if you also use too many equality
+@exercise[]  Rewrite your @racket[OR] definition if you also use too many equality
 tests.
 
 In this version, we have decreased the number of equality tests by half.
@@ -183,7 +183,7 @@ sure that you take all possible cases into account and provide at least one
 pattern that covers each case, just as you did before with a
 @racket[cond]-expression.
 
-@ex[]  Write the pattern-matching version of @racket[NOT] using the
+@exercise[]  Write the pattern-matching version of @racket[NOT] using the
 @racket[match] form.
 
 A @racket[match]-expression is like any other expression.  That is, it can
@@ -210,7 +210,7 @@ as the expression associated to a pattern inside another
 ;; ...
 )
 
-@ex[]  Write the pattern-matching version of @racket[OR].
+@exercise[]  Write the pattern-matching version of @racket[OR].
 
 @section{Matching Data Structures}
 
@@ -258,7 +258,7 @@ functions that simulate single-bit operators.
 ;; ...
 )
 
-@ex[]  Supply the definitinos for @racket[NOTs] and @racket[ORs].
+@exercise[]  Supply the definitinos for @racket[NOTs] and @racket[ORs].
 
 These definitions are all defined by recursion on the built-in list data
 structure by the so-called @italic{isomorphism} tests.  Two data structures
@@ -282,7 +282,7 @@ part of a @racket[let]-expression as shown below.
                       (ANDs bs1 bs2) ) ) ] ) )
 )
 
-@ex[]  Rewrite @racket[debits] and @racket[ORs] in the same way.
+@exercise[]  Rewrite @racket[debits] and @racket[ORs] in the same way.
 
 This version is clearer but feels heavy.  Here comes is the same question that
 whether we can do it by saying less.  Yes, pattern matching helps again.
@@ -381,7 +381,7 @@ their roles is by thinking of them as literals.  It is important not to
 confuse them with variables in a pattern.  They are used for identifying a
 particular type of data, thus @racket[list] for a list.
 
-@ex[]  Rewrite @racket[NOTs] using pattern matching.
+@exercise[]  Rewrite @racket[NOTs] using pattern matching.
 
 As before, @racket[match]-expressions can be nested.  Back to our
 debitalization example, we can rewrite @racket[ANDs] using nested
@@ -401,7 +401,7 @@ debitalization example, we can rewrite @racket[ANDs] using nested
                                 (ANDs bs1 bs2) ) ] ) ] ) )
 )
 
-@ex[]  Rewrite @racket[ORs] in the same way.
+@exercise[]  Rewrite @racket[ORs] in the same way.
 
 Since list is such an important data structure.  Racket supports rich patterns
 around it.  Here are more examples.
@@ -513,7 +513,7 @@ that how the underscore @litchar|{_}| is effectively used to match all other
 ranks, that is numbers.  Since these numbers are in string forms, we return
 them immediately.
 
-@ex[]  Define a function @racket[suit-name] that echoes the name of a suit.
+@exercise[]  Define a function @racket[suit-name] that echoes the name of a suit.
 
 A poker card is usually called by first saying its rank name, followed by the
 word "@bold{of}" and then the plural form of its suit name.  For example, the
@@ -580,7 +580,7 @@ will be bound to the rank and suit of the card respectively for later use.
 This example shows the way to construct a pattern for a user-defined data
 structure.
 
-@ex[]  Revise functions that manipulate other data structures you have
+@exercise[]  Revise functions that manipulate other data structures you have
 defined, for example, @racket[posn], using pattern matching.
 
 As a last example, we define a function that determines if two cards are the
@@ -651,10 +651,10 @@ This time we construct a list from the three input cards and use the list
 pattern instead.  The transitivity of @racket[string=?] guarantees that once
 two different pairs of strings are equal, all the three strings are equal.
 
-@ex[]  Rewrite the pattern-matching version of @racket[AND], @racket[OR],
+@exercise[]  Rewrite the pattern-matching version of @racket[AND], @racket[OR],
 @racket[ANDs] and @racket[ORs], do not use nested @racket[match]-expressions.
 
-@ex[]  Read the Wikipedia article
+@exercise[]  Read the Wikipedia article
 @hyperlink["http://en.wikipedia.org/wiki/List_of_poker_hands"]{List of poker
 hands}.  Suppose we represent a hand as a list of 5 cards, for each poker hand
 category, write a function that tests whether a hand of cards belong to a
@@ -824,7 +824,7 @@ effect as @racket[(sum 2 3)], which is what we want.
 If you have appreciated the benefits of pattern matching, you should be
 tempted to rewrite @racket[sum] using @racket[match].
 
-@ex[]  Write a function @racket[product] that calculates the product of an
+@exercise[]  Write a function @racket[product] that calculates the product of an
 arbitrary number of numbers using @racket[match].  Assume the function
 @racket[*] can only accept two arguments.
 
@@ -850,7 +850,7 @@ this:
           (string=? s1 s2) ) ] ) )
 )
 
-@ex[]  Rewrite @racket[AND], @racket[OR] and @racket[same-3-cards?] in a
+@exercise[]  Rewrite @racket[AND], @racket[OR] and @racket[same-3-cards?] in a
 similar way.
 
 You can also put as many variables before the dot @litchar|{.}| in a function

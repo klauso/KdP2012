@@ -1,7 +1,7 @@
 #lang scribble/manual
 
 @(require scriblib/footnote)
-@(require "../scribbleUtilities.rkt")
+@(require "scribbleUtilities.rkt")
 
 @title[#:version ""]{Pattern Macroing}
 

@@ -6,7 +6,7 @@
 (require racket/base)
 (require racket/sandbox)
 
-(provide eg ex)
+(provide eg exercise)
 
 (define rkteval
   (parameterize ([sandbox-output 'string]
@@ -25,7 +25,7 @@
 
 (define i 0)
 
-(define (ex [id #f])
+(define (exercise [id #f])
   (set! i (+ i 1))
   (when id (hash-set! ex-ids id i))
   (element (style 'bold '())
