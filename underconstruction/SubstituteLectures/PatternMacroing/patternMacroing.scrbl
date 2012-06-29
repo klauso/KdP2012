@@ -20,12 +20,12 @@ expression should be enclosed by a pair of parentheses @litchar{(}
 @litchar{)}.  Not many people have a sense of the simplicity of this uniform
 syntax.  In one way, the syntax indeed looks confusing.  Not everything
 appearing in the operator position is a function.  Instead it may be one of
-the so-called @emph{special forms}, such as @racket[lambda], @racket[if],
+the so-called @emph{syntactic keywords}, such as @racket[lambda], @racket[if],
 @racket[let], @racket[cond], @racket[and], @racket[or], and so on.  Moreover,
-it seems some special forms like @racket[if], @racket[and] and @racket[or]
-should be functions but somehow are not.  All these mysteries will be
-dispelled in this lecture.  In particular, we will introduce to you another
-abstraction mechanism, macros.  In contrast to functions which abstract over
+it seems some identifiers like @racket[and] and @racket[or] should designate
+functions but somehow do not.  All these mysteries will be dispelled in this
+lecture.  In particular, we will introduce to you another abstraction
+mechanism, macros.  In contrast to functions which abstract over
 @emph{computations}, macros abstract over @emph{code} that @emph{describes}
 some computations.  This new abstraction mechanism allows us to avoid code
 repetition, to abbreviate common coding patterns @note{@(linebreak) Be aware
@@ -55,7 +55,7 @@ uniform" are called @emph{s-expressions}.
 The name "s-expression" stands for @emph{symbolic expression} for some
 historical reasons.  It was invented in the birth of the Lisp programming
 language.  Originally it was used only as a notation for data.  Later it was
-also adopted for code.  Since then, the Lisp family of languages maintain this
+also adopted for code.  Since then, the Lisp-family languages maintain this
 tradition of using the same notation for both code and data.  An s-expression
 is defined @emph{inductively} (or @emph{recursively}) as
 
@@ -88,8 +88,8 @@ as @litchar{(1 2 . 3)}, and similarly @litchar{(+ . (1 . (2 . 3)))} as
 ()))) .  ())))} as @litchar{(* (+ 1 2 . ()) (- 5 1 . ()) .  ())}.  This last
 example shows that we can build very complex s-expressions by nesting.  In
 particular, if the rightmost element of such a nesting, in other words the
-most deeply nested element, is @litchar{()}, @litchar{()} and the dot
-@litchar{.} preceeding it can be completely ommited, so the last example can
+most deeply nested element, is @litchar{()}, @litchar{()} itself and the dot
+@litchar{.} preceeding it can be completely omitted, so the last example can
 be further abbreviated as simply @racket[(* (+ 1 2) (- 5 1))].  This
 maximally abbreviated form of s-expression is traditionally called list.  But
 to not confuse with the list data structure, we will call it s-list.
@@ -675,15 +675,14 @@ Now we can rewrite the simple example using @racket[with].
 
 This time, it is clear to the binding relations between the variables and
 arguments.  The benefit will of course be more obvious for larger examples.
-Racket provide a (more advanced) special form called @racket[let] that can
-do exactly what @racket[with] does.
+Racket provide @racket[let] that can do the same thing and more.
 
 In the example above, the coding pattern is actually quite simple.  It just
 shows one basic usage of macros to abbreviate coding patterns.  Macros can
 also be used to abstract over more complicated coding patterns.  One typical
 example is nested @tt{if}-@tt{else} statements found in C-family languages.
 In programs written in these languages, you can easily find code of the
-following structure.
+following structure:
 
 @verbatim|{
 if ( ... ) {
@@ -698,19 +697,18 @@ else {
 }
 }|
 
-
-You have been using @racket[cond] for quite some programming tasks.  It proves
-convenient.  But so far you have been told that it is a primitive control
-construct. @note{@racket[cond] is indeed provided as a primitive control
-construct in original Lisp.  But it is not in Scheme, neither in Racket.}  It
-is actually not.  The primitive control construct to form a conditional
-expression in Racket is @racket[if].  Now suppose, Racket does not provide
-@racket[cond] but only @racket[if] out of the box, what would happen?  Does it
-mean that you have to, as programmers of other languages do, identify nested
-@racket[if] expressions as a coding pattern and fron now on write every
-multi-conditional expression that way?  Fortunately not.  Racket allows us to
-define our own @racket[cond] as a macro and use it as if it is provided out of
-box.  Actually @racket[cond] is a pre-defined macro in Racket.
+This coding pattern essentially expresses multi-conditional analysis.  In
+Racket, we use @racket[cond] for that purpose.  It proves convenient.  But so
+far you have been told that it is a primitive control construct.
+@note{@racket[cond] is indeed provided as a primitive control construct in
+original Lisp.  But it is not in Scheme, neither in Racket.}  It is actually
+not.  The primitive control construct to form a conditional expression in
+Racket is @racket[if].  Now suppose, Racket does not provide @racket[cond] but
+only @racket[if] out of the box, what would happen?  Does it mean that you
+have to, as programmers of other languages do, identify nested @racket[if]
+expressions as a coding pattern and fron now on write every multi-conditional
+expression that way?  Fortunately not.  Racket allows us to define our own
+@racket[cond] as a macro and use it as if it is provided out of box.
 
 To see how @racket[cond] can be defined as a macro, let's start again with a
 template.  The template should cover the coding pattern, that is, it may
@@ -995,8 +993,108 @@ It seems the expansion does not reach the bottom since there is still an
 
 }
 
-
 @subsection{Extending Language Syntax}
+
+Racket is a descendant of Scheme.  In Scheme, a few identifiers are reserved,
+sometimes called @emph{syntactic keywords}.  Their use cases are in the Lisp
+tradition called @emph{special forms}.  They are special for both syntax and
+semantics.  Let's take a look at @racket[lambda].  It is special in syntax
+because if you do use it incorrectly you will get an syntax error.  It is
+special in semantics because it (when used correctly) @emph{creates} an
+anonymous function.  Due to their special status, they need special support
+from the language implementation.  Implementing a language is not an easy and
+cheap task.  It takes a lot of efforts and resources.  Generally, the richer
+the language syntax is, the more convenient to program in the language, but on
+the other hand the more efforts and resources needs to be put into the
+language implementation.  Clearly the language designers must make a
+trade-off.  The choice of Scheme, and in turn Racket, is to keep the core
+language syntax minimum but leaves open the possibility to extend it.  This
+follows the design philosophy stated in the Scheme language report:
+
+@emph{Programming languages should be designed not by piling feature on top of
+feature, but by removing the weaknesses and restrictions that make additional
+features appear necessary.} @note{This passage has been replicated at the very
+beginning of every @emph{Revised@superscript{n} Report on the Algorithmic
+Language Scheme} since n = 3.}
+
+Scheme has only a few syntactic keywords, two of them are @racket[lambda] and
+@racket[if].  They render the primitive syntax of the language.  Of course,
+with them, it can hardly be convenient to program anything in the language.
+For example, to write a multi-conditional expression, you have to write deep
+nested @racket[if]-expressions.  Fortunately Scheme provides a powerful macro
+system.  New macros can be defined on the fly.  Moreover, a macro call is
+indistinguishable from a special form, due to the uniform s-expression syntax.
+@note{In parallel, in Scheme and Racket, the call of a user-defined function
+is also indistinguishable from that of a primitive function.} This gives us a
+feeling that we are extending the core language syntax in a compatible way,
+which means we do not introduce some alien syntax.  Since macros can be used
+to extend the language syntax, they are sometimes also called @emph{syntactic
+extensions}.  
+
+In the previous subsection, we have seen the macros @racket[with] and
+@racket[condition] allow us to write code in a new way.  In a sense, we have
+extended the language syntax.  Both @racket[with] and @racket[condition] are
+already provided by Racket, but under different names: @racket[let] for
+@racket[with], and @racket[cond] for @racket[condition].  They are indeed
+pre-defined as macros.  Their definitions subsume ours.  Actually, Racket goes
+much further than Scheme, all seeming syntactic keywords, even @racket[lambda]
+and @racket[if], are macros.  Their uses are replaced by code in Racket core
+language syntax during macro expansion. @note{The way how Racket's macro
+expansion works is out of the scope of this lecture.  If you are interested,
+please refer to the Racket documentation.} In the sequel, we show how to use
+macros to extend the language syntax when in need.
+
+When imperative programmers moves to the functional programming world, they
+usually miss those loop constructs provided by the imperative language, if
+no such construct is provided by the functional language.  For a functional
+language with no syntax extensibility, all they can do is to hope such
+construct would be supported in future version of the language. @note{This is
+almost hopeless, since for a non-extensible functional language, if it omits
+such constructs from the very beginning, it suggests a strong favor of
+recursion.} But for Lisp-family languages, this is no problem.  If programmers
+want, they can always build such constructs as macros.
+
+A proper loop construct has a set of iteration variables (or loop variabels),
+and a boolean expression to control the entering and exiting of the loop.
+After entering the loop, one iteration starts.  During the iteration, some
+iteration variables may be modified 
+
+The boolean expression usually tests one or several iteration variable to
+decide to continue or terminate the iteration.
+
+Some of the iteration variables are used to control the iteration times, that
+is, how many times the body of the loop construct will be executed.  Others
+are used to accumulate results.  During each iteration
+
+Suppose now we want to define a do-when-else loop construct.  It will be in
+structure similar to the do-while loop in C, but 
+
+@verbatim|{
+do {
+  ...
+} while ( ... );
+}|
+
+except that we add another else-expression that will be evaluated when the
+loop condition is no longer satisfied.  The result of this else-expression is
+considered as the result of the whole do-while-else expression.  Let's call
+our macro @racket[do].  This time we start with the design of the macro
+header.
+
+A proper do-while-else loop should have a set of iteration variables.  Some of
+them are used to control the iteration times, some are used as accumulators.
+These iteration variables are (supposed to be) initialized before entering the
+body of the loop.  During each iteration, they may be modified.  At the end of
+an iteration, a conditional expression that may mention some of these
+iteration variables are evaluated: if the condition is true, a new iterations
+starts; otherwise, in our case, a default expression, i.e., the
+else-expression is evaluated and its result is returned as that of the whole
+loop expression.  Note that when a new iteration starts, the iteration
+variables have new values.
+
+@racketblock[
+(do [(ivar 
+
 
 @racket[when], @racket[do-while-else]
 
