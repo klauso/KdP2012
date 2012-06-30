@@ -18,7 +18,7 @@
          cards=? cards<a? cards>a? cards<l? cards>l?
          asort-cards dsort-cards
          flush? straight?
-         shuffle-cards deal-hand )
+         shuffle-cards group-cards deal-hand )
 
 (define Spade "♠")
 (define Heart "♥")
