@@ -354,12 +354,12 @@
 ;; tests if one list of cards is equal to the other
 (define (cards=? cs1 cs2)
   (match (cons cs1 cs2)
-    [(cons (list) _) false]
-    [(cons _ (list)) false]
+    [(cons (list) (list)) true]
     [(cons (list c1 cs1 ...)
            (list c2 cs2 ...) )
      (and (card=? c1 c2)
-          (cards=? cs1 cs2) ) ] ) )
+          (cards=? cs1 cs2) ) ]
+    [_ false] ) )
 
 ;; cards<a? : (listof card) (listof card) -> boolean
 ;; tests if one list of cards is alphabetically less than the other
