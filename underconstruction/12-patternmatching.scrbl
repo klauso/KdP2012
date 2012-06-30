@@ -660,7 +660,7 @@ hands}.  Suppose we represent a hand as a list of 5 cards, for each poker hand
 category, write a function that tests whether a hand of cards belong to a
 specific category.  You can find those functions that you may use to
 accomplish the task in the file
-@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/SubstituteLectures/PatternMatching/card.rkt"]{card.rkt}.
+@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/card.rkt"]{card.rkt}.
 
 @section{Matching Argument Lists}
 
