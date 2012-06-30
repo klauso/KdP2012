@@ -996,58 +996,19 @@ It seems the expansion does not reach the bottom since there is still an
 
 @subsection{Extending Language Syntax}
 
-Racket is a descendant of Scheme.  In Scheme, a few identifiers are reserved,
-sometimes called @emph{syntactic keywords}.  Their use cases are in the Lisp
-tradition called @emph{special forms}.  They are special for both syntax and
-semantics.  Let's take a look at @racket[lambda].  It is special in syntax
-because if you do use it incorrectly you will get an syntax error.  It is
-special in semantics because it (when used correctly) @emph{creates} an
-anonymous function.  Due to their special status, they need special support
-from the language implementation.  Implementing a language is not an easy and
-cheap task.  It takes a lot of efforts and resources.  Generally, the richer
-the language syntax is, the more convenient to program in the language, but on
-the other hand the more efforts and resources needs to be put into the
-language implementation.  Clearly the language designers must make a
-trade-off.  The choice of Scheme, and in turn Racket, is to keep the core
-language syntax minimum but leaves open the possibility to extend it.  This
-follows the design philosophy stated in the Scheme language report:
-
-@emph{Programming languages should be designed not by piling feature on top of
-feature, but by removing the weaknesses and restrictions that make additional
-features appear necessary.} @note{This passage has been replicated at the very
-beginning of every @emph{Revised@superscript{n} Report on the Algorithmic
-Language Scheme} since n = 3.}
-
-Scheme has only a few syntactic keywords, two of them are @racket[lambda] and
-@racket[if].  They render the primitive syntax of the language.  Of course,
-with them, it can hardly be convenient to program anything in the language.
-For example, to write a multi-conditional expression, you have to write deep
-nested @racket[if]-expressions.  Fortunately Scheme provides a powerful macro
-system.  New macros can be defined on the fly.  Moreover, a macro call is
-indistinguishable from a special form, due to the uniform s-expression syntax.
-@note{In parallel, in Scheme and Racket, the call of a user-defined function
-is also indistinguishable from that of a primitive function.} This gives us a
-feeling that we are extending the core language syntax in a compatible way,
-which means we do not introduce some alien syntax.  Since macros can be used
-to extend the language syntax, they are sometimes also called @emph{syntactic
-extensions}.  
-
-In the previous subsection, we have seen the macros @racket[with] and
+In the previous subsection, we have seen the macro @racket[with] and
 @racket[condition] allow us to write code in a new way.  In a sense, we have
 extended the language syntax.  Both @racket[with] and @racket[condition] are
 already provided by Racket, but under different names: @racket[let] for
 @racket[with], and @racket[cond] for @racket[condition].  They are indeed
-pre-defined as macros.  Their definitions subsume ours.  Actually, Racket goes
-much further than Scheme, all seeming syntactic keywords, even @racket[lambda]
-and @racket[if], are macros.  Their uses are replaced by code in Racket core
-language syntax during macro expansion. @note{The way how Racket's macro
-expansion works is out of the scope of this lecture.  If you are interested,
-please refer to the Racket documentation.} In the sequel, we show how to use
-macros to extend the language syntax when in need.
+pre-defined as macros.  Their definitions subsume ours.  The call for
+@racket[with] and @racket[condition] comes from our observation of some
+recurring coding patterns.  But macros can also be used to make some syntax
+out of our imagination.
 
 When imperative programmers moves to the functional programming world, they
-usually miss those loop constructs provided by the imperative language, if
-no such construct is provided by the functional language.  For a functional
+usually miss those loop constructs provided by the imperative language, if no
+such construct is provided by the functional language.  For a functional
 language with no syntax extensibility, all they can do is to hope such
 construct would be supported in future version of the language. @note{This is
 almost hopeless, since for a non-extensible functional language, if it omits
@@ -1163,6 +1124,70 @@ using loop is to print out the times table.
 
 For more detail of the function @racket[printf], @racket[newline] and
 @racket[void], please refer to the Racket documentation.
+
+Racket is a descendant of Scheme.  In Scheme, a few identifiers are reserved,
+sometimes called @emph{syntactic keywords}.  Their use cases are in the Lisp
+tradition called @emph{special forms}.  They are special for both syntax and
+semantics.  Let's take a look at @racket[lambda].  It is special in syntax
+because if you use it incorrectly you will get a syntax error.  It is special
+in semantics because it (when used correctly) @emph{creates} an anonymous
+function.  Due to their special status, these syntactic keywords  need special
+support from the language implementation.  Implementing a language is not an
+easy and cheap task.  It takes a lot of efforts and resources.  Generally, the
+richer the language syntax is, the more convenient to program in the language,
+but on the other hand the more efforts and resources needs to be put into the
+language implementation.  Clearly the language designers must make a
+trade-off.  The choice of Scheme, and in turn Racket, is to keep the core
+language syntax minimum but leaves open the possibility to extend it.  This
+follows the design philosophy stated in the Scheme language report:
+
+@emph{Programming languages should be designed not by piling feature on top of
+feature, but by removing the weaknesses and restrictions that make additional
+features appear necessary.} @note{This passage has been replicated at the very
+beginning of every @emph{Revised@superscript{n} Report on the Algorithmic
+Language Scheme} since n = 3.}
+
+Scheme has only a few syntactic keywords, two of them are @racket[lambda] and
+@racket[if].  They render the primitive syntax of the language.  Of course,
+with them, it can hardly be convenient to program anything in the language.
+For example, to write a multi-conditional expression, you have to write deep
+nested @racket[if]-expressions.  Fortunately Scheme provides a powerful macro
+system.  New macros can be defined on the fly.  Moreover, a macro call is
+indistinguishable from a special form, due to the uniform s-expression syntax.
+@note{In parallel, in Scheme and Racket, the call of a user-defined function
+is also indistinguishable from that of a primitive function.  This is not by
+coincidence but by intention, intention for a simple, uniform look and feel.}
+This gives us a feeling that we are extending the core language syntax in a
+compatible way, which means we do not introduce some alien syntax.  Since
+macros can be used to extend the language syntax, they are sometimes also
+called @emph{syntactic extensions}.  Actually, Racket goes much further than
+Scheme, everything is a macro, including all seeming syntactic keywords, even
+@racket[lambda] and @racket[if].  Their uses are replaced by code in Racket's
+core language syntax during macro expansion. @note{The way how Racket's macro
+expansion works is out of the scope of this lecture.  If you are interested,
+please refer to the Racket documentation.} At the end of this subsection, we
+use one example to demonstrate how the extensibility macros bring to the
+language can influence its design.
+
+We have claimed that everything in Racket is a macro.  Then it should be easy
+to accept that @racket[match], the construct we have focused on in our
+previous lecture is also just a macro.  Racket chooses to build @racket[match]
+as a macro on top of equality test on literals and isomorphism test on data
+structures.  Another perspective is to view pattern matching as a more general
+and more primitive mechanism that should be supported out of the core
+language.  The reason turns out to be that the most basic conditional
+construct @racket[if] can be simply defined as a macro on top of pattern
+matching!  Here you go:
+
+@racketblock[
+(define-syntax-rule (if test-expr then-expr else-expr)
+  (match test-expr
+    [#t then-expr]
+    [#f else-expr] ) )
+]
+
+Thus every conditinoal expression is essentially a pattern matching
+expression.
 
 @subsection{The Use and Abuse of Macros}
 
