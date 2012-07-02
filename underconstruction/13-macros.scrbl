@@ -236,20 +236,12 @@ about.  When you read this sentence, you know that you are not asked to get
 out of here, but told that "get out of here!" is a rude expression.  Inspired
 by this mechanism we employ in writing, the inventor of Lisp introduced an
 operator called @racket[quote].  Using @racket[quote] we can tell Racket not
-to evaluate the quoted code.
-
-@eg[
-(code:quote (+ 1 2 3))
-]
-
-@eg[
-(code:quote (list (+ 0 1) (+ 1 1) (+ 1 2)))
-]
-
-Note that Racket provides a shorthand for @racket[quote], instead of
-@racket[(code:quote (+ 1 2 3))], you can write @racket['(+ 1 2 3)], that is,
-you just put a single quotation mark @litchar{'} before the code you want to
-quote.  Be aware that there is no more @litchar{'} after the code you quote.
+to evaluate the quoted code, for example, @racket[(code:quote (+ 1 2 3))],
+@racket[(code:quote (list (+ 0 1) (+ 1 1) (+ 1 2)))].  Racket also provides a
+shorthand for @racket[quote], instead of @racket[(code:quote (+ 1 2 3))], you
+can write @racket['(+ 1 2 3)], that is, you just put a single quotation mark
+@litchar{'} before the code you want to quote.  Be aware that there is no more
+@litchar{'} after the code you quote.
 
 In addition to quoting code, you can also quote other data.
 
@@ -455,7 +447,7 @@ inside Racket's macro system.
 @subsection{Avoiding Code Repetition}
 
 In
-@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/SubstituteLectures/PatternMatching/card.rkt"]{card.rkt},
+@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/card.rkt"]{card.rkt},
 we try to represent the 52 poker cards using our
 @racket[card]-@racket[struct].  For example, we would like to have the
 following definition for the card called "Ace of Spades".
@@ -1126,8 +1118,7 @@ For more detail of the function @racket[printf], @racket[newline] and
 @racket[void], please refer to the Racket documentation.
 
 @exercise[] Some C-family languages also provide another form of loop, called
-@hyperlink[@tt{do-while}
-loop]{http://en.wikipedia.org/wiki/Do_while_loophttp://en.wikipedia.org/wiki/Do_while_loop}.
+@hyperlink["http://en.wikipedia.org/wiki/Do_while_loophttp://en.wikipedia.org/wiki/Do_while_loop"]{@tt{do-while}-loop}.
 Write a macro that can do  the same.
 
 Racket is a descendant of Scheme.  In Scheme, a few identifiers are reserved,
