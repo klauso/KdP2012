@@ -467,15 +467,15 @@ have to repeat strings that represent ranks (one of @racket["A"], @racket["2"]
 to @racket["10"], @racket["J"], @racket["Q"] and @racket["K"]).  Clearly we
 do not want to do this.  
 
-Racket's macro system can free us from this kindof boring task.  For it to
+Racket's macro system can free us from this kind of boring task.  For it to
 work, we give Racket a template that specifies the form of code that should be
 produced.  Then Racket will automatically generate code following the
 template.  Such a template usually contains holes to be fill in.  We can label
-these holes using same or different names accordingly to whether they are
-supposed to be filled by same or different code pieces.  A moment's thinking
-suggests that these code pieces cannot be those repeated.  So other parts of
-a template than its holes must have those repeated code pieces.  Now a
-template for our example can be formed.
+these holes using the same or different names according to whether they are
+supposed to be filled by the same or different code pieces.  A moment's
+thinking suggests that these code pieces cannot be those repeated.  So other
+parts of the template than its holes must have those repeated code pieces.
+Now a template for our example can be formed like this:
 
 @racketblock[
 (begin (define cs (make-card r "♠")) ...
