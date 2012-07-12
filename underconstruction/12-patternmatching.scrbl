@@ -630,9 +630,9 @@ But imagine that we now want to define a function that takes three cards and
 determine if all of them are the same.  Then we have to nest three
 @racket[match]-expressions.  If you still think it managable, imagine four,
 five or even more.  In these cases the advantage of our technique manifests,
-even though it means we have to sacriface some efficiency.  For example, we
+even though it means we have to sacrifice some efficiency.  For example, we
 can define the function that determines the sameness among three cards as
-follows.
+follows:
 
 @#reader scribble/comment-reader
 (racketblock
@@ -657,9 +657,9 @@ two different pairs of strings are equal, all the three strings are equal.
 @exercise[]  Read the Wikipedia article
 @hyperlink["http://en.wikipedia.org/wiki/List_of_poker_hands"]{List of poker
 hands}.  Suppose we represent a hand as a list of 5 cards, for each poker hand
-category, write a function that tests whether a hand of cards belong to a
-specific category.  You can find those functions that you may use to
-accomplish the task in the file
+category, write a function that tests whether a hand of cards belong to that
+category.  You can find those functions that you may use to accomplish the
+task in the file
 @hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/card.rkt"]{card.rkt}.
 
 @section{Matching Argument Lists}
