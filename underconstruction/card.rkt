@@ -3,7 +3,8 @@
 ;; A library for poker cards
 
 (provide Spade Heart Diamond Club Ranks Suits Deck
-         card card? make-card card-rank card-suit rank-name suit-name card-name
+         card card? make-card card-rank card-suit
+         rank-name suit-name card-name
          SA S2 S3 S4 S5 S6 S7 S8 S9 S10 SJ SQ SK
          🂡 🂢 🂣 🂤 🂥 🂦 🂧 🂨 🂩 🂪  🂫 🂭 🂮
          HA H2 H3 H4 H5 H6 H7 H8 H9 H10 HJ HQ HK
@@ -18,7 +19,7 @@
          cards=? cards<a? cards>a? cards<l? cards>l?
          asort-cards dsort-cards
          flush? straight?
-         shuffle-cards deal-hand )
+         shuffle-cards group-cards deal-hand )
 
 (define Spade "♠")
 (define Heart "♥")

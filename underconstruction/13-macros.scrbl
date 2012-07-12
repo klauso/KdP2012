@@ -236,20 +236,12 @@ about.  When you read this sentence, you know that you are not asked to get
 out of here, but told that "get out of here!" is a rude expression.  Inspired
 by this mechanism we employ in writing, the inventor of Lisp introduced an
 operator called @racket[quote].  Using @racket[quote] we can tell Racket not
-to evaluate the quoted code.
-
-@eg[
-(code:quote (+ 1 2 3))
-]
-
-@eg[
-(code:quote (list (+ 0 1) (+ 1 1) (+ 1 2)))
-]
-
-Note that Racket provides a shorthand for @racket[quote], instead of
-@racket[(code:quote (+ 1 2 3))], you can write @racket['(+ 1 2 3)], that is,
-you just put a single quotation mark @litchar{'} before the code you want to
-quote.  Be aware that there is no more @litchar{'} after the code you quote.
+to evaluate the quoted code, for example, @racket[(code:quote (+ 1 2 3))],
+@racket[(code:quote (list (+ 0 1) (+ 1 1) (+ 1 2)))].  Racket also provides a
+shorthand for @racket[quote], instead of @racket[(code:quote (+ 1 2 3))], you
+can write @racket['(+ 1 2 3)], that is, you just put a single quotation mark
+@litchar{'} before the code you want to quote.  Be aware that there is no more
+@litchar{'} after the code you quote.
 
 In addition to quoting code, you can also quote other data.
 
@@ -455,7 +447,7 @@ inside Racket's macro system.
 @subsection{Avoiding Code Repetition}
 
 In
-@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/SubstituteLectures/PatternMatching/card.rkt"]{card.rkt},
+@hyperlink["https://github.com/klauso/KdP2012/tree/master/underconstruction/card.rkt"]{card.rkt},
 we try to represent the 52 poker cards using our
 @racket[card]-@racket[struct].  For example, we would like to have the
 following definition for the card called "Ace of Spades".
@@ -475,15 +467,15 @@ have to repeat strings that represent ranks (one of @racket["A"], @racket["2"]
 to @racket["10"], @racket["J"], @racket["Q"] and @racket["K"]).  Clearly we
 do not want to do this.  
 
-Racket's macro system can free us from this kindof boring task.  For it to
+Racket's macro system can free us from this kind of boring task.  For it to
 work, we give Racket a template that specifies the form of code that should be
 produced.  Then Racket will automatically generate code following the
 template.  Such a template usually contains holes to be fill in.  We can label
-these holes using same or different names accordingly to whether they are
-supposed to be filled by same or different code pieces.  A moment's thinking
-suggests that these code pieces cannot be those repeated.  So other parts of
-a template than its holes must have those repeated code pieces.  Now a
-template for our example can be formed.
+these holes using the same or different names according to whether they are
+supposed to be filled by the same or different code pieces.  A moment's
+thinking suggests that these code pieces cannot be those repeated.  So other
+parts of the template than its holes must have those repeated code pieces.
+Now a template for our example can be formed like this:
 
 @racketblock[
 (begin (define cs (make-card r "♠")) ...
@@ -1125,6 +1117,10 @@ using loop is to print out the times table.
 For more detail of the function @racket[printf], @racket[newline] and
 @racket[void], please refer to the Racket documentation.
 
+@exercise[] Some C-family languages also provide another form of loop, called
+@hyperlink["http://en.wikipedia.org/wiki/Do_while_loophttp://en.wikipedia.org/wiki/Do_while_loop"]{@tt{do-while}-loop}.
+Write a macro that can do  the same.
+
 Racket is a descendant of Scheme.  In Scheme, a few identifiers are reserved,
 sometimes called @emph{syntactic keywords}.  Their use cases are in the Lisp
 tradition called @emph{special forms}.  They are special for both syntax and
@@ -1189,7 +1185,66 @@ matching!  Here you go:
 Thus every conditinoal expression is essentially a pattern matching
 expression.
 
-@subsection{The Use and Abuse of Macros}
+@subsection{The Use or Abuse of Macros}
 
-@racket[and], @racket[or]
+Macro system holds the power to create languages and fill them with syntax.
+But like all great power, it can be used for good, also for evil.  And so
+arises the question, a question that will trap our mind until it finds the
+balance.
+
+In this final subseciton, we will uncover the mask of @racket[and] and
+@racket[or].  They are not functions but macros.  Thus you can not pass them
+as an argument to a higher-order function, since they are not functions at
+all.  The reason why they are defined as macros instead of functions is
+deeper.  In the following discussion, we focus on @racket[and], the case for
+@racket[or] is similar.  Below is a function definition that can do what
+@racket[and] can:
+
+@racketblock[
+(define (andf . bs)
+  (match bs
+    [(list) true]
+    [(list b) b]
+    [(list b bs ...) (if b (andf bs) false)] ) )
+]
+
+This function looks correct.  The problem with it is that before entering the
+function body, all arguments have already been evaluated.  This is due to how
+Racket evaluates an application: arguments to a function are always evaluated
+before the evaluation of the function body.  For regular functions, this
+evaluate strategy is demanded, since it will save repeated evaluation is the
+arguments have to be substituted for several occurences of their corresponding
+parameters inside the function body, improving the efficiency of the
+computation.  But for @racket[andf], it causes inefficiency because it
+conflicts with the so-called @emph{short-circuit} evaluation for
+@racket[andf]: whenever we find an argument to @racket[andf] evaluates to
+@racket[false], we can stop and return @racket[false] immediately,
+disregarding all other arguments, no matter how many they are.  Now comes the
+conflict: Racket's evaluation strategy requires all arguments to a function
+being evaluated; short-circuit evaluation suggests that all arguments should
+only be evaluated if necessary.  Instead of changing the regular evaluation
+strategy for regular function application, which is the common case, Racket  
+takes away the function status of @racket[andf] and turn it into a macro:
+
+@racketblock[
+(define-syntax and
+  (syntax-rules ()
+    [(and) true]
+    [(and e) e]
+    [(and e es ...) (if e (and es ...) false) ] ) )
+]
+
+Since a macro takes its argument expressions unevaluated, the conflict
+disappears, and it can embrace the benefit of short-circuit evaluation.  On
+the other hand, it also means @racket[and] can no longer be used in place
+where first-class function status is required.  In particular, @racket[and]
+can never see the light of run-time again.
+
+@exercise[] Give the macro definition of @racket[or].
+
+We leave this usage of macros to you to decide whether it is use or abuse.
+The general advice is this: whenever you want to build abstractions, try
+functions first; only if one of situations described above occurs, should you
+try macros instead.  Remember, macros are powerful, so powerful if you abuse
+them, you may shoot yourself in the foot.
 

@@ -530,9 +530,9 @@ access the rank and suit of a card.  Here is the definition.
 ;; card-name : card -> string
 ;; echoes the name of a card
 (define (card-name c)
-  (string-append (rank-name (card-rank r))
+  (string-append (rank-name (card-rank c))
                  " of "
-                 (suit-name (card-suit s))
+                 (suit-name (card-suit c))
                  "s" ) )
 )
 
